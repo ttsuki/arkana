@@ -9,7 +9,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_", "_", "{44E6FD80-91D3-46
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "arkana", "arkana.vcxitems", "{CF0FD9FF-72AB-4FFC-9DE5-782BA7316BB4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "arkana-test", "arkana-test\arkana-test.vcxproj", "{E53163DB-9B32-4CD2-B3D8-1D769E6A802A}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		arkana.vcxitems*{cf0fd9ff-72ab-4ffc-9de5-782ba7316bb4}*SharedItemsImports = 9
+		arkana.vcxitems*{e53163db-9b32-4cd2-b3d8-1d769e6a802a}*SharedItemsImports = 4
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E53163DB-9B32-4CD2-B3D8-1D769E6A802A}.Debug|x64.ActiveCfg = Debug|x64
+		{E53163DB-9B32-4CD2-B3D8-1D769E6A802A}.Debug|x64.Build.0 = Debug|x64
+		{E53163DB-9B32-4CD2-B3D8-1D769E6A802A}.Debug|x86.ActiveCfg = Debug|Win32
+		{E53163DB-9B32-4CD2-B3D8-1D769E6A802A}.Debug|x86.Build.0 = Debug|Win32
+		{E53163DB-9B32-4CD2-B3D8-1D769E6A802A}.Release|x64.ActiveCfg = Release|x64
+		{E53163DB-9B32-4CD2-B3D8-1D769E6A802A}.Release|x64.Build.0 = Release|x64
+		{E53163DB-9B32-4CD2-B3D8-1D769E6A802A}.Release|x86.ActiveCfg = Release|Win32
+		{E53163DB-9B32-4CD2-B3D8-1D769E6A802A}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
