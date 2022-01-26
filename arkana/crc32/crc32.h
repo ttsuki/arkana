@@ -40,4 +40,16 @@ namespace arkana::crc32
 
         return ~crc;
     }
+
+    template <uint32_t polynomial, size_t n>
+    static inline constexpr table<uint32_t, 256> crc32_table_n = generate_table<uint32_t, 256>(
+        [](auto i)
+        {
+            auto& table = crc32_table0<polynomial>;
+            auto v = crc32_table_n<polynomial, n - 1>[i];
+            return (v >> 8) ^ table[(v & 0xFF)];
+        });
+
+    template <uint32_t polynomial>
+    static inline constexpr table<uint32_t, 256> crc32_table_n<polynomial, 0> = crc32_table0<polynomial>;
 }

@@ -45,6 +45,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
+    <ClInclude Include="helper.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
