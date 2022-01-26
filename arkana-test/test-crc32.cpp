@@ -4,6 +4,7 @@
 #include <arkana/crc32/crc32.h>
 #include <arkana/crc32/crc32-ia32.h>
 #include <arkana/crc32/crc32-avx2.h>
+#include <arkana/crc32/crc32-avx2clmul.h>
 
 #include "./helper.h"
 
@@ -35,8 +36,10 @@ TEST(CRC32, eq)
     auto a = calculate_crc32<polynominal>(static_random_bytes_1m.data(), static_random_bytes_1m.size());
     auto b = ia32::calculate_crc32<polynominal>(static_random_bytes_1m.data(), static_random_bytes_1m.size());
     auto c = avx2::calculate_crc32<polynominal>(static_random_bytes_1m.data(), static_random_bytes_1m.size());
+    auto d = avx2clmul::calculate_crc32<polynominal>(static_random_bytes_1m.data(), static_random_bytes_1m.size());
     EXPECT_EQ(a, b);
     EXPECT_EQ(a, c);
+    EXPECT_EQ(a, d);
 }
 
 #ifdef NDEBUG
@@ -60,5 +63,11 @@ TEST(CRC32, bench_avx2)
 {
     EXPECT_EQ(expect_a, avx2::calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
     EXPECT_EQ(expect_u, avx2::calculate_crc32<polynominal>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
+}
+
+TEST(CRC32, bench_avx2clmul)
+{
+    EXPECT_EQ(expect_a, avx2clmul::calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
+    EXPECT_EQ(expect_u, avx2clmul::calculate_crc32<polynominal>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
 }
 #endif

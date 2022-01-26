@@ -20,6 +20,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\types.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\xmm.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\crc32\crc32-avx2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\crc32\crc32-avx2clmul.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\crc32\crc32-ia32.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\crc32\crc32.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\sha2\sha2.h" />
