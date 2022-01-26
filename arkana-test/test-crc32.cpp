@@ -3,6 +3,7 @@
 #include <arkana/bits/hex-int-literals.h>
 #include <arkana/crc32/crc32.h>
 #include <arkana/crc32/crc32-ia32.h>
+#include <arkana/crc32/crc32-avx2.h>
 
 #include "./helper.h"
 
@@ -33,20 +34,31 @@ TEST(CRC32, eq)
 {
     auto a = calculate_crc32<polynominal>(static_random_bytes_1m.data(), static_random_bytes_1m.size());
     auto b = ia32::calculate_crc32<polynominal>(static_random_bytes_1m.data(), static_random_bytes_1m.size());
+    auto c = avx2::calculate_crc32<polynominal>(static_random_bytes_1m.data(), static_random_bytes_1m.size());
     EXPECT_EQ(a, b);
+    EXPECT_EQ(a, c);
 }
 
 #ifdef NDEBUG
 
-crc32_value_t expect = calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size());
+crc32_value_t expect_a = calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size());
+crc32_value_t expect_u = calculate_crc32<polynominal>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2);
 
 TEST(CRC32, bench_ref)
 {
-    EXPECT_EQ(expect, calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
+    EXPECT_EQ(expect_a, calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
+    EXPECT_EQ(expect_u, calculate_crc32<polynominal>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
 }
 
 TEST(CRC32, bench_ia32)
 {
-    EXPECT_EQ(expect, ia32::calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
+    EXPECT_EQ(expect_a, ia32::calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
+    EXPECT_EQ(expect_u, ia32::calculate_crc32<polynominal>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
+}
+
+TEST(CRC32, bench_avx2)
+{
+    EXPECT_EQ(expect_a, avx2::calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
+    EXPECT_EQ(expect_u, avx2::calculate_crc32<polynominal>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
 }
 #endif
