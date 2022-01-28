@@ -210,17 +210,16 @@ namespace arkana::xmm
     template <class T> ARKXMM_API andnot(const XMM<T> a, const XMM<T> mask) -> XMM<T> { return {_mm_andnot_si128(mask.v, a.v)}; }        // SSE2 a & ~mask
     template <class T> ARKXMM_API andnot(const YMM<T> a, const YMM<T> mask) -> YMM<T> { return {_mm256_andnot_si256(mask.v, a.v)}; }     // AVX2 a & ~mask
 
-    template <int bytes, class T> ARKXMM_API byte_shift_l_128(XMM<T> reg) -> XMM<T> { return {_mm_slli_si128(reg.v, bytes)}; }                                             // SSE2
-    template <int bytes, class T> ARKXMM_API byte_shift_l_128(YMM<T> reg) -> YMM<T> { return {_mm256_slli_si256(reg.v, bytes)}; }                                          // AVX2
-    template <int bytes, class T> ARKXMM_API byte_shift_r_128(XMM<T> reg) -> XMM<T> { return {_mm_srli_si128(reg.v, bytes)}; }                                             // SSE2
-    template <int bytes, class T> ARKXMM_API byte_shift_r_128(YMM<T> reg) -> YMM<T> { return {_mm256_srli_si256(reg.v, bytes)}; }                                          // AVX2
-    template <int bytes, class T> ARKXMM_API byte_align_r_128(XMM<T> lo, XMM<T> hi) -> XMM<T> { return {_mm_alignr_epi8(hi.v, lo.v, bytes)}; }                             // SSSE3
-    template <int bytes, class T> ARKXMM_API byte_align_r_128(YMM<T> lo, YMM<T> hi) -> YMM<T> { return {_mm256_alignr_epi8(hi.v, lo.v, bytes)}; }                          // AVX2
-    template <class T> ARKXMM_API byte_shuffle_128(XMM<T> val, XMM<int8_t> index) -> XMM<T> { return {_mm_shuffle_epi8(val.v, index.v)}; }                                 // SSSE3
-    template <class T> ARKXMM_API byte_shuffle_128(YMM<T> val, YMM<int8_t> index) -> YMM<T> { return {_mm256_shuffle_epi8(val.v, index.v)}; }                              // AVX2
-    template <class T> ARKXMM_API byte_shuffle_128(YMM<T> val, XMM<int8_t> index) -> YMM<T> { return {_mm256_shuffle_epi8(val.v, _mm256_broadcastsi128_si256(index.v))}; } // AVX2
-    template <class T> ARKXMM_API byte_blend(XMM<T> a, XMM<T> b, XMM<int8_t> selector) -> XMM<T> { return {_mm_blendv_epi8(a.v, b.v, selector.v)}; }                       // SSSE4.1
-    template <class T> ARKXMM_API byte_blend(YMM<T> a, YMM<T> b, YMM<int8_t> selector) -> YMM<T> { return {_mm256_blendv_epi8(a.v, b.v, selector.v)}; }                    // AVX2
+    template <int bytes, class T> ARKXMM_API byte_shift_l_128(XMM<T> reg) -> XMM<T> { return {_mm_slli_si128(reg.v, bytes)}; }                          // SSE2
+    template <int bytes, class T> ARKXMM_API byte_shift_l_128(YMM<T> reg) -> YMM<T> { return {_mm256_slli_si256(reg.v, bytes)}; }                       // AVX2
+    template <int bytes, class T> ARKXMM_API byte_shift_r_128(XMM<T> reg) -> XMM<T> { return {_mm_srli_si128(reg.v, bytes)}; }                          // SSE2
+    template <int bytes, class T> ARKXMM_API byte_shift_r_128(YMM<T> reg) -> YMM<T> { return {_mm256_srli_si256(reg.v, bytes)}; }                       // AVX2
+    template <int bytes, class T> ARKXMM_API byte_align_r_128(XMM<T> lo, XMM<T> hi) -> XMM<T> { return {_mm_alignr_epi8(hi.v, lo.v, bytes)}; }          // SSSE3
+    template <int bytes, class T> ARKXMM_API byte_align_r_128(YMM<T> lo, YMM<T> hi) -> YMM<T> { return {_mm256_alignr_epi8(hi.v, lo.v, bytes)}; }       // AVX2
+    template <class T> ARKXMM_API byte_shuffle_128(XMM<T> val, XMM<int8_t> index) -> XMM<T> { return {_mm_shuffle_epi8(val.v, index.v)}; }              // SSSE3
+    template <class T> ARKXMM_API byte_shuffle_128(YMM<T> val, YMM<int8_t> index) -> YMM<T> { return {_mm256_shuffle_epi8(val.v, index.v)}; }           // AVX2
+    template <class T> ARKXMM_API byte_blend(XMM<T> a, XMM<T> b, XMM<int8_t> selector) -> XMM<T> { return {_mm_blendv_epi8(a.v, b.v, selector.v)}; }    // SSSE4.1
+    template <class T> ARKXMM_API byte_blend(YMM<T> a, YMM<T> b, YMM<int8_t> selector) -> YMM<T> { return {_mm256_blendv_epi8(a.v, b.v, selector.v)}; } // AVX2
 
     // broadcast shortcut
     ARKXMM_API i8x16(int8_t v) -> vi8x16 { return broadcast<vi8x16>(v); }
@@ -257,6 +256,43 @@ namespace arkana::xmm
     ARKXMM_API u64x2(uint64_t x0, uint64_t x1) -> vu64x2 { return from_values<vu64x2>(x0, x1); }
     ARKXMM_API i64x4(int64_t x0, int64_t x1, int64_t x2, int64_t x3) -> vi64x4 { return from_values<vi64x4>(x0, x1, x2, x3); }
     ARKXMM_API u64x4(uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3) -> vu64x4 { return from_values<vu64x4>(x0, x1, x2, x3); }
+
+
+    // insert single element into vector
+    template <uint8_t index_4bit> ARKXMM_API insert_element(vi8x16 v, int8_t x) -> vi8x16 { return {_mm_insert_epi8(v.v, x, index_4bit)}; }        // SSE4.1
+    template <uint8_t index_4bit> ARKXMM_API insert_element(vu8x16 v, int8_t x) -> vu8x16 { return {_mm_insert_epi8(v.v, x, index_4bit)}; }        // SSE4.1
+    template <uint8_t index_5bit> ARKXMM_API insert_element(vi8x32 v, int8_t x) -> vi8x32 { return {_mm256_insert_epi8(v.v, x, index_5bit)}; }     // AVX
+    template <uint8_t index_5bit> ARKXMM_API insert_element(vu8x32 v, int8_t x) -> vu8x32 { return {_mm256_insert_epi8(v.v, x, index_5bit)}; }     // AVX
+    template <uint8_t index_3bit> ARKXMM_API insert_element(vi16x8 v, int16_t x) -> vi16x8 { return {_mm_insert_epi16(v.v, x, index_3bit)}; }      // SSE2
+    template <uint8_t index_3bit> ARKXMM_API insert_element(vu16x8 v, int16_t x) -> vu16x8 { return {_mm_insert_epi16(v.v, x, index_3bit)}; }      // SSE2
+    template <uint8_t index_4bit> ARKXMM_API insert_element(vi16x16 v, int16_t x) -> vi16x16 { return {_mm256_insert_epi16(v.v, x, index_4bit)}; } // AVX
+    template <uint8_t index_4bit> ARKXMM_API insert_element(vu16x16 v, int16_t x) -> vu16x16 { return {_mm256_insert_epi16(v.v, x, index_4bit)}; } // AVX
+    template <uint8_t index_2bit> ARKXMM_API insert_element(vi32x4 v, int32_t x) -> vi32x4 { return {_mm_insert_epi32(v.v, x, index_2bit)}; }      // SSE4.1
+    template <uint8_t index_2bit> ARKXMM_API insert_element(vu32x4 v, int32_t x) -> vu32x4 { return {_mm_insert_epi32(v.v, x, index_2bit)}; }      // SSE4.1
+    template <uint8_t index_3bit> ARKXMM_API insert_element(vi32x8 v, int32_t x) -> vi32x8 { return {_mm256_insert_epi32(v.v, x, index_3bit)}; }   // AVX
+    template <uint8_t index_3bit> ARKXMM_API insert_element(vu32x8 v, int32_t x) -> vu32x8 { return {_mm256_insert_epi32(v.v, x, index_3bit)}; }   // AVX
+    template <uint8_t index_1bit> ARKXMM_API insert_element(vi64x2 v, int64_t x) -> vi64x2 { return {_mm_insert_epi64(v.v, x, index_1bit)}; }      // SSE4.1
+    template <uint8_t index_1bit> ARKXMM_API insert_element(vu64x2 v, int64_t x) -> vu64x2 { return {_mm_insert_epi64(v.v, x, index_1bit)}; }      // SSE4.1
+    template <uint8_t index_2bit> ARKXMM_API insert_element(vi64x4 v, int64_t x) -> vi64x4 { return {_mm256_insert_epi64(v.v, x, index_2bit)}; }   // AVX
+    template <uint8_t index_2bit> ARKXMM_API insert_element(vu64x4 v, int64_t x) -> vu64x4 { return {_mm256_insert_epi64(v.v, x, index_2bit)}; }   // AVX
+
+    // extract single element from vector
+    template <uint8_t index_4bit> ARKXMM_API extract_element(vi8x16 v) { return _mm_extract_epi8(v.v, index_4bit); }      // SSE4.1
+    template <uint8_t index_4bit> ARKXMM_API extract_element(vu8x16 v) { return _mm_extract_epi8(v.v, index_4bit); }      // SSE4.1
+    template <uint8_t index_5bit> ARKXMM_API extract_element(vi8x32 v) { return _mm256_extract_epi8(v.v, index_5bit); }   // AVX2
+    template <uint8_t index_5bit> ARKXMM_API extract_element(vu8x32 v) { return _mm256_extract_epi8(v.v, index_5bit); }   // AVX2
+    template <uint8_t index_3bit> ARKXMM_API extract_element(vi16x8 v) { return _mm_extract_epi16(v.v, index_3bit); }     // SSE2
+    template <uint8_t index_3bit> ARKXMM_API extract_element(vu16x8 v) { return _mm_extract_epi16(v.v, index_3bit); }     // SSE2
+    template <uint8_t index_4bit> ARKXMM_API extract_element(vi16x16 v) { return _mm256_extract_epi16(v.v, index_4bit); } // AVX2
+    template <uint8_t index_4bit> ARKXMM_API extract_element(vu16x16 v) { return _mm256_extract_epi16(v.v, index_4bit); } // AVX2
+    template <uint8_t index_2bit> ARKXMM_API extract_element(vi32x4 v) { return _mm_extract_epi32(v.v, index_2bit); }     // SSE4.1
+    template <uint8_t index_2bit> ARKXMM_API extract_element(vu32x4 v) { return _mm_extract_epi32(v.v, index_2bit); }     // SSE4.1
+    template <uint8_t index_3bit> ARKXMM_API extract_element(vi32x8 v) { return _mm256_extract_epi32(v.v, index_3bit); }  // AVX
+    template <uint8_t index_3bit> ARKXMM_API extract_element(vu32x8 v) { return _mm256_extract_epi32(v.v, index_3bit); }  // AVX
+    template <uint8_t index_1bit> ARKXMM_API extract_element(vi64x2 v) { return _mm_extract_epi64(v.v, index_1bit); }     // SSE4.1
+    template <uint8_t index_1bit> ARKXMM_API extract_element(vu64x2 v) { return _mm_extract_epi64(v.v, index_1bit); }     // SSE4.1
+    template <uint8_t index_2bit> ARKXMM_API extract_element(vi64x4 v) { return _mm256_extract_epi64(v.v, index_2bit); }  // AVX
+    template <uint8_t index_2bit> ARKXMM_API extract_element(vu64x4 v) { return _mm256_extract_epi64(v.v, index_2bit); }  // AVX
 
     // blend
     ARKXMM_API blend(vi8x16 a, vi8x16 b, vi8x16 control) -> vi8x16 { return {_mm_blendv_epi8(a.v, b.v, control.v)}; }                              // SSE 4.1
@@ -468,25 +504,6 @@ namespace arkana::xmm
     /* ARKXMM_API operator >>(vi64x4 a, vi64x4 i) -> vi64x4 { return { _mm256_srav_epi64(a.v, i.v) }; } */    // AVX512VL + AVX512F
     ARKXMM_API operator >>(vu64x4 a, vi64x4 i) -> vu64x4 { return {_mm256_srlv_epi64(a.v, i.v)}; }            // AVX2
 
-    ARKXMM_API rotl(vu16x8 v, int i) -> vu16x8 { return v << (i & 15) | v >> (-i & 15); }
-    ARKXMM_API rotl(vu16x16 v, int i) -> vu16x16 { return v << (i & 15) | v >> (-i & 15); }
-    ARKXMM_API rotl(vu32x4 v, int i) -> vu32x4 { return v << (i & 31) | v >> (-i & 31); }
-    ARKXMM_API rotl(vu32x8 v, int i) -> vu32x8 { return v << (i & 31) | v >> (-i & 31); }
-    ARKXMM_API rotl(vu64x4 v, int i) -> vu64x4 { return v << (i & 63) | v >> (-i & 63); }
-    ARKXMM_API rotl(vu64x2 v, int i) -> vu64x2 { return v << (i & 63) | v >> (-i & 63); }
-    ARKXMM_API rotr(vu16x8 v, int i) -> vu16x8 { return v >> (i & 15) | v << (-i & 15); }
-    ARKXMM_API rotr(vu16x16 v, int i) -> vu16x16 { return v >> (i & 15) | v << (-i & 15); }
-    ARKXMM_API rotr(vu32x4 v, int i) -> vu32x4 { return v >> (i & 31) | v << (-i & 31); }
-    ARKXMM_API rotr(vu32x8 v, int i) -> vu32x8 { return v >> (i & 31) | v << (-i & 31); }
-    ARKXMM_API rotr(vu64x2 v, int i) -> vu64x2 { return v >> (i & 63) | v << (-i & 63); }
-    ARKXMM_API rotr(vu64x4 v, int i) -> vu64x4 { return v >> (i & 63) | v << (-i & 63); }
-    ARKXMM_API byteswap(vu16x8 v) -> vu16x8 { return byte_shuffle_128(v, from_values<XMM<int8_t>>(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14)); }
-    ARKXMM_API byteswap(vu16x16 v) -> vu16x16 { return byte_shuffle_128(v, from_values<YMM<int8_t>>(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14)); }
-    ARKXMM_API byteswap(vu32x4 v) -> vu32x4 { return byte_shuffle_128(v, from_values<XMM<int8_t>>(3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12)); }
-    ARKXMM_API byteswap(vu32x8 v) -> vu32x8 { return byte_shuffle_128(v, from_values<YMM<int8_t>>(3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12, 3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12)); }
-    ARKXMM_API byteswap(vu64x2 v) -> vu64x2 { return byte_shuffle_128(v, from_values<XMM<int8_t>>(7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8)); }
-    ARKXMM_API byteswap(vu64x4 v) -> vu64x4 { return byte_shuffle_128(v, from_values<YMM<int8_t>>(7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8)); }
-
     ARKXMM_API max(vi8x16 a, vi8x16 b) -> vi8x16 { return {_mm_max_epi8(a.v, b.v)}; }                  // SSE4.1
     ARKXMM_API max(vu8x16 a, vu8x16 b) -> vu8x16 { return {_mm_max_epu8(a.v, b.v)}; }                  // SSE2
     ARKXMM_API max(vi8x32 a, vi8x32 b) -> vi8x32 { return {_mm256_max_epi8(a.v, b.v)}; }               // AVX2
@@ -604,7 +621,7 @@ namespace arkana::xmm
     ARKXMM_API prefetch_nta(const void* p) -> void { _mm_prefetch(static_cast<const char*>(p), _MM_HINT_NTA); }
 
     // PCLMULQDQ carry-less integer multiplication
-    template <int i0, int i1> ARKXMM_API clmul(vu64x2 a, vu64x2 b) -> vx128x1 { return {_mm_clmulepi64_si128(a.v, b.v, (i0 & 1) | (i1 & 1) << 4)}; }  // PCLMULQDQ carry-less integer multiplication
+    template <int i0, int i1> ARKXMM_API clmul(vu64x2 a, vu64x2 b) -> vx128x1 { return {_mm_clmulepi64_si128(a.v, b.v, (i0 & 1) | (i1 & 1) << 4)}; } // PCLMULQDQ carry-less integer multiplication
 
     // immediate value extensions
     template <class NMM> ARKXMM_API operator &(NMM a, typename NMM::elem_t b) -> ARKXMM_DEFINE_EXTENSION(a & xmm::broadcast<NMM>(b));
@@ -705,6 +722,24 @@ namespace arkana::xmm
     template <uint8_t index> ARKXMM_API extract_byte(vu64x2 v) -> std::enable_if_t<index < 8, vu64x2> { return reinterpret<vu64x2>(byte_shuffle_128(v, reinterpret<vi8x16>(from_values<vu64x2>(0xFFFFFFFFFFFFFF00 | index, 0xFFFFFFFFFFFFFF08 | index)))); }
     template <uint8_t index> ARKXMM_API extract_byte(vu64x4 v) -> std::enable_if_t<index < 8, vu64x4> { return reinterpret<vu64x4>(byte_shuffle_128(v, reinterpret<vi8x32>(from_values<vu64x4>(0xFFFFFFFFFFFFFF00 | index, 0xFFFFFFFFFFFFFF08 | index, 0xFFFFFFFFFFFFFF00 | index, 0xFFFFFFFFFFFFFF08 | index)))); }
 
+    ARKXMM_API rotl(vu16x8 v, int i) -> vu16x8 { return v << (i & 15) | v >> (-i & 15); }
+    ARKXMM_API rotl(vu16x16 v, int i) -> vu16x16 { return v << (i & 15) | v >> (-i & 15); }
+    ARKXMM_API rotl(vu32x4 v, int i) -> vu32x4 { return v << (i & 31) | v >> (-i & 31); }
+    ARKXMM_API rotl(vu32x8 v, int i) -> vu32x8 { return v << (i & 31) | v >> (-i & 31); }
+    ARKXMM_API rotl(vu64x4 v, int i) -> vu64x4 { return v << (i & 63) | v >> (-i & 63); }
+    ARKXMM_API rotl(vu64x2 v, int i) -> vu64x2 { return v << (i & 63) | v >> (-i & 63); }
+    ARKXMM_API rotr(vu16x8 v, int i) -> vu16x8 { return v >> (i & 15) | v << (-i & 15); }
+    ARKXMM_API rotr(vu16x16 v, int i) -> vu16x16 { return v >> (i & 15) | v << (-i & 15); }
+    ARKXMM_API rotr(vu32x4 v, int i) -> vu32x4 { return v >> (i & 31) | v << (-i & 31); }
+    ARKXMM_API rotr(vu32x8 v, int i) -> vu32x8 { return v >> (i & 31) | v << (-i & 31); }
+    ARKXMM_API rotr(vu64x2 v, int i) -> vu64x2 { return v >> (i & 63) | v << (-i & 63); }
+    ARKXMM_API rotr(vu64x4 v, int i) -> vu64x4 { return v >> (i & 63) | v << (-i & 63); }
+    ARKXMM_API byteswap(vu16x8 v) -> vu16x8 { return byte_shuffle_128(v, from_values<XMM<int8_t>>(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14)); }
+    ARKXMM_API byteswap(vu16x16 v) -> vu16x16 { return byte_shuffle_128(v, from_values<YMM<int8_t>>(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14)); }
+    ARKXMM_API byteswap(vu32x4 v) -> vu32x4 { return byte_shuffle_128(v, from_values<XMM<int8_t>>(3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12)); }
+    ARKXMM_API byteswap(vu32x8 v) -> vu32x8 { return byte_shuffle_128(v, from_values<YMM<int8_t>>(3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12, 3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12)); }
+    ARKXMM_API byteswap(vu64x2 v) -> vu64x2 { return byte_shuffle_128(v, from_values<XMM<int8_t>>(7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8)); }
+    ARKXMM_API byteswap(vu64x4 v) -> vu64x4 { return byte_shuffle_128(v, from_values<YMM<int8_t>>(7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8)); }
 
     // x00 x01 x02 x03 | x04 x05 x06 x07
     // x10 x11 x12 x13 | x14 x15 x16 x17
