@@ -3,6 +3,7 @@
 #include <arkana/bits/hex-int-literals.h>
 #include <arkana/camellia/camellia.h>
 #include <arkana/camellia/camellia-avx2.h>
+#include <arkana/camellia/camellia-avx2aesni.h>
 #include "./helper.h"
 
 using namespace arkana;
@@ -142,3 +143,15 @@ struct avx2_ecb_contexts
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(avx2, CamelliaTest, avx2_ecb_contexts);
+
+struct avx2aesni_ecb_contexts
+{
+    using camellia128_encrypt_context_t = ecb_context<key_128bit_t, avx2aesni::unit_t, avx2aesni::generate_key_vector<128, true>, avx2aesni::process_blocks_ecb<128>>;
+    using camellia192_encrypt_context_t = ecb_context<key_192bit_t, avx2aesni::unit_t, avx2aesni::generate_key_vector<192, true>, avx2aesni::process_blocks_ecb<192>>;
+    using camellia256_encrypt_context_t = ecb_context<key_256bit_t, avx2aesni::unit_t, avx2aesni::generate_key_vector<256, true>, avx2aesni::process_blocks_ecb<256>>;
+    using camellia128_decrypt_context_t = ecb_context<key_128bit_t, avx2aesni::unit_t, avx2aesni::generate_key_vector<128, false>, avx2aesni::process_blocks_ecb<128>>;
+    using camellia192_decrypt_context_t = ecb_context<key_192bit_t, avx2aesni::unit_t, avx2aesni::generate_key_vector<192, false>, avx2aesni::process_blocks_ecb<192>>;
+    using camellia256_decrypt_context_t = ecb_context<key_256bit_t, avx2aesni::unit_t, avx2aesni::generate_key_vector<256, false>, avx2aesni::process_blocks_ecb<256>>;
+};
+
+INSTANTIATE_TYPED_TEST_CASE_P(avx2aesni, CamelliaTest, avx2aesni_ecb_contexts);
