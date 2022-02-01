@@ -21,6 +21,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\table.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\types.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\xmm.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\camellia\camellia-avx2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\camellia\camellia-avx2aesni.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\camellia\camellia.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\crc32\crc32-avx2.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\crc32\crc32-avx2clmul.h" />
