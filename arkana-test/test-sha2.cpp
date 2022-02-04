@@ -1,40 +1,27 @@
 #include "pch.h"
 
-#include <arkana/bits/hex-int-literals.h>
-#include <arkana/sha2/sha2.h>
+#include "../arkana/bits.h"
+#include "../arkana/sha2.h"
 
 using namespace arkana::hex_int_literals;
 using namespace arkana::sha2;
 
 namespace
 {
-    template <auto create_sha2_state>
+    template <auto create_context = create_sha256_context>
     class sha2_context
     {
     public:
-        decltype(create_sha2_state()) state = create_sha2_state();
-
-        sha2_context& process_bytes(const void* data, size_t len) noexcept
-        {
-            arkana::sha2::process_bytes(state, data, len);
-            return *this;
-        }
-
-        sha2_context& process_string(std::string_view text) noexcept
-        {
-            return process_bytes(text.data(), text.length());
-        }
-
-        auto finalize() noexcept
-        {
-            return arkana::sha2::finalize_and_get_digest(state);
-        }
+        decltype(create_context()) ctx = create_context();
+        sha2_context& process_bytes(const void* data, size_t len) noexcept { return ctx->process_bytes(data, len), *this; }
+        sha2_context& process_string(std::string_view text) noexcept { return process_bytes(text.data(), text.length()); }
+        auto finalize() noexcept { return ctx->finalize(); }
     };
 
-    using sha224_context = sha2_context<arkana::sha2::create_sha224_state>;
-    using sha256_context = sha2_context<arkana::sha2::create_sha256_state>;
-    using sha384_context = sha2_context<arkana::sha2::create_sha384_state>;
-    using sha512_context = sha2_context<arkana::sha2::create_sha512_state>;
+    using sha224_context = sha2_context<create_sha224_context>;
+    using sha256_context = sha2_context<create_sha256_context>;
+    using sha384_context = sha2_context<create_sha384_context>;
+    using sha512_context = sha2_context<create_sha512_context>;
 }
 
 TEST(SHA2_224, test)

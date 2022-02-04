@@ -1,48 +1,27 @@
 #include "pch.h"
 
-#include <arkana/bits/hex-int-literals.h>
-#include <arkana/camellia/camellia.h>
-#include <arkana/camellia/camellia-ia32.h>
-#include <arkana/camellia/camellia-avx2.h>
-#include <arkana/camellia/camellia-avx2aesni.h>
+#include "../arkana/bits.h"
+#include "../arkana/camellia.h"
 #include "./helper.h"
 
-using namespace arkana;
-using namespace camellia;
-using namespace hex_int_literals;
+using namespace arkana::hex_int_literals;
+using namespace arkana::camellia;
+using arkana::byte_array;
 
 namespace
 {
-    template <class t_key_t, class t_unit_t, auto t_generate_key_vector, auto t_process_blocks>
     struct ecb_context
     {
-        using key_t = t_key_t;
-        using key_vector_t = decltype(t_generate_key_vector(std::declval<key_t>()));
-        using unit_t = t_unit_t;
+        std::unique_ptr<ecb_context_t> ctx;
 
-        const key_vector_t key_vector;
-
-        explicit ecb_context(const key_t* key)
-            : key_vector(t_generate_key_vector(*key))
+        explicit ecb_context(std::unique_ptr<ecb_context_t>&& ctx)
+            : ctx(std::move(ctx))
         {
         }
 
         void process_blocks(void* dst, const void* src, size_t length) const
         {
-            if (length % 16 != 0)
-                throw std::invalid_argument("invalid length.");
-
-            const size_t unit_count = length / sizeof(unit_t);
-            t_process_blocks(static_cast<unit_t*>(dst), static_cast<const unit_t*>(src), unit_count, key_vector);
-
-            if (const size_t remain_bytes = length % sizeof(unit_t))
-            {
-                unit_t buf{};
-                static_assert(std::is_trivial_v<unit_t>);
-                memcpy(&buf, static_cast<const byte_t*>(src) + unit_count * sizeof(unit_t), remain_bytes);
-                t_process_blocks(&buf, &buf, 1, key_vector);
-                memcpy(static_cast<byte_t*>(dst) + unit_count * sizeof(unit_t), &buf, remain_bytes);
-            }
+            ctx->process_blocks(dst, src, length);
         }
     };
 }
@@ -123,36 +102,36 @@ REGISTER_TYPED_TEST_CASE_P(CamelliaTest, test, benchmark128, benchmark256);
 
 struct ia32_ecb_contexts
 {
-    using camellia128_encrypt_context_t = ecb_context<key_128bit_t, ia32::unit_t, ia32::generate_key_vector<128, true>, ia32::process_blocks_ecb<128>>;
-    using camellia192_encrypt_context_t = ecb_context<key_192bit_t, ia32::unit_t, ia32::generate_key_vector<192, true>, ia32::process_blocks_ecb<192>>;
-    using camellia256_encrypt_context_t = ecb_context<key_256bit_t, ia32::unit_t, ia32::generate_key_vector<256, true>, ia32::process_blocks_ecb<256>>;
-    using camellia128_decrypt_context_t = ecb_context<key_128bit_t, ia32::unit_t, ia32::generate_key_vector<128, false>, ia32::process_blocks_ecb<128>>;
-    using camellia192_decrypt_context_t = ecb_context<key_192bit_t, ia32::unit_t, ia32::generate_key_vector<192, false>, ia32::process_blocks_ecb<192>>;
-    using camellia256_decrypt_context_t = ecb_context<key_256bit_t, ia32::unit_t, ia32::generate_key_vector<256, false>, ia32::process_blocks_ecb<256>>;
+    static auto camellia128_encrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_context_ia32(key, true)); }
+    static auto camellia192_encrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_context_ia32(key, true)); }
+    static auto camellia256_encrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_context_ia32(key, true)); }
+    static auto camellia128_decrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_context_ia32(key, false)); }
+    static auto camellia192_decrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_context_ia32(key, false)); }
+    static auto camellia256_decrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_context_ia32(key, false)); }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(ia32, CamelliaTest, ia32_ecb_contexts);
 
 struct avx2_ecb_contexts
 {
-    using camellia128_encrypt_context_t = ecb_context<key_128bit_t, avx2::unit_t, avx2::generate_key_vector<128, true>, avx2::process_blocks_ecb<128>>;
-    using camellia192_encrypt_context_t = ecb_context<key_192bit_t, avx2::unit_t, avx2::generate_key_vector<192, true>, avx2::process_blocks_ecb<192>>;
-    using camellia256_encrypt_context_t = ecb_context<key_256bit_t, avx2::unit_t, avx2::generate_key_vector<256, true>, avx2::process_blocks_ecb<256>>;
-    using camellia128_decrypt_context_t = ecb_context<key_128bit_t, avx2::unit_t, avx2::generate_key_vector<128, false>, avx2::process_blocks_ecb<128>>;
-    using camellia192_decrypt_context_t = ecb_context<key_192bit_t, avx2::unit_t, avx2::generate_key_vector<192, false>, avx2::process_blocks_ecb<192>>;
-    using camellia256_decrypt_context_t = ecb_context<key_256bit_t, avx2::unit_t, avx2::generate_key_vector<256, false>, avx2::process_blocks_ecb<256>>;
+    static auto camellia128_encrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_context_avx2(key, true)); }
+    static auto camellia192_encrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_context_avx2(key, true)); }
+    static auto camellia256_encrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_context_avx2(key, true)); }
+    static auto camellia128_decrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_context_avx2(key, false)); }
+    static auto camellia192_decrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_context_avx2(key, false)); }
+    static auto camellia256_decrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_context_avx2(key, false)); }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(avx2, CamelliaTest, avx2_ecb_contexts);
 
 struct avx2aesni_ecb_contexts
 {
-    using camellia128_encrypt_context_t = ecb_context<key_128bit_t, avx2aesni::unit_t, avx2aesni::generate_key_vector<128, true>, avx2aesni::process_blocks_ecb<128>>;
-    using camellia192_encrypt_context_t = ecb_context<key_192bit_t, avx2aesni::unit_t, avx2aesni::generate_key_vector<192, true>, avx2aesni::process_blocks_ecb<192>>;
-    using camellia256_encrypt_context_t = ecb_context<key_256bit_t, avx2aesni::unit_t, avx2aesni::generate_key_vector<256, true>, avx2aesni::process_blocks_ecb<256>>;
-    using camellia128_decrypt_context_t = ecb_context<key_128bit_t, avx2aesni::unit_t, avx2aesni::generate_key_vector<128, false>, avx2aesni::process_blocks_ecb<128>>;
-    using camellia192_decrypt_context_t = ecb_context<key_192bit_t, avx2aesni::unit_t, avx2aesni::generate_key_vector<192, false>, avx2aesni::process_blocks_ecb<192>>;
-    using camellia256_decrypt_context_t = ecb_context<key_256bit_t, avx2aesni::unit_t, avx2aesni::generate_key_vector<256, false>, avx2aesni::process_blocks_ecb<256>>;
+    static auto camellia128_encrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_context_avx2aesni(key, true)); }
+    static auto camellia192_encrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_context_avx2aesni(key, true)); }
+    static auto camellia256_encrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_context_avx2aesni(key, true)); }
+    static auto camellia128_decrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_context_avx2aesni(key, false)); }
+    static auto camellia192_decrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_context_avx2aesni(key, false)); }
+    static auto camellia256_decrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_context_avx2aesni(key, false)); }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(avx2aesni, CamelliaTest, avx2aesni_ecb_contexts);

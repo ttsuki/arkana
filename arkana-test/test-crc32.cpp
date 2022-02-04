@@ -1,22 +1,23 @@
 #include "pch.h"
 
-#include <arkana/bits/hex-int-literals.h>
-#include <arkana/crc32/crc32.h>
-#include <arkana/crc32/crc32-ia32.h>
-#include <arkana/crc32/crc32-avx2.h>
-#include <arkana/crc32/crc32-avx2clmul.h>
-
+#include "../arkana/bits.h"
+#include "../arkana/crc32.h"
 #include "./helper.h"
 
-using namespace arkana;
 using namespace arkana::crc32;
 
-static inline constexpr uint32_t polynominal = 0xEDB88320;
+template <auto context_factory = create_crc32_context>
+crc32_value_t calculate_crc32(const void *data, size_t length)
+{
+    auto ctx = context_factory(0);
+    ctx->update(data, length);
+    return ctx->current();
+}
 
 TEST(CRC32, zero)
 {
-    constexpr array<byte_t, 257> zero_data{};
-    constexpr array<crc32_value_t, 256> expect_zero
+    constexpr std::array<std::byte, 257> zero_data{};
+    constexpr std::array<crc32_value_t, 256> expect_zero
     {
         0x00000000, 0xD202EF8D, 0x41D912FF, 0xFF41D912, 0x2144DF1C, 0xC622F71D, 0xB1C2A1A3, 0x9D6CDF7E,
         0x6522DF69, 0xE60914AE, 0xE38A6876, 0x6B87B1EC, 0x7BD5C66F, 0x0F744682, 0xD1BB79C7, 0xD7D303E7,
@@ -54,58 +55,57 @@ TEST(CRC32, zero)
 
     for (size_t i = 0; i < 256; i++)
     {
-        EXPECT_EQ(calculate_crc32<polynominal>(zero_data.data(), i), expect_zero[i]);
-        EXPECT_EQ(ia32::calculate_crc32<polynominal>(zero_data.data(), i), expect_zero[i]);
-        EXPECT_EQ(avx2::calculate_crc32<polynominal>(zero_data.data(), i), expect_zero[i]);
-        EXPECT_EQ(avx2clmul::calculate_crc32<polynominal>(zero_data.data(), i), expect_zero[i]);
+        EXPECT_EQ(calculate_crc32<create_crc32_context_ref>(zero_data.data(), i), expect_zero[i]);
+        EXPECT_EQ(calculate_crc32<create_crc32_context_ia32>(zero_data.data(), i), expect_zero[i]);
+        EXPECT_EQ(calculate_crc32<create_crc32_context_avx2>(zero_data.data(), i), expect_zero[i]);
+        EXPECT_EQ(calculate_crc32<create_crc32_context_avx2clmul>(zero_data.data(), i), expect_zero[i]);
     }
 
     for (size_t i = 0; i < 256; i++)
     {
         // unaligned
-        EXPECT_EQ(calculate_crc32<polynominal>(zero_data.data() + 1, i), expect_zero[i]);
-        EXPECT_EQ(ia32::calculate_crc32<polynominal>(zero_data.data() + 1, i), expect_zero[i]);
-        EXPECT_EQ(avx2::calculate_crc32<polynominal>(zero_data.data() + 1, i), expect_zero[i]);
-        EXPECT_EQ(avx2clmul::calculate_crc32<polynominal>(zero_data.data() + 1, i), expect_zero[i]);
+        EXPECT_EQ(calculate_crc32<create_crc32_context_ref>(zero_data.data() + 1, i), expect_zero[i]);
+        EXPECT_EQ(calculate_crc32<create_crc32_context_ia32>(zero_data.data() + 1, i), expect_zero[i]);
+        EXPECT_EQ(calculate_crc32<create_crc32_context_avx2>(zero_data.data() + 1, i), expect_zero[i]);
+        EXPECT_EQ(calculate_crc32<create_crc32_context_avx2clmul>(zero_data.data() + 1, i), expect_zero[i]);
     }
 }
 
 
 TEST(CRC32, tests)
 {
-    crc32_value_t expect = calculate_crc32<polynominal>(static_random_bytes_1m.data(), static_random_bytes_1m.size());
-    EXPECT_EQ(expect, calculate_crc32<polynominal>(static_random_bytes_1m.data(), static_random_bytes_1m.size()));
-    EXPECT_EQ(expect, ia32::calculate_crc32<polynominal>(static_random_bytes_1m.data(), static_random_bytes_1m.size()));
-    EXPECT_EQ(expect, avx2::calculate_crc32<polynominal>(static_random_bytes_1m.data(), static_random_bytes_1m.size()));
-    EXPECT_EQ(expect, avx2clmul::calculate_crc32<polynominal>(static_random_bytes_1m.data(), static_random_bytes_1m.size()));
+    crc32_value_t expect = calculate_crc32<create_crc32_context_ref>(static_random_bytes_1m.data(), static_random_bytes_1m.size());
+    EXPECT_EQ(expect, calculate_crc32<create_crc32_context_ia32>(static_random_bytes_1m.data(), static_random_bytes_1m.size()));
+    EXPECT_EQ(expect, calculate_crc32<create_crc32_context_avx2>(static_random_bytes_1m.data(), static_random_bytes_1m.size()));
+    EXPECT_EQ(expect, calculate_crc32<create_crc32_context_avx2clmul>(static_random_bytes_1m.data(), static_random_bytes_1m.size()));
 }
 
 #ifdef NDEBUG
 
-static crc32_value_t expect_a = calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size());
-static crc32_value_t expect_u = calculate_crc32<polynominal>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2);
+static crc32_value_t expect_a = calculate_crc32<create_crc32_context_ref>(static_random_bytes_256m.data(), static_random_bytes_256m.size());
+static crc32_value_t expect_u = calculate_crc32<create_crc32_context_ref>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2);
 
 TEST(CRC32, bench_ref)
 {
-    EXPECT_EQ(expect_a, calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
-    EXPECT_EQ(expect_u, calculate_crc32<polynominal>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
+    EXPECT_EQ(expect_a, calculate_crc32<create_crc32_context_ref>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
+    EXPECT_EQ(expect_u, calculate_crc32<create_crc32_context_ref>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
 }
 
 TEST(CRC32, bench_ia32)
 {
-    EXPECT_EQ(expect_a, ia32::calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
-    EXPECT_EQ(expect_u, ia32::calculate_crc32<polynominal>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
+    EXPECT_EQ(expect_a, calculate_crc32<create_crc32_context_ia32>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
+    EXPECT_EQ(expect_u, calculate_crc32<create_crc32_context_ia32>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
 }
 
 TEST(CRC32, bench_avx2)
 {
-    EXPECT_EQ(expect_a, avx2::calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
-    EXPECT_EQ(expect_u, avx2::calculate_crc32<polynominal>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
+    EXPECT_EQ(expect_a, calculate_crc32<create_crc32_context_avx2>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
+    EXPECT_EQ(expect_u, calculate_crc32<create_crc32_context_avx2>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
 }
 
 TEST(CRC32, bench_avx2clmul)
 {
-    EXPECT_EQ(expect_a, avx2clmul::calculate_crc32<polynominal>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
-    EXPECT_EQ(expect_u, avx2clmul::calculate_crc32<polynominal>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
+    EXPECT_EQ(expect_a, calculate_crc32<create_crc32_context_avx2clmul>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
+    EXPECT_EQ(expect_u, calculate_crc32<create_crc32_context_avx2clmul>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
 }
 #endif
