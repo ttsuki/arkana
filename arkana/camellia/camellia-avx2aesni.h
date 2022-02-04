@@ -395,22 +395,14 @@ namespace arkana::camellia
             ARKXMM_API load_v128(const v128* src) -> v128
             {
                 return v128{
-                    xmm::load_u(&src->l.l.x0),
-                    xmm::load_u(&src->l.l.x1),
-                    xmm::load_u(&src->l.l.x2),
-                    xmm::load_u(&src->l.l.x3),
-                    xmm::load_u(&src->l.r.x0),
-                    xmm::load_u(&src->l.r.x1),
-                    xmm::load_u(&src->l.r.x2),
-                    xmm::load_u(&src->l.r.x3),
-                    xmm::load_u(&src->r.l.x0),
-                    xmm::load_u(&src->r.l.x1),
-                    xmm::load_u(&src->r.l.x2),
-                    xmm::load_u(&src->r.l.x3),
-                    xmm::load_u(&src->r.r.x0),
-                    xmm::load_u(&src->r.r.x1),
-                    xmm::load_u(&src->r.r.x2),
-                    xmm::load_u(&src->r.r.x3),
+                    {
+                        {xmm::load_u(&src->l.l.x0), xmm::load_u(&src->l.l.x1), xmm::load_u(&src->l.l.x2), xmm::load_u(&src->l.l.x3)},
+                        {xmm::load_u(&src->l.r.x0), xmm::load_u(&src->l.r.x1), xmm::load_u(&src->l.r.x2), xmm::load_u(&src->l.r.x3)},
+                    },
+                    {
+                        {xmm::load_u(&src->r.l.x0), xmm::load_u(&src->r.l.x1), xmm::load_u(&src->r.l.x2), xmm::load_u(&src->r.l.x3)},
+                        {xmm::load_u(&src->r.r.x0), xmm::load_u(&src->r.r.x1), xmm::load_u(&src->r.r.x2), xmm::load_u(&src->r.r.x3)},
+                    }
                 };
             }
 

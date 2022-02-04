@@ -121,10 +121,8 @@ namespace arkana::camellia
             ARKXMM_API load_v128(const v128* src) -> v128
             {
                 return v128{
-                    xmm::load_u(&src->l.l),
-                    xmm::load_u(&src->l.r),
-                    xmm::load_u(&src->r.l),
-                    xmm::load_u(&src->r.r),
+                    {xmm::load_u(&src->l.l), xmm::load_u(&src->l.r)},
+                    {xmm::load_u(&src->r.l), xmm::load_u(&src->r.r)},
                 };
             }
 
