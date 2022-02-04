@@ -2,6 +2,7 @@
 
 #include <arkana/bits/hex-int-literals.h>
 #include <arkana/camellia/camellia.h>
+#include <arkana/camellia/camellia-ia32.h>
 #include <arkana/camellia/camellia-avx2.h>
 #include <arkana/camellia/camellia-avx2aesni.h>
 #include "./helper.h"
