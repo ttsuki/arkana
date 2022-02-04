@@ -640,18 +640,18 @@ namespace arkana::xmm
     // PCLMULQDQ carry-less integer multiplication
     template <int i0, int i1> ARKXMM_API clmul(vu64x2 a, vu64x2 b) -> vx128x1 { return {_mm_clmulepi64_si128(a.v, b.v, (i0 & 1) | (i1 & 1) << 4)}; } // PCLMULQDQ carry-less integer multiplication
 
-    // immediate value extensions
-    template <class NMM> ARKXMM_API operator &(NMM a, typename NMM::elem_t b) -> ARKXMM_DEFINE_EXTENSION(a & xmm::broadcast<NMM>(b));
-    template <class NMM> ARKXMM_API operator |(NMM a, typename NMM::elem_t b) -> ARKXMM_DEFINE_EXTENSION(a | xmm::broadcast<NMM>(b));
-    template <class NMM> ARKXMM_API operator ^(NMM a, typename NMM::elem_t b) -> ARKXMM_DEFINE_EXTENSION(a ^ xmm::broadcast<NMM>(b));
-    template <class NMM> ARKXMM_API operator +(NMM a, typename NMM::elem_t b) -> ARKXMM_DEFINE_EXTENSION(a + xmm::broadcast<NMM>(b));
-    template <class NMM> ARKXMM_API operator -(NMM a, typename NMM::elem_t b) -> ARKXMM_DEFINE_EXTENSION(a - xmm::broadcast<NMM>(b));
-    template <class NMM> ARKXMM_API operator *(NMM a, typename NMM::elem_t b) -> ARKXMM_DEFINE_EXTENSION(a * xmm::broadcast<NMM>(b));
-    template <class NMM> ARKXMM_API operator ==(NMM a, typename NMM::elem_t b) -> ARKXMM_DEFINE_EXTENSION(a == xmm::broadcast<NMM>(b));
-    template <class NMM> ARKXMM_API operator <(NMM a, typename NMM::elem_t b) -> ARKXMM_DEFINE_EXTENSION(a < xmm::broadcast<NMM>(b));
-    template <class NMM> ARKXMM_API operator >(NMM a, typename NMM::elem_t b) -> ARKXMM_DEFINE_EXTENSION(a > xmm::broadcast<NMM>(b));
-    template <class NMM> ARKXMM_API max(NMM a, typename NMM::elem_t b) -> ARKXMM_DEFINE_EXTENSION(max(a, xmm::broadcast<NMM>(b)));
-    template <class NMM> ARKXMM_API min(NMM a, typename NMM::elem_t b) -> ARKXMM_DEFINE_EXTENSION(min(a, xmm::broadcast<NMM>(b)));
+    //// immediate value extensions
+    template <class NMM> ARKXMM_API operator &(NMM a, typename NMM::elem_t b) -> enable::if_NMM<NMM> { return a & xmm::broadcast<NMM>(b); };
+    template <class NMM> ARKXMM_API operator |(NMM a, typename NMM::elem_t b) -> enable::if_NMM<NMM> { return a | xmm::broadcast<NMM>(b); }
+    template <class NMM> ARKXMM_API operator ^(NMM a, typename NMM::elem_t b) -> enable::if_NMM<NMM> { return a ^ xmm::broadcast<NMM>(b); }
+    template <class NMM> ARKXMM_API operator +(NMM a, typename NMM::elem_t b) -> enable::if_NMM<NMM> { return a + xmm::broadcast<NMM>(b); };
+    template <class NMM> ARKXMM_API operator -(NMM a, typename NMM::elem_t b) -> enable::if_NMM<NMM> { return a - xmm::broadcast<NMM>(b); }
+    template <class NMM> ARKXMM_API operator *(NMM a, typename NMM::elem_t b) -> enable::if_NMM<NMM> { return a * xmm::broadcast<NMM>(b); }
+    template <class NMM> ARKXMM_API operator ==(NMM a, typename NMM::elem_t b) -> enable::if_NMM<NMM> { return a == xmm::broadcast<NMM>(b); }
+    template <class NMM> ARKXMM_API operator <(NMM a, typename NMM::elem_t b) -> enable::if_NMM<NMM> { return a < xmm::broadcast<NMM>(b); }
+    template <class NMM> ARKXMM_API operator >(NMM a, typename NMM::elem_t b) -> enable::if_NMM<NMM> { return a > xmm::broadcast<NMM>(b); }
+    template <class NMM> ARKXMM_API max(NMM a, typename NMM::elem_t b) -> enable::if_NMM<NMM> { return max(a, xmm::broadcast<NMM>(b)); }
+    template <class NMM> ARKXMM_API min(NMM a, typename NMM::elem_t b) -> enable::if_NMM<NMM> { return min(a, xmm::broadcast<NMM>(b)); }
 
     // operator extensions
     template <class T, class U> ARKXMM_API operator &=(T& lhs, U rhs) -> ARKXMM_DEFINE_EXTENSION(lhs = lhs & rhs);
