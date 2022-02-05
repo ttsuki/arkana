@@ -52,6 +52,7 @@
     <ClCompile Include="test-camellia.cpp" />
     <ClCompile Include="test-crc32.cpp" />
     <ClCompile Include="test-sha2.cpp" />
+    <ClCompile Include="test-uint128.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -62,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="test-uint128.gen.py" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\arkana\arkana.lib.vcxproj">

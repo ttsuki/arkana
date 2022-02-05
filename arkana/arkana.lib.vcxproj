@@ -27,6 +27,7 @@
     <ClInclude Include="bits\memory.h" />
     <ClInclude Include="bits\table.h" />
     <ClInclude Include="bits\types.h" />
+    <ClInclude Include="bits\uint128.h" />
     <ClInclude Include="bits\xmm.h" />
     <ClInclude Include="camellia.h" />
     <ClInclude Include="camellia\camellia-avx2.h" />
