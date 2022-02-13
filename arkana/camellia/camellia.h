@@ -89,42 +89,40 @@ namespace arkana::camellia
                 return a | b;                   //a|b = pqrstuv0 hijklmno 9abcdefg 12345678
             }
 
-            static ARKANA_FORCEINLINE constexpr auto decompose(uint64_t x) noexcept
+            static ARKANA_FORCEINLINE constexpr auto decompose(uint64_t x) noexcept -> array<uint32_t, 2>
             {
-                return array<uint32_t, 2>{static_cast<uint32_t>(x), static_cast<uint32_t>(x >> 32)};
+                return {static_cast<uint32_t>(x), static_cast<uint32_t>(x >> 32)};
             }
 
-            static ARKANA_FORCEINLINE constexpr decltype(auto) recompose(uint64_t& t, uint32_t l, uint32_t r) noexcept
+            static ARKANA_FORCEINLINE constexpr auto recompose(uint64_t& t, uint32_t l, uint32_t r) noexcept -> uint64_t&
             {
                 return t = static_cast<uint64_t>(r) << 32 | l;
             }
 
             template <class pair_t>
-            static ARKANA_FORCEINLINE constexpr auto decompose(pair_t& v)
-            -> /* TODO sfinae */ pair_t&
+            static ARKANA_FORCEINLINE constexpr auto decompose(pair_t& v) -> /* TODO sfinae */ pair_t&
             {
-                [[maybe_unused]] auto& [bl, br] = v;
                 return v;
             }
 
-            template <class pair_t, class elememnt_t>
-            static ARKANA_FORCEINLINE constexpr auto recompose(pair_t& v, elememnt_t&& l, elememnt_t&& r)
-            -> /* TODO sfinae */ pair_t&
+            template <class pair_t, class element_t>
+            static ARKANA_FORCEINLINE constexpr auto recompose(pair_t& v, element_t&& l, element_t&& r) -> /* TODO sfinae */ pair_t&
             {
-                auto& [bl, br] = v;
-                bl = l;
-                br = r;
+                auto& [vl, vr] = v;
+                vl = std::forward<element_t>(l);
+                vr = std::forward<element_t>(r);
                 return v;
             }
         }
 
         template <class uint64_t = std::uint64_t, class uint64_key_t = std::uint64_t, auto lookup_sbox32 = sbox::lookup_sbox32>
-        static ARKANA_FORCEINLINE constexpr auto camellia_f_table_lookup_32(uint64_t& r, uint64_t l, const uint64_key_t& k) noexcept -> uint64_t&
+        static ARKANA_FORCEINLINE constexpr auto camellia_f_table_lookup_32(uint64_t r, uint64_t l, uint64_key_t k) noexcept -> uint64_t
         {
             using bits::decompose;
             using bits::recompose;
 
-            auto&& [ll, lr] = decompose(l);
+            std::remove_reference_t<uint64_t> t = l;
+            auto&& [ll, lr] = decompose(t);
             auto&& [kl, kr] = decompose(k);
 
             lr ^= kr;
@@ -143,27 +141,27 @@ namespace arkana::camellia
             auto dd = d ^ u;
             auto uu = dd ^ (u << 8 | u >> 24);
 
-            return r ^= recompose(l, dd, uu);
+            return r ^= recompose(t, dd, uu);
         }
 
         template <class uint64_t = std::uint64_t, class uint64_key_t = std::uint64_t, auto lookup_sbox64 = sbox::lookup_sbox64>
-        static ARKANA_FORCEINLINE constexpr auto camellia_f_table_lookup_64(uint64_t& r, uint64_t l, const uint64_key_t& k) noexcept -> uint64_t&
+        static ARKANA_FORCEINLINE constexpr auto camellia_f_table_lookup_64(uint64_t r, uint64_t l, uint64_key_t k) noexcept -> uint64_t
         {
-            l ^= k;
-            auto kx = lookup_sbox64(sbox::sbox_64_0, l, 0) ^
-                lookup_sbox64(sbox::sbox_64_1, l, 1) ^
-                lookup_sbox64(sbox::sbox_64_2, l, 2) ^
-                lookup_sbox64(sbox::sbox_64_3, l, 3) ^
-                lookup_sbox64(sbox::sbox_64_4, l, 4) ^
-                lookup_sbox64(sbox::sbox_64_5, l, 5) ^
-                lookup_sbox64(sbox::sbox_64_6, l, 6) ^
-                lookup_sbox64(sbox::sbox_64_7, l, 7);
-
+            std::remove_reference_t<uint64_t> t = l;
+            t ^= k;
+            auto kx = lookup_sbox64(sbox::sbox_64_0, t, 0) ^
+                lookup_sbox64(sbox::sbox_64_1, t, 1) ^
+                lookup_sbox64(sbox::sbox_64_2, t, 2) ^
+                lookup_sbox64(sbox::sbox_64_3, t, 3) ^
+                lookup_sbox64(sbox::sbox_64_4, t, 4) ^
+                lookup_sbox64(sbox::sbox_64_5, t, 5) ^
+                lookup_sbox64(sbox::sbox_64_6, t, 6) ^
+                lookup_sbox64(sbox::sbox_64_7, t, 7);
             return r ^= kx;
         }
 
         template <class uint64_t = std::uint64_t, class uint64_key_t = std::uint64_t, auto rotl_be1 = bits::rotl_be1>
-        static ARKANA_FORCEINLINE constexpr uint64_t& camellia_fl(uint64_t& l, const uint64_key_t& k) noexcept
+        static ARKANA_FORCEINLINE constexpr auto camellia_fl(uint64_t l, uint64_key_t k) noexcept -> uint64_t
         {
             using bits::decompose;
             using bits::recompose;
@@ -178,7 +176,7 @@ namespace arkana::camellia
         }
 
         template <class uint64_t = std::uint64_t, class uint64_key_t = std::uint64_t, auto rotl_be1 = bits::rotl_be1>
-        static ARKANA_FORCEINLINE constexpr uint64_t& camellia_fl_inv(uint64_t& r, const uint64_key_t& k) noexcept
+        static ARKANA_FORCEINLINE constexpr auto camellia_fl_inv(uint64_t r, const uint64_key_t& k) noexcept -> uint64_t
         {
             using bits::decompose;
             using bits::recompose;
@@ -192,8 +190,8 @@ namespace arkana::camellia
             return recompose(r, rl, rr);
         }
 
-        template <class uint64_pair_t, class uint64_t = std::uint64_t>
-        static ARKANA_FORCEINLINE uint64_pair_t camellia_prewhite(uint64_pair_t& v, const uint64_t& kl, const uint64_t& kr) noexcept
+        template <class uint128_t, class uint64_t = std::uint64_t>
+        static ARKANA_FORCEINLINE constexpr auto camellia_prewhite(uint128_t v, uint64_t kl, uint64_t kr) noexcept -> uint128_t
         {
             using bits::decompose;
             using bits::recompose;
@@ -202,8 +200,8 @@ namespace arkana::camellia
             return recompose(v, l ^ kl, r ^ kr);
         }
 
-        template <class uint64_pair_t, class uint64_t = std::uint64_t>
-        static ARKANA_FORCEINLINE uint64_pair_t camellia_postwhite(uint64_pair_t& v, const uint64_t& l, const uint64_t& r, const uint64_t& kl, const uint64_t& kr) noexcept
+        template <class uint128_t, class uint64_t = std::uint64_t>
+        static ARKANA_FORCEINLINE constexpr auto camellia_postwhite(uint128_t v, uint64_t l, uint64_t r, uint64_t kl, uint64_t kr) noexcept -> uint128_t
         {
             using bits::decompose;
             using bits::recompose;
@@ -211,7 +209,7 @@ namespace arkana::camellia
             return recompose(v, r ^ kl, l ^ kr);
         }
 
-        static ARKANA_FORCEINLINE constexpr uint64_t& camellia_f_table_lookup(uint64_t& r, const uint64_t& l, const uint64_t& k)
+        static ARKANA_FORCEINLINE constexpr auto camellia_f_table_lookup(uint64_t r, uint64_t l, uint64_t k) noexcept -> uint64_t
         {
             if constexpr (sizeof(void*) == 8)
                 return camellia_f_table_lookup_64(r, l, k);
@@ -334,11 +332,9 @@ namespace arkana::camellia
                     return array<uint128_t, 4>{kl, kr, ka, kb};
                 }(static_cast<const byte_t*>(key.data()));
 
+                key_vector_t<uint64_t, key_bits> r{};
                 if constexpr (key_bits == 128)
                 {
-                    using std::tie;
-
-                    key_vector_128_t<uint64_t> r{};
                     (for_encryption ? r.kw_1 : r.kw_3) = kl.byteswap().rotl(0).byteswap().l;
                     (for_encryption ? r.kw_2 : r.kw_4) = kl.byteswap().rotl(0).byteswap().r;
                     (for_encryption ? r.k_1 : r.k_18) = ka.byteswap().rotl(0).byteswap().l;
@@ -365,11 +361,9 @@ namespace arkana::camellia
                     (for_encryption ? r.k_18 : r.k_1) = kl.byteswap().rotl(111).byteswap().r;
                     (for_encryption ? r.kw_3 : r.kw_1) = ka.byteswap().rotl(111).byteswap().l;
                     (for_encryption ? r.kw_4 : r.kw_2) = ka.byteswap().rotl(111).byteswap().r;
-                    return r;
                 }
                 else
                 {
-                    key_vector_256_t<uint64_t> r{};
                     (for_encryption ? r.kw_1 : r.kw_3) = kl.byteswap().rotl(0).byteswap().l;
                     (for_encryption ? r.kw_2 : r.kw_4) = kl.byteswap().rotl(0).byteswap().r;
                     (for_encryption ? r.k_1 : r.k_24) = kb.byteswap().rotl(0).byteswap().l;
@@ -404,8 +398,8 @@ namespace arkana::camellia
                     (for_encryption ? r.k_24 : r.k_1) = kl.byteswap().rotl(111).byteswap().r;
                     (for_encryption ? r.kw_3 : r.kw_1) = kb.byteswap().rotl(111).byteswap().l;
                     (for_encryption ? r.kw_4 : r.kw_2) = kb.byteswap().rotl(111).byteswap().r;
-                    return r;
                 }
+                return r;
             }
 
             struct uint64_pair_t
@@ -414,14 +408,14 @@ namespace arkana::camellia
             };
 
             template <
-                class uint64_pair_t = uint64_pair_t,
+                class uint128_t = uint64_pair_t,
                 class key_element_t = uint64_t,
-                auto camellia_prewhite = camellia_prewhite<uint64_pair_t, uint64_t>,
+                auto camellia_prewhite = camellia_prewhite<uint128_t, uint64_t>,
                 auto camellia_f = camellia_f_table_lookup,
                 auto camellia_fl = camellia_fl<uint64_t, uint64_t, bits::rotl_be1>,
                 auto camellia_fl_inv = camellia_fl_inv<uint64_t, uint64_t, bits::rotl_be1>,
-                auto camellia_postwhite = camellia_postwhite<uint64_pair_t, uint64_t>>
-            static ARKANA_FORCEINLINE uint64_pair_t& process_block_inlined(uint64_pair_t& block, const key_vector_128_t<key_element_t>& kev)
+                auto camellia_postwhite = camellia_postwhite<uint128_t, uint64_t>>
+            static ARKANA_FORCEINLINE uint128_t process_block_inlined(uint128_t block, const key_vector_128_t<key_element_t>& kev)
             {
                 auto&& [l, r] = camellia_prewhite(block, kev.kw_1, kev.kw_2);
                 r = camellia_f(r, l, kev.k_1);
@@ -450,14 +444,14 @@ namespace arkana::camellia
             }
 
             template <
-                class uint64_pair_t = uint64_pair_t,
+                class uint128_t = uint64_pair_t,
                 class key_element_t = uint64_t,
-                auto camellia_prewhite = camellia_prewhite<uint64_pair_t, uint64_t>,
+                auto camellia_prewhite = camellia_prewhite<uint128_t, uint64_t>,
                 auto camellia_f = camellia_f_table_lookup,
                 auto camellia_fl = camellia_fl<uint64_t, uint64_t, bits::rotl_be1>,
                 auto camellia_fl_inv = camellia_fl_inv<uint64_t, uint64_t, bits::rotl_be1>,
-                auto camellia_postwhite = camellia_postwhite<uint64_pair_t, uint64_t>>
-            static ARKANA_FORCEINLINE uint64_pair_t& process_block_inlined(uint64_pair_t& block, const key_vector_256_t<key_element_t>& kev)
+                auto camellia_postwhite = camellia_postwhite<uint128_t, uint64_t>>
+            static ARKANA_FORCEINLINE uint128_t process_block_inlined(uint128_t block, const key_vector_256_t<key_element_t>& kev)
             {
                 auto&& [l, r] = camellia_prewhite(block, kev.kw_1, kev.kw_2);
                 r = camellia_f(r, l, kev.k_1);

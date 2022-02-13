@@ -449,7 +449,7 @@ namespace arkana::camellia
             {
                 unit_t b = impl::load_v128(src + i);
                 b = impl::process_block_inlined<
-                    unit_t,
+                    unit_t&,
                     uint64_t,
                     impl::camellia_prewhite,
                     impl::camellia_f,

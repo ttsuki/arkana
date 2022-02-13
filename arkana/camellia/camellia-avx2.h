@@ -152,12 +152,12 @@ namespace arkana::camellia
             {
                 impl::v128 b = impl::load_v128(src + i);
                 b = impl::process_block_inlined<
-                    impl::v128,
+                    impl::v128&,
                     uint64_t,
                     impl::camellia_prewhite,
-                    impl::camellia_f_table_lookup_32<impl::v64, std::uint64_t, impl::lookup_sbox32>,
-                    impl::camellia_fl<impl::v64, std::uint64_t, impl::rotl_be1>,
-                    impl::camellia_fl_inv<impl::v64, std::uint64_t, impl::rotl_be1>,
+                    impl::camellia_f_table_lookup_32<impl::v64&, std::uint64_t, impl::lookup_sbox32>,
+                    impl::camellia_fl<impl::v64&, std::uint64_t, impl::rotl_be1>,
+                    impl::camellia_fl_inv<impl::v64&, std::uint64_t, impl::rotl_be1>,
                     impl::camellia_postwhite
                 >(b, kv);
                 impl::store_v128(dst + i, b);
