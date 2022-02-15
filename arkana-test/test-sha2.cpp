@@ -1,5 +1,4 @@
-#include "pch.h"
-
+#include "./gtest.h"
 #include "../arkana/bits.h"
 #include "../arkana/sha2.h"
 
