@@ -22,16 +22,16 @@
 #  include "./hex-int-literals.h"
 #endif
 
-#ifdef NDEBUG
 #if defined(_MSC_VER)
+#ifdef NDEBUG
 #define ARKXMM_INLINE inline __forceinline
 #define ARKXMM_VECTORCALL __vectorcall
 #else
-#define ARKXMM_INLINE inline __attribute__((always_inline))
+#define ARKXMM_INLINE inline
 #define ARKXMM_VECTORCALL
 #endif
 #else
-#define ARKXMM_INLINE inline
+#define ARKXMM_INLINE inline __attribute__((always_inline))
 #define ARKXMM_VECTORCALL
 #endif
 
