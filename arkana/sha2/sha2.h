@@ -10,6 +10,7 @@
 
 #include "../bits/types.h"
 #include "../bits/bit-manip.h"
+#include "../bits/memory.h"
 
 namespace arkana::sha2
 {

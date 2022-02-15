@@ -9,6 +9,7 @@
 #pragma once
 
 #include "crc32.h"
+#include "../bits/memory.h"
 
 namespace arkana::crc32
 {

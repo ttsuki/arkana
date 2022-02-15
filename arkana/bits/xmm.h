@@ -148,12 +148,12 @@ namespace arkana::xmm
         template <class NMM> using if_64xN = std::enable_if_t<is_nmm_v<NMM> && NMM::elem_bits == 64, NMM>;
     }
 
-    template <class XMM> ARKXMM_API load_u(const XMM* src) -> enable::if_XMM<XMM> { return XMM{_mm_lddqu_si128(&src->v)}; }          // SSE3
-    template <class XMM> ARKXMM_API load_a(const XMM* src) -> enable::if_XMM<XMM> { return XMM{_mm_load_si128(&src->v)}; }           // SSE2
-    template <class XMM> ARKXMM_API load_s(const XMM* src) -> enable::if_XMM<XMM> { return XMM{_mm_stream_load_si128(&src->v)}; }    // SSE41
-    template <class YMM> ARKXMM_API load_u(const YMM* src) -> enable::if_YMM<YMM> { return YMM{_mm256_lddqu_si256(&src->v)}; }       // AVX
-    template <class YMM> ARKXMM_API load_a(const YMM* src) -> enable::if_YMM<YMM> { return YMM{_mm256_load_si256(&src->v)}; }        // AVX
-    template <class YMM> ARKXMM_API load_s(const YMM* src) -> enable::if_YMM<YMM> { return YMM{_mm256_stream_load_si256(&src->v)}; } // AVX2
+    template <class XMM> ARKXMM_API load_u(const XMM* src) -> enable::if_XMM<XMM> { return XMM{_mm_lddqu_si128(&src->v)}; }                         // SSE3
+    template <class XMM> ARKXMM_API load_a(const XMM* src) -> enable::if_XMM<XMM> { return XMM{_mm_load_si128(&src->v)}; }                          // SSE2
+    template <class XMM> ARKXMM_API load_s(const XMM* src) -> enable::if_XMM<XMM> { return XMM{_mm_stream_load_si128(&const_cast<XMM*>(src)->v)}; } // SSE41
+    template <class YMM> ARKXMM_API load_u(const YMM* src) -> enable::if_YMM<YMM> { return YMM{_mm256_lddqu_si256(&src->v)}; }                      // AVX
+    template <class YMM> ARKXMM_API load_a(const YMM* src) -> enable::if_YMM<YMM> { return YMM{_mm256_load_si256(&src->v)}; }                       // AVX
+    template <class YMM> ARKXMM_API load_s(const YMM* src) -> enable::if_YMM<YMM> { return YMM{_mm256_stream_load_si256(&src->v)}; }                // AVX2
 
     template <class XMM> ARKXMM_API store_u(XMM* dst, const XMM v) -> enable::if_XMM<XMM> { return _mm_storeu_si128(&dst->v, v.v), v; }    // SSE2
     template <class XMM> ARKXMM_API store_a(XMM* dst, const XMM v) -> enable::if_XMM<XMM> { return _mm_store_si128(&dst->v, v.v), v; }     // SSE2
