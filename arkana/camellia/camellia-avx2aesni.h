@@ -241,22 +241,6 @@ namespace arkana::camellia
                 return v;
             }
 
-            ARKXMM_API camellia_prewhite(v128& block, uint64_t kl, uint64_t kr) -> v128&
-            {
-                const vu8x32 kx = reinterpret<vu8x32>(u64x4(kl, kr));
-                block.l.l ^= kx;
-                block.l.r ^= kx;
-                block.r.l ^= kx;
-                block.r.r ^= kx;
-
-                byte_slice_16x16(
-                    block.l.l.x0, block.l.l.x1, block.l.l.x2, block.l.l.x3,
-                    block.l.r.x0, block.l.r.x1, block.l.r.x2, block.l.r.x3,
-                    block.r.l.x0, block.r.l.x1, block.r.l.x2, block.r.l.x3,
-                    block.r.r.x0, block.r.r.x1, block.r.r.x2, block.r.r.x3);
-
-                return block;
-            }
 
             ARKXMM_API camellia_f(v64& l, const v64& r, uint64_t k) -> v64&
             {
@@ -365,6 +349,23 @@ namespace arkana::camellia
                 return r;
             }
 
+            ARKXMM_API camellia_prewhite(v128& block, uint64_t kl, uint64_t kr) -> v128&
+            {
+                const vu8x32 kx = reinterpret<vu8x32>(u64x4(kl, kr));
+                block.l.l ^= kx;
+                block.l.r ^= kx;
+                block.r.l ^= kx;
+                block.r.r ^= kx;
+
+                byte_slice_16x16(
+                    block.l.l.x0, block.l.l.x1, block.l.l.x2, block.l.l.x3,
+                    block.l.r.x0, block.l.r.x1, block.l.r.x2, block.l.r.x3,
+                    block.r.l.x0, block.r.l.x1, block.r.l.x2, block.r.l.x3,
+                    block.r.r.x0, block.r.r.x1, block.r.r.x2, block.r.r.x3);
+
+                return block;
+            }
+
             ARKXMM_API camellia_postwhite(v128& block, v64& l, v64& r, uint64_t kl, uint64_t kr) -> v128&
             {
                 const vu8x32 kx = reinterpret<vu8x32>(u64x4(kl, kr));
@@ -380,28 +381,40 @@ namespace arkana::camellia
                 r.l ^= kx;
                 r.r ^= kx;
 
-                l.l ^= r.l;
-                l.r ^= r.r;
-                r.l ^= l.l;
-                r.r ^= l.r;
-                l.l ^= r.l;
-                l.r ^= r.r;
-
-                block.l = l;
-                block.r = r;
-                return block;
+                v128 ret = { r, l };
+                return block = ret;
             }
 
             ARKXMM_API load_v128(const v128* src) -> v128
             {
                 return v128{
                     {
-                        {xmm::load_u(&src->l.l.x0), xmm::load_u(&src->l.l.x1), xmm::load_u(&src->l.l.x2), xmm::load_u(&src->l.l.x3)},
-                        {xmm::load_u(&src->l.r.x0), xmm::load_u(&src->l.r.x1), xmm::load_u(&src->l.r.x2), xmm::load_u(&src->l.r.x3)},
+                        {
+                            xmm::load_u(&src->l.l.x0),
+                            xmm::load_u(&src->l.l.x1),
+                            xmm::load_u(&src->l.l.x2),
+                            xmm::load_u(&src->l.l.x3)
+                        },
+                        {
+                            xmm::load_u(&src->l.r.x0),
+                            xmm::load_u(&src->l.r.x1),
+                            xmm::load_u(&src->l.r.x2),
+                            xmm::load_u(&src->l.r.x3)
+                        },
                     },
                     {
-                        {xmm::load_u(&src->r.l.x0), xmm::load_u(&src->r.l.x1), xmm::load_u(&src->r.l.x2), xmm::load_u(&src->r.l.x3)},
-                        {xmm::load_u(&src->r.r.x0), xmm::load_u(&src->r.r.x1), xmm::load_u(&src->r.r.x2), xmm::load_u(&src->r.r.x3)},
+                        {
+                            xmm::load_u(&src->r.l.x0),
+                            xmm::load_u(&src->r.l.x1),
+                            xmm::load_u(&src->r.l.x2),
+                            xmm::load_u(&src->r.l.x3)
+                        },
+                        {
+                            xmm::load_u(&src->r.r.x0),
+                            xmm::load_u(&src->r.r.x1),
+                            xmm::load_u(&src->r.r.x2),
+                            xmm::load_u(&src->r.r.x3)
+                        },
                     }
                 };
             }
@@ -428,37 +441,31 @@ namespace arkana::camellia
 
             using camellia::impl::key_t;
             using camellia::impl::key_vector_t;
-            using camellia::impl::generate_key_vector_inlined;
-            using camellia::impl::process_block_inlined;
+            using camellia::impl::generate_key_vector;
+            using camellia::impl::process_blocks_ecb;
         }
-
-        template <size_t key_bits> using key_t = impl::key_t<key_bits>;
-        template <size_t key_bits> using key_vector_t = impl::key_vector_t<uint64_t, key_bits>;
-        using unit_t = impl::v128; // 512 bytes per process
 
         template <size_t key_bits, bool for_encryption>
         static key_vector_t<key_bits> generate_key_vector(const key_t<key_bits>& key)
         {
-            return impl::generate_key_vector_inlined<key_bits, for_encryption>(key);
+            return impl::generate_key_vector<key_bits, for_encryption>(key);
         }
 
         template <size_t key_bits>
-        static void process_blocks_ecb(unit_t* dst, const unit_t* src, size_t unit_count, const key_vector_t<key_bits>& kv)
+        static void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_t<key_bits>& kv)
         {
-            for (size_t i = 0; i < unit_count; i++)
-            {
-                unit_t b = impl::load_v128(src + i);
-                b = impl::process_block_inlined<
-                    unit_t&,
-                    uint64_t,
+            impl::process_blocks_ecb<
+                    impl::v128,
+                    std::uint64_t,
+                    key_bits,
+                    impl::load_v128,
                     impl::camellia_prewhite,
                     impl::camellia_f,
                     impl::camellia_fl,
                     impl::camellia_fl_inv,
-                    impl::camellia_postwhite
-                >(b, kv);
-                impl::store_v128(dst + i, b);
-            }
+                    impl::camellia_postwhite,
+                    impl::store_v128>
+                (dst, src, length, kv);
         }
     }
 }

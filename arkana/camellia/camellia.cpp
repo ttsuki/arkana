@@ -44,5 +44,3 @@ std::unique_ptr<arkana::camellia::ecb_context_t> arkana::camellia::create_ecb_co
 
     return create_ecb_context_ia32(key, encrypt);
 }
-
-
