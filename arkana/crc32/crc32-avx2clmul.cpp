@@ -12,11 +12,19 @@
 /// https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf
 
 #include "../crc32.h"
-#include "./crc32.private.hpp"
-
 #include "./crc32-avx2clmul.h"
 
-std::unique_ptr<arkana::crc32::crc32_context_t> arkana::crc32::create_crc32_context_avx2clmul(crc32_value_t initial)
+namespace arkana::crc32
 {
-    return std::make_unique<crc32_context_impl_t<avx2clmul::calculate_crc32<0xEDB88320>>>(initial);
+    std::unique_ptr<crc32_context_t> create_crc32_context_avx2clmul(crc32_value_t initial)
+    {
+        struct crc32_context_impl_t final : public virtual crc32_context_t
+        {
+            crc32_value_t value{};
+            crc32_context_impl_t(crc32_value_t initial) : value(initial) { }
+            crc32_value_t current() const override { return value; }
+            void update(const void* data, size_t length) override { value = avx2clmul::calculate_crc32<0xEDB88320>(data, length, value); }
+        };
+        return std::make_unique<crc32_context_impl_t>(initial);
+    }
 }

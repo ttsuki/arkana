@@ -39,7 +39,6 @@
     <ClInclude Include="crc32\crc32-avx2clmul.h" />
     <ClInclude Include="crc32\crc32-ia32.h" />
     <ClInclude Include="crc32\crc32.h" />
-    <ClInclude Include="crc32\crc32.private.hpp" />
     <ClInclude Include="sha2.h" />
     <ClInclude Include="sha2\sha2.h" />
   </ItemGroup>
