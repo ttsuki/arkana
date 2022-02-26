@@ -9,27 +9,28 @@
 /// - camellia https://info.isl.ntt.co.jp/crypt/camellia/ 
 
 #include "../camellia.h"
-#include "./camellia.private.hpp"
 #include "./camellia-avx2.h"
 
-std::unique_ptr<arkana::camellia::ecb_context_t> arkana::camellia::create_ecb_context_avx2(const key_128bit_t* key, bool encrypt)
+namespace arkana::camellia
 {
-    return encrypt
-               ? static_cast<std::unique_ptr<ecb_context_t>>(std::make_unique<ecb_context_impl_t<key_128bit_t, avx2::generate_key_vector<128, true>, avx2::process_blocks_ecb<128>>>(key))
-               : static_cast<std::unique_ptr<ecb_context_t>>(std::make_unique<ecb_context_impl_t<key_128bit_t, avx2::generate_key_vector<128, false>, avx2::process_blocks_ecb<128>>>(key));
-}
+    template <class key_t, class enc_t>
+    static inline std::unique_ptr<ecb_context_t> make_avx2_ecb_context(key_t k, enc_t e)
+    {
+        class ecb_context_impl_t final : public virtual ecb_context_t
+        {
+        public:
+            const avx2::impl::key_vector_for_t<key_t> key_vector_;
+            explicit ecb_context_impl_t(key_t key, enc_t enc) : key_vector_(avx2::impl::generate_key_vector(key, enc)) { }
+            void process_blocks(void* dst, const void* src, size_t length) override { return avx2::impl::process_blocks_ecb(dst, src, length, key_vector_); }
+        };
 
-std::unique_ptr<arkana::camellia::ecb_context_t> arkana::camellia::create_ecb_context_avx2(const key_192bit_t* key, bool encrypt)
-{
-    return encrypt
-               ? static_cast<std::unique_ptr<ecb_context_t>>(std::make_unique<ecb_context_impl_t<key_192bit_t, avx2::generate_key_vector<192, true>, avx2::process_blocks_ecb<192>>>(key))
-               : static_cast<std::unique_ptr<ecb_context_t>>(std::make_unique<ecb_context_impl_t<key_192bit_t, avx2::generate_key_vector<192, false>, avx2::process_blocks_ecb<192>>>(key));
-}
+        return std::make_unique<ecb_context_impl_t>(std::move(k), std::move(e));
+    }
 
-
-std::unique_ptr<arkana::camellia::ecb_context_t> arkana::camellia::create_ecb_context_avx2(const key_256bit_t* key, bool encrypt)
-{
-    return encrypt
-               ? static_cast<std::unique_ptr<ecb_context_t>>(std::make_unique<ecb_context_impl_t<key_256bit_t, avx2::generate_key_vector<256, true>, avx2::process_blocks_ecb<256>>>(key))
-               : static_cast<std::unique_ptr<ecb_context_t>>(std::make_unique<ecb_context_impl_t<key_256bit_t, avx2::generate_key_vector<256, false>, avx2::process_blocks_ecb<256>>>(key));
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context_avx2(const key_128bit_t* key) { return make_avx2_ecb_context(*key, true_t{}); }
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context_avx2(const key_192bit_t* key) { return make_avx2_ecb_context(*key, true_t{}); }
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context_avx2(const key_256bit_t* key) { return make_avx2_ecb_context(*key, true_t{}); }
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context_avx2(const key_128bit_t* key) { return make_avx2_ecb_context(*key, false_t{}); }
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context_avx2(const key_192bit_t* key) { return make_avx2_ecb_context(*key, false_t{}); }
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context_avx2(const key_256bit_t* key) { return make_avx2_ecb_context(*key, false_t{}); }
 }

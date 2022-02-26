@@ -7,12 +7,19 @@
 namespace arkana
 {
     using byte_t = std::byte;
-    using uint8_t = std::uint8_t;
-    using uint16_t = std::uint16_t;
-    using uint32_t = std::uint32_t;
-    using uint64_t = std::uint64_t;
-    using size_t = std::size_t;
-    using uintmax_t = std::uintmax_t;
-    template <class T, size_t S> using array = std::array<T, S>;
+    using std::uint8_t;
+    using std::uint16_t;
+    using std::uint32_t;
+    using std::uint64_t;
+    using std::size_t;
+    using std::uintmax_t;
+
+    using std::array;
+    using std::tuple;
+
+    template <bool b>using bool_constant_t = std::bool_constant<b>;
+    using true_t = bool_constant_t<true>;
+    using false_t = bool_constant_t<false>;
+
     template <size_t S> using byte_array = array<byte_t, S>;
 }

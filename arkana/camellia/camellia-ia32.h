@@ -16,7 +16,6 @@ namespace arkana::camellia
 {
     namespace ia32
     {
-        using arkana::camellia::generate_key_vector;
-        using arkana::camellia::process_blocks_ecb;
+        using namespace ref;
     }
 }

@@ -22,9 +22,7 @@ namespace arkana::camellia
         {
             using namespace arkana::xmm;
 
-            using camellia::impl::sbox::sbox_t;
-
-            ARKXMM_API lookup_sbox32(const sbox_t<uint32_t>& sbox, vu32x8 index, int shift) -> vu32x8
+            ARKXMM_API lookup_sbox32(const functions::sbox::sbox_t<uint32_t>& sbox, vu32x8 index, int shift) -> vu32x8
             {
                 return xmm::gather<vu32x8>(sbox.data(), index >> shift * 8 & broadcast<vu32x8>(0x000000FF));
             }
@@ -76,11 +74,6 @@ namespace arkana::camellia
                 return lhs;
             }
 
-
-            using camellia::impl::camellia_f_table_lookup_32;
-            using camellia::impl::camellia_fl;
-            using camellia::impl::camellia_fl_inv;
-
             ARKXMM_API camellia_prewhite(v128& block, uint64_t kl, uint64_t kr) -> v128&
             {
                 const vu32x8 kx = reinterpret<vu32x8>(u64x4(kl, kr));
@@ -122,34 +115,41 @@ namespace arkana::camellia
                 xmm::store_u(&dst->r.l, reg.r.l);
                 xmm::store_u(&dst->r.r, reg.r.r);
             }
-
-            using camellia::impl::key_t;
-            using camellia::impl::key_vector_t;
-            using camellia::impl::generate_key_vector;
-            using camellia::impl::process_blocks_ecb;
         }
 
-        template <size_t key_bits, bool for_encryption>
-        static key_vector_t<key_bits> generate_key_vector(const key_t<key_bits>& key)
+        namespace impl
         {
-            return impl::generate_key_vector<key_bits, for_encryption>(key);
+            using ref::impl::key_vector_small_t;
+            using ref::impl::key_vector_large_t;
+            using ref::impl::generate_key_vector;
+            using ref::impl::key_vector_for_t;
+
+            template <class key_vector_t>
+            static inline auto process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_t& kv)
+            -> std::enable_if_t<std::is_same_v<key_vector_t, key_vector_small_t> || std::is_same_v<key_vector_t, key_vector_large_t>, void>
+            {
+                functions::key_scheduling::process_blocks_ecb<
+                    v128,
+                    load_v128,
+                    camellia_prewhite,
+                    functions::camellia_f_table_lookup_32<v64&, lookup_sbox32>,
+                    functions::camellia_fl<v64&, rotl_be1>,
+                    functions::camellia_fl_inv<v64&, rotl_be1>,
+                    camellia_postwhite,
+                    store_v128>(dst, src, length, kv);
+            }
         }
 
-        template <size_t key_bits>
-        static void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_t<key_bits>& kv)
-        {
-            impl::process_blocks_ecb<
-                    impl::v128,
-                    std::uint64_t,
-                    key_bits,
-                    impl::load_v128,
-                    impl::camellia_prewhite,
-                    impl::camellia_f_table_lookup_32<impl::v64&, std::uint64_t, impl::lookup_sbox32>,
-                    impl::camellia_fl<impl::v64&, std::uint64_t, impl::rotl_be1>,
-                    impl::camellia_fl_inv<impl::v64&, std::uint64_t, impl::rotl_be1>,
-                    impl::camellia_postwhite,
-                    impl::store_v128>
-                (dst, src, length, kv);
-        }
+        using impl::key_vector_small_t;
+        using impl::key_vector_large_t;
+        using impl::key_vector_for_t;
+        static inline key_vector_small_t generate_key_vector_encrypt(const key_128bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
+        static inline key_vector_large_t generate_key_vector_encrypt(const key_192bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
+        static inline key_vector_large_t generate_key_vector_encrypt(const key_256bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
+        static inline key_vector_small_t generate_key_vector_decrypt(const key_128bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
+        static inline key_vector_large_t generate_key_vector_decrypt(const key_192bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
+        static inline key_vector_large_t generate_key_vector_decrypt(const key_256bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
+        static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_small_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
+        static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_large_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
     }
 }

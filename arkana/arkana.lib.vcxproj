@@ -34,7 +34,6 @@
     <ClInclude Include="camellia\camellia-avx2aesni.h" />
     <ClInclude Include="camellia\camellia-ia32.h" />
     <ClInclude Include="camellia\camellia.h" />
-    <ClInclude Include="camellia\camellia.private.hpp" />
     <ClInclude Include="crc32.h" />
     <ClInclude Include="crc32\crc32-avx2.h" />
     <ClInclude Include="crc32\crc32-avx2clmul.h" />
