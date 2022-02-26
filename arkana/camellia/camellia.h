@@ -124,7 +124,7 @@ namespace arkana::camellia
         template <class v64 = v64, auto lookup_sbox32 = lookup_sbox32, class key64 = key64>
         static ARKANA_FORCEINLINE constexpr auto camellia_f_table_lookup_32(v64 r, v64 l, const key64& k) noexcept -> v64
         {
-            std::decay_t<v64> t = l; // copy
+            auto t = l; // copy
             auto&& [ll, lr] = decompose(t);
             auto&& [kl, kr] = decompose(k);
 
@@ -150,7 +150,7 @@ namespace arkana::camellia
         template <class v64 = v64, auto lookup_sbox64 = lookup_sbox64, class key64 = key64>
         static ARKANA_FORCEINLINE constexpr auto camellia_f_table_lookup_64(v64 r, v64 l, const key64& k) noexcept -> v64
         {
-            std::decay_t<v64> t = l; // copy
+            auto t = l; // copy
             t ^= k;
             auto kx = lookup_sbox64(sbox::sbox_64_0, t, 0) ^
                 lookup_sbox64(sbox::sbox_64_1, t, 1) ^
@@ -196,7 +196,7 @@ namespace arkana::camellia
             return recompose(r, rl, rr);
         }
 
-        template <class v128 = v128, class v64 = v64, class key64 = key64>
+        template <class v128 = v128, class key64 = key64>
         static ARKANA_FORCEINLINE constexpr auto camellia_prewhite(v128 v, const key64& kl, const key64& kr) noexcept -> v128
         {
             auto&& [l, r] = decompose(v);
@@ -205,14 +205,13 @@ namespace arkana::camellia
             return recompose(v, l, r);
         }
 
-        template <class v128 = v128, class v64 = v64, class key64 = key64>
-        static ARKANA_FORCEINLINE constexpr auto camellia_postwhite(v128 v, v64 l, v64 r, const key64& kl, const key64& kr) noexcept -> v128
+        template <class v128 = v128, class key64 = key64>
+        static ARKANA_FORCEINLINE constexpr auto camellia_postwhite(v128 v, const key64& kl, const key64& kr) noexcept -> v128
         {
-            std::decay_t<v64> tl = l; // copy
-            std::decay_t<v64> tr = r; // copy
-            tl ^= kr;
-            tr ^= kl;
-            return recompose(v, tr, tl);
+            auto [r, l] = decompose(v); // copy
+            l ^= kl;
+            r ^= kr;
+            return recompose(v, l, r);
         }
 
         inline namespace key_scheduling
@@ -409,15 +408,16 @@ namespace arkana::camellia
 
             template <
                 class block_t = v128&,
-                auto camellia_prewhite = functions::camellia_prewhite<v128&, v64&, key64>,
+                auto camellia_prewhite = functions::camellia_prewhite<v128&, key64>,
                 auto camellia_f = functions::camellia_f_table_lookup<v64&, lookup_sbox32, lookup_sbox64, key64>,
                 auto camellia_fl = functions::camellia_fl<v64&, rotl_be1, key64>,
                 auto camellia_fl_inv = functions::camellia_fl_inv<v64&, rotl_be1, key64>,
-                auto camellia_postwhite = functions::camellia_postwhite<v128&, v64&, key64>,
+                auto camellia_postwhite = functions::camellia_postwhite<v128&, key64>,
                 class key64 = key64>
             static ARKANA_FORCEINLINE auto process_block_inlined(block_t block, const key_vector_small_t<key64>& kev) -> block_t
             {
-                auto&& [l, r] = camellia_prewhite(block, kev.kw_1, kev.kw_2);
+                block = camellia_prewhite(block, kev.kw_1, kev.kw_2);
+                auto&& [l, r] = decompose(block);
                 r = camellia_f(r, l, kev.k_1);
                 l = camellia_f(l, r, kev.k_2);
                 r = camellia_f(r, l, kev.k_3);
@@ -440,20 +440,22 @@ namespace arkana::camellia
                 l = camellia_f(l, r, kev.k_16);
                 r = camellia_f(r, l, kev.k_17);
                 l = camellia_f(l, r, kev.k_18);
-                return block = camellia_postwhite(block, l, r, kev.kw_3, kev.kw_4);
+                block = recompose(block, l, r);
+                return block = camellia_postwhite(block, kev.kw_3, kev.kw_4);
             }
 
             template <
                 class block_t = v128&,
-                auto camellia_prewhite = functions::camellia_prewhite<v128&, v64&, key64>,
+                auto camellia_prewhite = functions::camellia_prewhite<v128&, key64>,
                 auto camellia_f = functions::camellia_f_table_lookup<v64&, lookup_sbox32, lookup_sbox64, key64>,
                 auto camellia_fl = functions::camellia_fl<v64&, rotl_be1, key64>,
                 auto camellia_fl_inv = functions::camellia_fl_inv<v64&, rotl_be1, key64>,
-                auto camellia_postwhite = functions::camellia_postwhite<v128&, v64&, key64>,
+                auto camellia_postwhite = functions::camellia_postwhite<v128&, key64>,
                 class key64 = key64>
             static ARKANA_FORCEINLINE auto process_block_inlined(block_t block, const key_vector_large_t<key64>& kev) -> block_t
             {
-                auto&& [l, r] = camellia_prewhite(block, kev.kw_1, kev.kw_2);
+                block = camellia_prewhite(block, kev.kw_1, kev.kw_2);
+                auto&& [l, r] = decompose(block);
                 r = camellia_f(r, l, kev.k_1);
                 l = camellia_f(l, r, kev.k_2);
                 r = camellia_f(r, l, kev.k_3);
@@ -484,17 +486,18 @@ namespace arkana::camellia
                 l = camellia_f(l, r, kev.k_22);
                 r = camellia_f(r, l, kev.k_23);
                 l = camellia_f(l, r, kev.k_24);
-                return block = camellia_postwhite(block, l, r, kev.kw_3, kev.kw_4);
+                block = recompose(block, l, r);
+                return block = camellia_postwhite(block, kev.kw_3, kev.kw_4);
             }
 
             template <
                 class block_t = v128,
                 auto load_block = load_u<v128>,
-                auto camellia_prewhite = functions::camellia_prewhite<v128&, v64&>,
-                auto camellia_f = functions::camellia_f_table_lookup<v64&, lookup_sbox32, lookup_sbox64>,
-                auto camellia_fl = functions::camellia_fl<v64&, rotl_be1>,
-                auto camellia_fl_inv = functions::camellia_fl_inv<v64&, rotl_be1>,
-                auto camellia_postwhite = functions::camellia_postwhite<v128&, v64&>,
+                auto camellia_prewhite = functions::camellia_prewhite<v128&, key64>,
+                auto camellia_f = functions::camellia_f_table_lookup<v64&, lookup_sbox32, lookup_sbox64, key64>,
+                auto camellia_fl = functions::camellia_fl<v64&, rotl_be1, key64>,
+                auto camellia_fl_inv = functions::camellia_fl_inv<v64&, rotl_be1, key64>,
+                auto camellia_postwhite = functions::camellia_postwhite<v128&, key64>,
                 auto store_block = store_u<v128>,
                 class key_vector_t>
             static void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_t& kv)
@@ -556,11 +559,11 @@ namespace arkana::camellia
                 key_scheduling::process_blocks_ecb<
                     v128,
                     load_u<v128>,
-                    camellia_prewhite<v128&, v64&, key64>,
+                    camellia_prewhite<v128&, key64>,
                     camellia_f_table_lookup<v64&, lookup_sbox32, lookup_sbox64, key64>,
                     camellia_fl<v64&, rotl_be1, key64>,
                     camellia_fl_inv<v64&, rotl_be1, key64>,
-                    camellia_postwhite<v128&, v64, key64>,
+                    camellia_postwhite<v128&, key64>,
                     store_u<v128>>(dst, src, length, kv);
             }
         }
