@@ -22,6 +22,12 @@ namespace arkana::camellia
 {
     namespace functions
     {
+        template <class T>
+        struct value_pair_t
+        {
+            T l, r;
+        };
+
         template <class value_pair_t>
         static ARKANA_FORCEINLINE constexpr auto decompose(value_pair_t&& v) noexcept -> /* TODO sfinae */ value_pair_t
         {
@@ -42,12 +48,12 @@ namespace arkana::camellia
             return {static_cast<uint32_t>(x), static_cast<uint32_t>(x >> 32)};
         }
 
-        static ARKANA_FORCEINLINE constexpr auto recompose(uint64_t t, uint32_t l, uint32_t r) noexcept -> uint64_t
+        static ARKANA_FORCEINLINE constexpr auto recompose(uint64_t& t, uint32_t l, uint32_t r) noexcept -> uint64_t&
         {
             return t = static_cast<std::uint64_t>(r) << 32 | l;
         }
 
-        static ARKANA_FORCEINLINE constexpr std::uint32_t rotl_be1(std::uint32_t v) noexcept
+        static ARKANA_FORCEINLINE constexpr uint32_t rotl_be1(uint32_t v) noexcept
         {
             /* Big endian rotl(v, 1) */     //  BE: 01234567 89abcdef ghijklmn opqrstuv
             /* on little endian      */     //  ->: 12345678 9abcdefg hijklmno pqrstuv0
@@ -99,21 +105,26 @@ namespace arkana::camellia
             static inline constexpr sbox_t<uint64_t> sbox_64_6 = generate_table<uint64_t, 256>([](auto i) { return 0x0100010101000101u * sbox_3[i]; });
             static inline constexpr sbox_t<uint64_t> sbox_64_7 = generate_table<uint64_t, 256>([](auto i) { return 0x0001010100010101u * sbox_0[i]; });
 
-            static ARKANA_FORCEINLINE constexpr std::uint32_t lookup_sbox32(const sbox_t<std::uint32_t>& sbox, std::uint32_t index, int shift) noexcept
+            static ARKANA_FORCEINLINE constexpr uint32_t lookup_sbox32(const sbox_t<uint32_t>& sbox, uint32_t index, int shift) noexcept
             {
-                return sbox[static_cast<std::uint8_t>(index >> 8 * shift)];
+                return sbox[static_cast<uint8_t>(index >> 8 * shift)];
             }
 
-            static ARKANA_FORCEINLINE constexpr std::uint64_t lookup_sbox64(const sbox_t<std::uint64_t>& sbox, std::uint64_t index, int shift) noexcept
+            static ARKANA_FORCEINLINE constexpr uint64_t lookup_sbox64(const sbox_t<uint64_t>& sbox, uint64_t index, int shift) noexcept
             {
-                return sbox[static_cast<std::uint8_t>(index >> 8 * shift)];
+                return sbox[static_cast<uint8_t>(index >> 8 * shift)];
             }
         }
 
-        template <class uint64_t = std::uint64_t, auto lookup_sbox32 = sbox::lookup_sbox32, class subkey_uint64_t = std::uint64_t>
-        static ARKANA_FORCEINLINE constexpr auto camellia_f_table_lookup_32(uint64_t r, uint64_t l, const subkey_uint64_t& k) noexcept -> uint64_t
+        using v32 = uint32_t;
+        using v64 = uint64_t;
+        using v128 = value_pair_t<uint64_t>;
+        using key64 = uint64_t;
+
+        template <class v64 = v64, auto lookup_sbox32 = lookup_sbox32, class key64 = key64>
+        static ARKANA_FORCEINLINE constexpr auto camellia_f_table_lookup_32(v64 r, v64 l, const key64& k) noexcept -> v64
         {
-            std::decay_t<uint64_t> t = l;
+            std::decay_t<v64> t = l; // copy
             auto&& [ll, lr] = decompose(t);
             auto&& [kl, kr] = decompose(k);
 
@@ -136,10 +147,10 @@ namespace arkana::camellia
             return r ^= recompose(t, dd, uu);
         }
 
-        template <class uint64_t = std::uint64_t, auto lookup_sbox64 = sbox::lookup_sbox64, class subkey_uint64_t = std::uint64_t>
-        static ARKANA_FORCEINLINE constexpr auto camellia_f_table_lookup_64(uint64_t r, uint64_t l, const subkey_uint64_t& k) noexcept -> uint64_t
+        template <class v64 = v64, auto lookup_sbox64 = lookup_sbox64, class key64 = key64>
+        static ARKANA_FORCEINLINE constexpr auto camellia_f_table_lookup_64(v64 r, v64 l, const key64& k) noexcept -> v64
         {
-            std::decay_t<uint64_t> t = l;
+            std::decay_t<v64> t = l; // copy
             t ^= k;
             auto kx = lookup_sbox64(sbox::sbox_64_0, t, 0) ^
                 lookup_sbox64(sbox::sbox_64_1, t, 1) ^
@@ -152,17 +163,17 @@ namespace arkana::camellia
             return r ^= kx;
         }
 
-        template <class uint64_t = std::uint64_t, auto lookup_sbox32 = sbox::lookup_sbox32, auto lookup_sbox64 = sbox::lookup_sbox64, class subkey_uint64_t = std::uint64_t>
-        static ARKANA_FORCEINLINE constexpr auto camellia_f_table_lookup(uint64_t r, uint64_t l, const subkey_uint64_t& k) noexcept -> uint64_t
+        template <class v64 = v64, auto lookup_sbox32 = lookup_sbox32, auto lookup_sbox64 = lookup_sbox64, class key64 = key64>
+        static ARKANA_FORCEINLINE constexpr auto camellia_f_table_lookup(v64 r, v64 l, const key64& k) noexcept -> v64
         {
             if constexpr (sizeof(void*) == 8)
-                return camellia_f_table_lookup_64<uint64_t, lookup_sbox64, subkey_uint64_t>(r, l, k);
+                return camellia_f_table_lookup_64<v64, lookup_sbox64, key64>(std::forward<v64>(r), std::forward<v64>(l), k);
             else
-                return camellia_f_table_lookup_32<uint64_t, lookup_sbox32, subkey_uint64_t>(r, l, k);
+                return camellia_f_table_lookup_32<v64, lookup_sbox32, key64>(std::forward<v64>(r), std::forward<v64>(l), k);
         }
 
-        template <class uint64_t = std::uint64_t, auto rotl_be1 = rotl_be1, class subkey_uint64_t = std::uint64_t>
-        static ARKANA_FORCEINLINE constexpr auto camellia_fl(uint64_t l, const subkey_uint64_t& k) noexcept -> uint64_t
+        template <class v64 = v64, auto rotl_be1 = rotl_be1, class key64 = key64>
+        static ARKANA_FORCEINLINE constexpr auto camellia_fl(v64& l, const key64& k) noexcept -> v64&
         {
             auto&& [ll, lr] = decompose(l);
             auto&& [kl, kr] = decompose(k);
@@ -173,8 +184,8 @@ namespace arkana::camellia
             return recompose(l, ll, lr);
         }
 
-        template <class uint64_t = std::uint64_t, auto rotl_be1 = rotl_be1, class subkey_uint64_t = std::uint64_t>
-        static ARKANA_FORCEINLINE constexpr auto camellia_fl_inv(uint64_t r, const subkey_uint64_t& k) noexcept -> uint64_t
+        template <class v64 = v64, auto rotl_be1 = rotl_be1, class key64 = key64>
+        static ARKANA_FORCEINLINE constexpr auto camellia_fl_inv(v64 r, const key64& k) noexcept -> v64
         {
             auto&& [rl, rr] = decompose(r);
             auto&& [kl, kr] = decompose(k);
@@ -185,8 +196,8 @@ namespace arkana::camellia
             return recompose(r, rl, rr);
         }
 
-        template <class uint128_t = std::array<std::uint64_t, 2>, class subkey_uint64_t = std::uint64_t>
-        static ARKANA_FORCEINLINE constexpr auto camellia_prewhite(uint128_t v, const subkey_uint64_t& kl, const subkey_uint64_t& kr) noexcept -> uint128_t
+        template <class v128 = v128, class v64 = v64, class key64 = key64>
+        static ARKANA_FORCEINLINE constexpr auto camellia_prewhite(v128 v, const key64& kl, const key64& kr) noexcept -> v128
         {
             auto&& [l, r] = decompose(v);
             l ^= kl;
@@ -194,11 +205,11 @@ namespace arkana::camellia
             return recompose(v, l, r);
         }
 
-        template <class uint128_t = std::array<std::uint64_t, 2>, class uint64_t = std::uint64_t, class subkey_uint64_t = std::uint64_t>
-        static ARKANA_FORCEINLINE constexpr auto camellia_postwhite(uint128_t v, uint64_t l, uint64_t r, const subkey_uint64_t& kl, const subkey_uint64_t& kr) noexcept -> uint128_t
+        template <class v128 = v128, class v64 = v64, class key64 = key64>
+        static ARKANA_FORCEINLINE constexpr auto camellia_postwhite(v128 v, v64 l, v64 r, const key64& kl, const key64& kr) noexcept -> v128
         {
-            auto tl = l; // copy
-            auto tr = r; // copy
+            std::decay_t<v64> tl = l; // copy
+            std::decay_t<v64> tr = r; // copy
             tl ^= kr;
             tr ^= kl;
             return recompose(v, tr, tl);
@@ -206,57 +217,59 @@ namespace arkana::camellia
 
         inline namespace key_scheduling
         {
-            template <class subkey_uint64_t = std::uint64_t>
+            template <size_t key_length> using key_t = byte_array<key_length>;
+            using key_128bit_t = key_t<16>;
+            using key_192bit_t = key_t<24>;
+            using key_256bit_t = key_t<32>;
+
+            template <class key64>
             struct key_vector_small_t
             {
-                subkey_uint64_t kw_1, kw_2;
-                subkey_uint64_t k_1, k_2;
-                subkey_uint64_t k_3, k_4;
-                subkey_uint64_t k_5, k_6;
-                subkey_uint64_t kl_1, kl_2;
-                subkey_uint64_t k_7, k_8;
-                subkey_uint64_t k_9, k_10;
-                subkey_uint64_t k_11, k_12;
-                subkey_uint64_t kl_3, kl_4;
-                subkey_uint64_t k_13, k_14;
-                subkey_uint64_t k_15, k_16;
-                subkey_uint64_t k_17, k_18;
-                subkey_uint64_t kw_3, kw_4;
+                key64 kw_1, kw_2;
+                key64 k_1, k_2;
+                key64 k_3, k_4;
+                key64 k_5, k_6;
+                key64 kl_1, kl_2;
+                key64 k_7, k_8;
+                key64 k_9, k_10;
+                key64 k_11, k_12;
+                key64 kl_3, kl_4;
+                key64 k_13, k_14;
+                key64 k_15, k_16;
+                key64 k_17, k_18;
+                key64 kw_3, kw_4;
             };
 
-            template <class subkey_uint64_t = std::uint64_t>
+            template <class key64>
             struct key_vector_large_t
             {
-                subkey_uint64_t kw_1, kw_2;
-                subkey_uint64_t k_1, k_2;
-                subkey_uint64_t k_3, k_4;
-                subkey_uint64_t k_5, k_6;
-                subkey_uint64_t kl_1, kl_2;
-                subkey_uint64_t k_7, k_8;
-                subkey_uint64_t k_9, k_10;
-                subkey_uint64_t k_11, k_12;
-                subkey_uint64_t kl_3, kl_4;
-                subkey_uint64_t k_13, k_14;
-                subkey_uint64_t k_15, k_16;
-                subkey_uint64_t k_17, k_18;
-                subkey_uint64_t kl_5, kl_6;
-                subkey_uint64_t k_19, k_20;
-                subkey_uint64_t k_21, k_22;
-                subkey_uint64_t k_23, k_24;
-                subkey_uint64_t kw_3, kw_4;
+                key64 kw_1, kw_2;
+                key64 k_1, k_2;
+                key64 k_3, k_4;
+                key64 k_5, k_6;
+                key64 kl_1, kl_2;
+                key64 k_7, k_8;
+                key64 k_9, k_10;
+                key64 k_11, k_12;
+                key64 kl_3, kl_4;
+                key64 k_13, k_14;
+                key64 k_15, k_16;
+                key64 k_17, k_18;
+                key64 kl_5, kl_6;
+                key64 k_19, k_20;
+                key64 k_21, k_22;
+                key64 k_23, k_24;
+                key64 kw_3, kw_4;
             };
 
-            template <
-                size_t key_length,
-                bool for_encryption,
-                auto camellia_f = camellia_f_table_lookup<std::uint64_t>>
-            static constexpr auto generate_key_vector(
-                const byte_array<key_length>& key,
-                bool_constant_t<for_encryption> /* encrypting */  = {}) noexcept
-            -> std::enable_if_t<key_length * 8 == 128 || key_length * 8 == 192 || key_length * 8 == 256,
-                                std::conditional_t<key_length * 8 == 128,
-                                                   key_vector_small_t<uint64_t>,
-                                                   key_vector_large_t<uint64_t>>>
+            template <class key_t, class key64>
+            using key_vector_for_t = std::enable_if_t<
+                std::is_same_v<key_t, key_128bit_t> || std::is_same_v<key_t, key_192bit_t> || std::is_same_v<key_t, key_256bit_t>,
+                std::conditional_t<std::is_same_v<key_t, key_128bit_t>, key_vector_small_t<key64>, key_vector_large_t<key64>>>;
+
+            template <size_t key_length, bool encrypting, auto camellia_f = camellia_f_table_lookup<v64, lookup_sbox32, lookup_sbox64, key64>>
+            static constexpr auto generate_key_vector(const key_t<key_length>& key, bool_constant_t<encrypting> = {}) noexcept
+            -> key_vector_for_t<key_t<key_length>, key64>
             {
                 struct uint128_t
                 {
@@ -275,6 +288,7 @@ namespace arkana::camellia
                     }
                 };
 
+                // little endian 128bit sub-key {KL,KR,KA,KB}
                 auto [kl, kr, ka, kb] = [](const byte_t* key)
                 {
                     uint128_t kl{};
@@ -317,90 +331,91 @@ namespace arkana::camellia
                     t.l = camellia_f(t.l, t.r, bits::byteswap(0xB05688C2B3E6C1FDu));
                     uint128_t kb = t;
 
-                    return std::make_tuple(kl, kr, ka, kb);
+                    return std::make_tuple(kl.byteswap(), kr.byteswap(), ka.byteswap(), kb.byteswap());
                 }(static_cast<const byte_t*>(key.data()));
 
-                if constexpr (key_length * 8 == 128)
+                // result
+                key_vector_for_t<key_t<key_length>, key64> r{};
+                if constexpr (std::is_same_v<decltype(r), key_vector_small_t<key64>>)
                 {
-                    key_vector_small_t<uint64_t> r{};
-                    (for_encryption ? r.kw_1 : r.kw_3) = kl.byteswap().rotl(0).byteswap().l;
-                    (for_encryption ? r.kw_2 : r.kw_4) = kl.byteswap().rotl(0).byteswap().r;
-                    (for_encryption ? r.k_1 : r.k_18) = ka.byteswap().rotl(0).byteswap().l;
-                    (for_encryption ? r.k_2 : r.k_17) = ka.byteswap().rotl(0).byteswap().r;
-                    (for_encryption ? r.k_3 : r.k_16) = kl.byteswap().rotl(15).byteswap().l;
-                    (for_encryption ? r.k_4 : r.k_15) = kl.byteswap().rotl(15).byteswap().r;
-                    (for_encryption ? r.k_5 : r.k_14) = ka.byteswap().rotl(15).byteswap().l;
-                    (for_encryption ? r.k_6 : r.k_13) = ka.byteswap().rotl(15).byteswap().r;
-                    (for_encryption ? r.kl_1 : r.kl_4) = ka.byteswap().rotl(30).byteswap().l;
-                    (for_encryption ? r.kl_2 : r.kl_3) = ka.byteswap().rotl(30).byteswap().r;
-                    (for_encryption ? r.k_7 : r.k_12) = kl.byteswap().rotl(45).byteswap().l;
-                    (for_encryption ? r.k_8 : r.k_11) = kl.byteswap().rotl(45).byteswap().r;
-                    (for_encryption ? r.k_9 : r.k_10) = ka.byteswap().rotl(45).byteswap().l;
-                    (for_encryption ? r.k_10 : r.k_9) = kl.byteswap().rotl(60).byteswap().r;
-                    (for_encryption ? r.k_11 : r.k_8) = ka.byteswap().rotl(60).byteswap().l;
-                    (for_encryption ? r.k_12 : r.k_7) = ka.byteswap().rotl(60).byteswap().r;
-                    (for_encryption ? r.kl_3 : r.kl_2) = kl.byteswap().rotl(77).byteswap().l;
-                    (for_encryption ? r.kl_4 : r.kl_1) = kl.byteswap().rotl(77).byteswap().r;
-                    (for_encryption ? r.k_13 : r.k_6) = kl.byteswap().rotl(94).byteswap().l;
-                    (for_encryption ? r.k_14 : r.k_5) = kl.byteswap().rotl(94).byteswap().r;
-                    (for_encryption ? r.k_15 : r.k_4) = ka.byteswap().rotl(94).byteswap().l;
-                    (for_encryption ? r.k_16 : r.k_3) = ka.byteswap().rotl(94).byteswap().r;
-                    (for_encryption ? r.k_17 : r.k_2) = kl.byteswap().rotl(111).byteswap().l;
-                    (for_encryption ? r.k_18 : r.k_1) = kl.byteswap().rotl(111).byteswap().r;
-                    (for_encryption ? r.kw_3 : r.kw_1) = ka.byteswap().rotl(111).byteswap().l;
-                    (for_encryption ? r.kw_4 : r.kw_2) = ka.byteswap().rotl(111).byteswap().r;
-                    return r;
+                    // 128 bit key
+                    (encrypting ? r.kw_1 : r.kw_3) = kl.rotl(0).byteswap().l;
+                    (encrypting ? r.kw_2 : r.kw_4) = kl.rotl(0).byteswap().r;
+                    (encrypting ? r.k_1 : r.k_18) = ka.rotl(0).byteswap().l;
+                    (encrypting ? r.k_2 : r.k_17) = ka.rotl(0).byteswap().r;
+                    (encrypting ? r.k_3 : r.k_16) = kl.rotl(15).byteswap().l;
+                    (encrypting ? r.k_4 : r.k_15) = kl.rotl(15).byteswap().r;
+                    (encrypting ? r.k_5 : r.k_14) = ka.rotl(15).byteswap().l;
+                    (encrypting ? r.k_6 : r.k_13) = ka.rotl(15).byteswap().r;
+                    (encrypting ? r.kl_1 : r.kl_4) = ka.rotl(30).byteswap().l;
+                    (encrypting ? r.kl_2 : r.kl_3) = ka.rotl(30).byteswap().r;
+                    (encrypting ? r.k_7 : r.k_12) = kl.rotl(45).byteswap().l;
+                    (encrypting ? r.k_8 : r.k_11) = kl.rotl(45).byteswap().r;
+                    (encrypting ? r.k_9 : r.k_10) = ka.rotl(45).byteswap().l;
+                    (encrypting ? r.k_10 : r.k_9) = kl.rotl(60).byteswap().r;
+                    (encrypting ? r.k_11 : r.k_8) = ka.rotl(60).byteswap().l;
+                    (encrypting ? r.k_12 : r.k_7) = ka.rotl(60).byteswap().r;
+                    (encrypting ? r.kl_3 : r.kl_2) = kl.rotl(77).byteswap().l;
+                    (encrypting ? r.kl_4 : r.kl_1) = kl.rotl(77).byteswap().r;
+                    (encrypting ? r.k_13 : r.k_6) = kl.rotl(94).byteswap().l;
+                    (encrypting ? r.k_14 : r.k_5) = kl.rotl(94).byteswap().r;
+                    (encrypting ? r.k_15 : r.k_4) = ka.rotl(94).byteswap().l;
+                    (encrypting ? r.k_16 : r.k_3) = ka.rotl(94).byteswap().r;
+                    (encrypting ? r.k_17 : r.k_2) = kl.rotl(111).byteswap().l;
+                    (encrypting ? r.k_18 : r.k_1) = kl.rotl(111).byteswap().r;
+                    (encrypting ? r.kw_3 : r.kw_1) = ka.rotl(111).byteswap().l;
+                    (encrypting ? r.kw_4 : r.kw_2) = ka.rotl(111).byteswap().r;
                 }
                 else
                 {
-                    key_vector_large_t<uint64_t> r{};
-                    (for_encryption ? r.kw_1 : r.kw_3) = kl.byteswap().rotl(0).byteswap().l;
-                    (for_encryption ? r.kw_2 : r.kw_4) = kl.byteswap().rotl(0).byteswap().r;
-                    (for_encryption ? r.k_1 : r.k_24) = kb.byteswap().rotl(0).byteswap().l;
-                    (for_encryption ? r.k_2 : r.k_23) = kb.byteswap().rotl(0).byteswap().r;
-                    (for_encryption ? r.k_3 : r.k_22) = kr.byteswap().rotl(15).byteswap().l;
-                    (for_encryption ? r.k_4 : r.k_21) = kr.byteswap().rotl(15).byteswap().r;
-                    (for_encryption ? r.k_5 : r.k_20) = ka.byteswap().rotl(15).byteswap().l;
-                    (for_encryption ? r.k_6 : r.k_19) = ka.byteswap().rotl(15).byteswap().r;
-                    (for_encryption ? r.kl_1 : r.kl_6) = kr.byteswap().rotl(30).byteswap().l;
-                    (for_encryption ? r.kl_2 : r.kl_5) = kr.byteswap().rotl(30).byteswap().r;
-                    (for_encryption ? r.k_7 : r.k_18) = kb.byteswap().rotl(30).byteswap().l;
-                    (for_encryption ? r.k_8 : r.k_17) = kb.byteswap().rotl(30).byteswap().r;
-                    (for_encryption ? r.k_9 : r.k_16) = kl.byteswap().rotl(45).byteswap().l;
-                    (for_encryption ? r.k_10 : r.k_15) = kl.byteswap().rotl(45).byteswap().r;
-                    (for_encryption ? r.k_11 : r.k_14) = ka.byteswap().rotl(45).byteswap().l;
-                    (for_encryption ? r.k_12 : r.k_13) = ka.byteswap().rotl(45).byteswap().r;
-                    (for_encryption ? r.kl_3 : r.kl_4) = kl.byteswap().rotl(60).byteswap().l;
-                    (for_encryption ? r.kl_4 : r.kl_3) = kl.byteswap().rotl(60).byteswap().r;
-                    (for_encryption ? r.k_13 : r.k_12) = kr.byteswap().rotl(60).byteswap().l;
-                    (for_encryption ? r.k_14 : r.k_11) = kr.byteswap().rotl(60).byteswap().r;
-                    (for_encryption ? r.k_15 : r.k_10) = kb.byteswap().rotl(60).byteswap().l;
-                    (for_encryption ? r.k_16 : r.k_9) = kb.byteswap().rotl(60).byteswap().r;
-                    (for_encryption ? r.k_17 : r.k_8) = kl.byteswap().rotl(77).byteswap().l;
-                    (for_encryption ? r.k_18 : r.k_7) = kl.byteswap().rotl(77).byteswap().r;
-                    (for_encryption ? r.kl_5 : r.kl_2) = ka.byteswap().rotl(77).byteswap().l;
-                    (for_encryption ? r.kl_6 : r.kl_1) = ka.byteswap().rotl(77).byteswap().r;
-                    (for_encryption ? r.k_19 : r.k_6) = kr.byteswap().rotl(94).byteswap().l;
-                    (for_encryption ? r.k_20 : r.k_5) = kr.byteswap().rotl(94).byteswap().r;
-                    (for_encryption ? r.k_21 : r.k_4) = ka.byteswap().rotl(94).byteswap().l;
-                    (for_encryption ? r.k_22 : r.k_3) = ka.byteswap().rotl(94).byteswap().r;
-                    (for_encryption ? r.k_23 : r.k_2) = kl.byteswap().rotl(111).byteswap().l;
-                    (for_encryption ? r.k_24 : r.k_1) = kl.byteswap().rotl(111).byteswap().r;
-                    (for_encryption ? r.kw_3 : r.kw_1) = kb.byteswap().rotl(111).byteswap().l;
-                    (for_encryption ? r.kw_4 : r.kw_2) = kb.byteswap().rotl(111).byteswap().r;
-                    return r;
+                    // 192 or 256 bit key
+                    (encrypting ? r.kw_1 : r.kw_3) = kl.rotl(0).byteswap().l;
+                    (encrypting ? r.kw_2 : r.kw_4) = kl.rotl(0).byteswap().r;
+                    (encrypting ? r.k_1 : r.k_24) = kb.rotl(0).byteswap().l;
+                    (encrypting ? r.k_2 : r.k_23) = kb.rotl(0).byteswap().r;
+                    (encrypting ? r.k_3 : r.k_22) = kr.rotl(15).byteswap().l;
+                    (encrypting ? r.k_4 : r.k_21) = kr.rotl(15).byteswap().r;
+                    (encrypting ? r.k_5 : r.k_20) = ka.rotl(15).byteswap().l;
+                    (encrypting ? r.k_6 : r.k_19) = ka.rotl(15).byteswap().r;
+                    (encrypting ? r.kl_1 : r.kl_6) = kr.rotl(30).byteswap().l;
+                    (encrypting ? r.kl_2 : r.kl_5) = kr.rotl(30).byteswap().r;
+                    (encrypting ? r.k_7 : r.k_18) = kb.rotl(30).byteswap().l;
+                    (encrypting ? r.k_8 : r.k_17) = kb.rotl(30).byteswap().r;
+                    (encrypting ? r.k_9 : r.k_16) = kl.rotl(45).byteswap().l;
+                    (encrypting ? r.k_10 : r.k_15) = kl.rotl(45).byteswap().r;
+                    (encrypting ? r.k_11 : r.k_14) = ka.rotl(45).byteswap().l;
+                    (encrypting ? r.k_12 : r.k_13) = ka.rotl(45).byteswap().r;
+                    (encrypting ? r.kl_3 : r.kl_4) = kl.rotl(60).byteswap().l;
+                    (encrypting ? r.kl_4 : r.kl_3) = kl.rotl(60).byteswap().r;
+                    (encrypting ? r.k_13 : r.k_12) = kr.rotl(60).byteswap().l;
+                    (encrypting ? r.k_14 : r.k_11) = kr.rotl(60).byteswap().r;
+                    (encrypting ? r.k_15 : r.k_10) = kb.rotl(60).byteswap().l;
+                    (encrypting ? r.k_16 : r.k_9) = kb.rotl(60).byteswap().r;
+                    (encrypting ? r.k_17 : r.k_8) = kl.rotl(77).byteswap().l;
+                    (encrypting ? r.k_18 : r.k_7) = kl.rotl(77).byteswap().r;
+                    (encrypting ? r.kl_5 : r.kl_2) = ka.rotl(77).byteswap().l;
+                    (encrypting ? r.kl_6 : r.kl_1) = ka.rotl(77).byteswap().r;
+                    (encrypting ? r.k_19 : r.k_6) = kr.rotl(94).byteswap().l;
+                    (encrypting ? r.k_20 : r.k_5) = kr.rotl(94).byteswap().r;
+                    (encrypting ? r.k_21 : r.k_4) = ka.rotl(94).byteswap().l;
+                    (encrypting ? r.k_22 : r.k_3) = ka.rotl(94).byteswap().r;
+                    (encrypting ? r.k_23 : r.k_2) = kl.rotl(111).byteswap().l;
+                    (encrypting ? r.k_24 : r.k_1) = kl.rotl(111).byteswap().r;
+                    (encrypting ? r.kw_3 : r.kw_1) = kb.rotl(111).byteswap().l;
+                    (encrypting ? r.kw_4 : r.kw_2) = kb.rotl(111).byteswap().r;
                 }
+                return r;
             }
 
             template <
-                class uint128_t = std::array<std::uint64_t, 2>,
-                auto camellia_prewhite = functions::camellia_prewhite<uint128_t>,
-                auto camellia_f = functions::camellia_f_table_lookup<uint64_t>,
-                auto camellia_fl = functions::camellia_fl<uint64_t>,
-                auto camellia_fl_inv = functions::camellia_fl_inv<uint64_t>,
-                auto camellia_postwhite = functions::camellia_postwhite<uint128_t, uint64_t>,
-                class subkey_uint64_t = std::uint64_t>
-            static ARKANA_FORCEINLINE auto process_block_inlined(uint128_t block, const key_vector_small_t<subkey_uint64_t>& kev) -> uint128_t
+                class block_t = v128&,
+                auto camellia_prewhite = functions::camellia_prewhite<v128&, v64&, key64>,
+                auto camellia_f = functions::camellia_f_table_lookup<v64&, lookup_sbox32, lookup_sbox64, key64>,
+                auto camellia_fl = functions::camellia_fl<v64&, rotl_be1, key64>,
+                auto camellia_fl_inv = functions::camellia_fl_inv<v64&, rotl_be1, key64>,
+                auto camellia_postwhite = functions::camellia_postwhite<v128&, v64&, key64>,
+                class key64 = key64>
+            static ARKANA_FORCEINLINE auto process_block_inlined(block_t block, const key_vector_small_t<key64>& kev) -> block_t
             {
                 auto&& [l, r] = camellia_prewhite(block, kev.kw_1, kev.kw_2);
                 r = camellia_f(r, l, kev.k_1);
@@ -429,14 +444,14 @@ namespace arkana::camellia
             }
 
             template <
-                class uint128_t = std::array<std::uint64_t, 2>,
-                auto camellia_prewhite = functions::camellia_prewhite<uint128_t>,
-                auto camellia_f = functions::camellia_f_table_lookup<uint64_t>,
-                auto camellia_fl = functions::camellia_fl<uint64_t>,
-                auto camellia_fl_inv = functions::camellia_fl_inv<uint64_t>,
-                auto camellia_postwhite = functions::camellia_postwhite<uint128_t, uint64_t>,
-                class subkey_uint64_t = std::uint64_t>
-            static ARKANA_FORCEINLINE auto process_block_inlined(uint128_t block, const key_vector_large_t<subkey_uint64_t>& kev) -> uint128_t
+                class block_t = v128&,
+                auto camellia_prewhite = functions::camellia_prewhite<v128&, v64&, key64>,
+                auto camellia_f = functions::camellia_f_table_lookup<v64&, lookup_sbox32, lookup_sbox64, key64>,
+                auto camellia_fl = functions::camellia_fl<v64&, rotl_be1, key64>,
+                auto camellia_fl_inv = functions::camellia_fl_inv<v64&, rotl_be1, key64>,
+                auto camellia_postwhite = functions::camellia_postwhite<v128&, v64&, key64>,
+                class key64 = key64>
+            static ARKANA_FORCEINLINE auto process_block_inlined(block_t block, const key_vector_large_t<key64>& kev) -> block_t
             {
                 auto&& [l, r] = camellia_prewhite(block, kev.kw_1, kev.kw_2);
                 r = camellia_f(r, l, kev.k_1);
@@ -473,25 +488,25 @@ namespace arkana::camellia
             }
 
             template <
-                class uint128_t = std::array<uint64_t, 2>,
-                auto load_block = load_u<uint128_t>,
-                auto camellia_prewhite = functions::camellia_prewhite<uint128_t>,
-                auto camellia_f = functions::camellia_f_table_lookup<uint64_t>,
-                auto camellia_fl = functions::camellia_fl<uint64_t>,
-                auto camellia_fl_inv = functions::camellia_fl_inv<uint64_t>,
-                auto camellia_postwhite = functions::camellia_postwhite<uint128_t, uint64_t>,
-                auto store_block = store_u<uint128_t>,
+                class block_t = v128,
+                auto load_block = load_u<v128>,
+                auto camellia_prewhite = functions::camellia_prewhite<v128&, v64&>,
+                auto camellia_f = functions::camellia_f_table_lookup<v64&, lookup_sbox32, lookup_sbox64>,
+                auto camellia_fl = functions::camellia_fl<v64&, rotl_be1>,
+                auto camellia_fl_inv = functions::camellia_fl_inv<v64&, rotl_be1>,
+                auto camellia_postwhite = functions::camellia_postwhite<v128&, v64&>,
+                auto store_block = store_u<v128>,
                 class key_vector_t>
             static void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_t& kv)
             {
-                static_assert(std::is_trivial_v<uint128_t>);
+                static_assert(std::is_trivial_v<block_t>);
 
-                constexpr auto f = [](uint128_t* dst, const uint128_t* src, size_t count, const auto& kv)
+                constexpr auto f = [](block_t* dst, const block_t* src, size_t count, const auto& kv)
                 {
                     for (size_t i = 0; i < count; i++)
                     {
-                        uint128_t b = load_block(src + i);
-                        b = process_block_inlined<uint128_t&, camellia_prewhite, camellia_f, camellia_fl, camellia_fl_inv, camellia_postwhite>(b, kv);
+                        block_t b = load_block(src + i);
+                        b = process_block_inlined<block_t&, camellia_prewhite, camellia_f, camellia_fl, camellia_fl_inv, camellia_postwhite>(b, kv);
                         store_block(dst + i, b);
                     }
                 };
@@ -500,17 +515,17 @@ namespace arkana::camellia
                 if (length % 16 != 0)
                     throw std::invalid_argument("invalid length. length must be multiple of 16.");
 
-                const size_t unit_count = length / sizeof(uint128_t);
-                const size_t remain_bytes = length % sizeof(uint128_t);
+                const size_t unit_count = length / sizeof(block_t);
+                const size_t remain_bytes = length % sizeof(block_t);
 
-                f(static_cast<uint128_t*>(dst), static_cast<const uint128_t*>(src), unit_count, kv);
+                f(static_cast<block_t*>(dst), static_cast<const block_t*>(src), unit_count, kv);
 
                 if (remain_bytes)
                 {
-                    uint128_t buf{};
-                    memcpy(&buf, static_cast<const std::byte*>(src) + unit_count * sizeof(uint128_t), remain_bytes);
+                    block_t buf{};
+                    memcpy(&buf, static_cast<const std::byte*>(src) + unit_count * sizeof(block_t), remain_bytes);
                     f(&buf, &buf, 1, kv);
-                    memcpy(static_cast<std::byte*>(dst) + unit_count * sizeof(uint128_t), &buf, remain_bytes);
+                    memcpy(static_cast<std::byte*>(dst) + unit_count * sizeof(block_t), &buf, remain_bytes);
                 }
             }
         }
@@ -527,26 +542,26 @@ namespace arkana::camellia
     {
         namespace impl
         {
-
-            using key_vector_small_t = functions::key_vector_small_t<uint64_t>;
-            using key_vector_large_t = functions::key_vector_large_t<uint64_t>;
+            using key_vector_small_t = functions::key_vector_small_t<functions::key64>;
+            using key_vector_large_t = functions::key_vector_large_t<functions::key64>;
+            template <class key_t> using key_vector_for_t = functions::key_scheduling::key_vector_for_t<key_t, functions::key64>;
             using functions::key_scheduling::generate_key_vector;
-            template <class key_t> using key_vector_for_t = decltype(functions::key_scheduling::generate_key_vector(key_t{}, true_t{}));
 
             template <class key_vector_t>
             static inline auto process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_t& kv)
             -> std::enable_if_t<std::is_same_v<key_vector_t, key_vector_small_t> || std::is_same_v<key_vector_t, key_vector_large_t>, void>
             {
-                using uint128_t = std::array<std::uint64_t, 2>;
-                functions::key_scheduling::process_blocks_ecb<
-                    uint128_t,
-                    load_u<uint128_t>,
-                    functions::camellia_prewhite<uint128_t>,
-                    functions::camellia_f_table_lookup<uint64_t>,
-                    functions::camellia_fl<uint64_t>,
-                    functions::camellia_fl_inv<uint64_t>,
-                    functions::camellia_postwhite<uint128_t, uint64_t>,
-                    store_u<uint128_t>>(dst, src, length, kv);
+                using namespace functions;
+
+                key_scheduling::process_blocks_ecb<
+                    v128,
+                    load_u<v128>,
+                    camellia_prewhite<v128&, v64&, key64>,
+                    camellia_f_table_lookup<v64&, lookup_sbox32, lookup_sbox64, key64>,
+                    camellia_fl<v64&, rotl_be1, key64>,
+                    camellia_fl_inv<v64&, rotl_be1, key64>,
+                    camellia_postwhite<v128&, v64, key64>,
+                    store_u<v128>>(dst, src, length, kv);
             }
         }
 
