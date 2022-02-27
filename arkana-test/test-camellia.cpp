@@ -101,36 +101,36 @@ REGISTER_TYPED_TEST_CASE_P(CamelliaTest, test, benchmark128, benchmark256);
 
 struct ia32_ecb_contexts
 {
-    static auto camellia128_encrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_context_ia32(key, true)); }
-    static auto camellia192_encrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_context_ia32(key, true)); }
-    static auto camellia256_encrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_context_ia32(key, true)); }
-    static auto camellia128_decrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_context_ia32(key, false)); }
-    static auto camellia192_decrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_context_ia32(key, false)); }
-    static auto camellia256_decrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_context_ia32(key, false)); }
+    static auto camellia128_encrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_encrypt_context_ia32(key)); }
+    static auto camellia192_encrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_encrypt_context_ia32(key)); }
+    static auto camellia256_encrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_encrypt_context_ia32(key)); }
+    static auto camellia128_decrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_decrypt_context_ia32(key)); }
+    static auto camellia192_decrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_decrypt_context_ia32(key)); }
+    static auto camellia256_decrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_decrypt_context_ia32(key)); }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(ia32, CamelliaTest, ia32_ecb_contexts);
 
 struct avx2_ecb_contexts
 {
-    static auto camellia128_encrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_context_avx2(key, true)); }
-    static auto camellia192_encrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_context_avx2(key, true)); }
-    static auto camellia256_encrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_context_avx2(key, true)); }
-    static auto camellia128_decrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_context_avx2(key, false)); }
-    static auto camellia192_decrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_context_avx2(key, false)); }
-    static auto camellia256_decrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_context_avx2(key, false)); }
+    static auto camellia128_encrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_encrypt_context_avx2(key)); }
+    static auto camellia192_encrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_encrypt_context_avx2(key)); }
+    static auto camellia256_encrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_encrypt_context_avx2(key)); }
+    static auto camellia128_decrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_decrypt_context_avx2(key)); }
+    static auto camellia192_decrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_decrypt_context_avx2(key)); }
+    static auto camellia256_decrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_decrypt_context_avx2(key)); }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(avx2, CamelliaTest, avx2_ecb_contexts);
 
 struct avx2aesni_ecb_contexts
 {
-    static auto camellia128_encrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_context_avx2aesni(key, true)); }
-    static auto camellia192_encrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_context_avx2aesni(key, true)); }
-    static auto camellia256_encrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_context_avx2aesni(key, true)); }
-    static auto camellia128_decrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_context_avx2aesni(key, false)); }
-    static auto camellia192_decrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_context_avx2aesni(key, false)); }
-    static auto camellia256_decrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_context_avx2aesni(key, false)); }
+    static auto camellia128_encrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_encrypt_context_avx2aesni(key)); }
+    static auto camellia192_encrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_encrypt_context_avx2aesni(key)); }
+    static auto camellia256_encrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_encrypt_context_avx2aesni(key)); }
+    static auto camellia128_decrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_decrypt_context_avx2aesni(key)); }
+    static auto camellia192_decrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_decrypt_context_avx2aesni(key)); }
+    static auto camellia256_decrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_decrypt_context_avx2aesni(key)); }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(avx2aesni, CamelliaTest, avx2aesni_ecb_contexts);

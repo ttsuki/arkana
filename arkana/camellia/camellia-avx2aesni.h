@@ -207,6 +207,7 @@ namespace arkana::camellia
                 v64 l, r;
             };
 
+            using key64 = uint64_t;
 
             ARKXMM_API operator ^=(v32& lhs, v32 rhs) noexcept -> v32&
             {
@@ -241,24 +242,8 @@ namespace arkana::camellia
                 return v;
             }
 
-            ARKXMM_API camellia_prewhite(v128& block, uint64_t kl, uint64_t kr) -> v128&
-            {
-                const vu8x32 kx = reinterpret<vu8x32>(u64x4(kl, kr));
-                block.l.l ^= kx;
-                block.l.r ^= kx;
-                block.r.l ^= kx;
-                block.r.r ^= kx;
 
-                byte_slice_16x16(
-                    block.l.l.x0, block.l.l.x1, block.l.l.x2, block.l.l.x3,
-                    block.l.r.x0, block.l.r.x1, block.l.r.x2, block.l.r.x3,
-                    block.r.l.x0, block.r.l.x1, block.r.l.x2, block.r.l.x3,
-                    block.r.r.x0, block.r.r.x1, block.r.r.x2, block.r.r.x3);
-
-                return block;
-            }
-
-            ARKXMM_API camellia_f(v64& l, const v64& r, uint64_t k) -> v64&
+            ARKXMM_API camellia_f(v64& l, const v64& r, const key64& k) -> v64&
             {
                 const vi8x32 ze = zero<vi8x32>();
                 const vu64x4 kx = u64x4(k);
@@ -321,7 +306,7 @@ namespace arkana::camellia
                 return l;
             }
 
-            ARKXMM_API camellia_fl(v64& l, uint64_t k) -> v64&
+            ARKXMM_API camellia_fl(v64& l, const key64& k) -> v64&
             {
                 const vi8x32 ze = zero<vi8x32>();
                 const vu64x4 kx = u64x4(k);
@@ -343,7 +328,7 @@ namespace arkana::camellia
                 return l;
             }
 
-            ARKXMM_API camellia_fl_inv(v64& r, uint64_t k) -> v64&
+            ARKXMM_API camellia_fl_inv(v64& r, const key64& k) -> v64&
             {
                 const vi8x32 ze = zero<vi8x32>();
                 const vu64x4 kx = u64x4(k);
@@ -365,30 +350,37 @@ namespace arkana::camellia
                 return r;
             }
 
-            ARKXMM_API camellia_postwhite(v128& block, v64& l, v64& r, uint64_t kl, uint64_t kr) -> v128&
+            ARKXMM_API camellia_prewhite(v128& block, const key64& kl, const key64& kr) -> v128&
+            {
+                const vu8x32 kx = reinterpret<vu8x32>(u64x4(kl, kr));
+                block.l.l ^= kx;
+                block.l.r ^= kx;
+                block.r.l ^= kx;
+                block.r.r ^= kx;
+
+                byte_slice_16x16(
+                    block.l.l.x0, block.l.l.x1, block.l.l.x2, block.l.l.x3,
+                    block.l.r.x0, block.l.r.x1, block.l.r.x2, block.l.r.x3,
+                    block.r.l.x0, block.r.l.x1, block.r.l.x2, block.r.l.x3,
+                    block.r.r.x0, block.r.r.x1, block.r.r.x2, block.r.r.x3);
+
+                return block;
+            }
+
+            ARKXMM_API camellia_postwhite(v128& block, const key64& kl, const key64& kr) -> v128&
             {
                 const vu8x32 kx = reinterpret<vu8x32>(u64x4(kl, kr));
 
                 byte_slice_16x16(
-                    r.l.x0, r.r.x0, l.l.x0, l.r.x0,
-                    r.l.x1, r.r.x1, l.l.x1, l.r.x1,
-                    r.l.x2, r.r.x2, l.l.x2, l.r.x2,
-                    r.l.x3, r.r.x3, l.l.x3, l.r.x3);
+                    block.r.l.x0, block.r.r.x0, block.l.l.x0, block.l.r.x0,
+                    block.r.l.x1, block.r.r.x1, block.l.l.x1, block.l.r.x1,
+                    block.r.l.x2, block.r.r.x2, block.l.l.x2, block.l.r.x2,
+                    block.r.l.x3, block.r.r.x3, block.l.l.x3, block.l.r.x3);
 
-                l.l ^= kx;
-                l.r ^= kx;
-                r.l ^= kx;
-                r.r ^= kx;
-
-                l.l ^= r.l;
-                l.r ^= r.r;
-                r.l ^= l.l;
-                r.r ^= l.r;
-                l.l ^= r.l;
-                l.r ^= r.r;
-
-                block.l = l;
-                block.r = r;
+                block.l.l ^= kx;
+                block.l.r ^= kx;
+                block.r.l ^= kx;
+                block.r.r ^= kx;
                 return block;
             }
 
@@ -396,69 +388,93 @@ namespace arkana::camellia
             {
                 return v128{
                     {
-                        {xmm::load_u(&src->l.l.x0), xmm::load_u(&src->l.l.x1), xmm::load_u(&src->l.l.x2), xmm::load_u(&src->l.l.x3)},
-                        {xmm::load_u(&src->l.r.x0), xmm::load_u(&src->l.r.x1), xmm::load_u(&src->l.r.x2), xmm::load_u(&src->l.r.x3)},
+                        {
+                            xmm::load_u(&src->l.l.x0),
+                            xmm::load_u(&src->l.l.x1),
+                            xmm::load_u(&src->l.l.x2),
+                            xmm::load_u(&src->l.l.x3)
+                        },
+                        {
+                            xmm::load_u(&src->l.r.x0),
+                            xmm::load_u(&src->l.r.x1),
+                            xmm::load_u(&src->l.r.x2),
+                            xmm::load_u(&src->l.r.x3)
+                        },
                     },
                     {
-                        {xmm::load_u(&src->r.l.x0), xmm::load_u(&src->r.l.x1), xmm::load_u(&src->r.l.x2), xmm::load_u(&src->r.l.x3)},
-                        {xmm::load_u(&src->r.r.x0), xmm::load_u(&src->r.r.x1), xmm::load_u(&src->r.r.x2), xmm::load_u(&src->r.r.x3)},
+                        {
+                            xmm::load_u(&src->r.l.x0),
+                            xmm::load_u(&src->r.l.x1),
+                            xmm::load_u(&src->r.l.x2),
+                            xmm::load_u(&src->r.l.x3)
+                        },
+                        {
+                            xmm::load_u(&src->r.r.x0),
+                            xmm::load_u(&src->r.r.x1),
+                            xmm::load_u(&src->r.r.x2),
+                            xmm::load_u(&src->r.r.x3)
+                        },
                     }
                 };
             }
 
-            ARKXMM_API store_v128(v128* dst, const v128& reg)
+            ARKXMM_API swap_store_v128(v128* dst, const v128& reg)
             {
-                xmm::store_u(&dst->l.l.x0, reg.l.l.x0);
-                xmm::store_u(&dst->l.l.x1, reg.l.l.x1);
-                xmm::store_u(&dst->l.l.x2, reg.l.l.x2);
-                xmm::store_u(&dst->l.l.x3, reg.l.l.x3);
-                xmm::store_u(&dst->l.r.x0, reg.l.r.x0);
-                xmm::store_u(&dst->l.r.x1, reg.l.r.x1);
-                xmm::store_u(&dst->l.r.x2, reg.l.r.x2);
-                xmm::store_u(&dst->l.r.x3, reg.l.r.x3);
-                xmm::store_u(&dst->r.l.x0, reg.r.l.x0);
-                xmm::store_u(&dst->r.l.x1, reg.r.l.x1);
-                xmm::store_u(&dst->r.l.x2, reg.r.l.x2);
-                xmm::store_u(&dst->r.l.x3, reg.r.l.x3);
-                xmm::store_u(&dst->r.r.x0, reg.r.r.x0);
-                xmm::store_u(&dst->r.r.x1, reg.r.r.x1);
-                xmm::store_u(&dst->r.r.x2, reg.r.r.x2);
-                xmm::store_u(&dst->r.r.x3, reg.r.r.x3);
-            }
-
-            using camellia::impl::key_t;
-            using camellia::impl::key_vector_t;
-            using camellia::impl::generate_key_vector_inlined;
-            using camellia::impl::process_block_inlined;
-        }
-
-        template <size_t key_bits> using key_t = impl::key_t<key_bits>;
-        template <size_t key_bits> using key_vector_t = impl::key_vector_t<uint64_t, key_bits>;
-        using unit_t = impl::v128; // 512 bytes per process
-
-        template <size_t key_bits, bool for_encryption>
-        static key_vector_t<key_bits> generate_key_vector(const key_t<key_bits>& key)
-        {
-            return impl::generate_key_vector_inlined<key_bits, for_encryption>(key);
-        }
-
-        template <size_t key_bits>
-        static void process_blocks_ecb(unit_t* dst, const unit_t* src, size_t unit_count, const key_vector_t<key_bits>& kv)
-        {
-            for (size_t i = 0; i < unit_count; i++)
-            {
-                unit_t b = impl::load_v128(src + i);
-                b = impl::process_block_inlined<
-                    unit_t&,
-                    uint64_t,
-                    impl::camellia_prewhite,
-                    impl::camellia_f,
-                    impl::camellia_fl,
-                    impl::camellia_fl_inv,
-                    impl::camellia_postwhite
-                >(b, kv);
-                impl::store_v128(dst + i, b);
+                xmm::store_u(&dst->l.l.x0, reg.r.l.x0);
+                xmm::store_u(&dst->l.l.x1, reg.r.l.x1);
+                xmm::store_u(&dst->l.l.x2, reg.r.l.x2);
+                xmm::store_u(&dst->l.l.x3, reg.r.l.x3);
+                xmm::store_u(&dst->l.r.x0, reg.r.r.x0);
+                xmm::store_u(&dst->l.r.x1, reg.r.r.x1);
+                xmm::store_u(&dst->l.r.x2, reg.r.r.x2);
+                xmm::store_u(&dst->l.r.x3, reg.r.r.x3);
+                xmm::store_u(&dst->r.l.x0, reg.l.l.x0);
+                xmm::store_u(&dst->r.l.x1, reg.l.l.x1);
+                xmm::store_u(&dst->r.l.x2, reg.l.l.x2);
+                xmm::store_u(&dst->r.l.x3, reg.l.l.x3);
+                xmm::store_u(&dst->r.r.x0, reg.l.r.x0);
+                xmm::store_u(&dst->r.r.x1, reg.l.r.x1);
+                xmm::store_u(&dst->r.r.x2, reg.l.r.x2);
+                xmm::store_u(&dst->r.r.x3, reg.l.r.x3);
             }
         }
+
+        using ref::key_vector_small_t;
+        using ref::key_vector_large_t;
+
+        namespace impl
+        {
+            using ref::impl::key_vector_small_t;
+            using ref::impl::key_vector_large_t;
+            using ref::impl::generate_key_vector;
+            using ref::impl::key_vector_for_t;
+
+            template <class key_vector_t>
+            static inline auto process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_t& kv)
+            -> std::enable_if_t<std::is_same_v<key_vector_t, key_vector_small_t> || std::is_same_v<key_vector_t, key_vector_large_t>, void>
+            {
+                functions::key_scheduling::process_blocks_ecb<
+                    v128,
+                    load_v128,
+                    camellia_prewhite,
+                    camellia_f,
+                    camellia_fl,
+                    camellia_fl_inv,
+                    camellia_postwhite,
+                    swap_store_v128>(dst, src, length, kv);
+            }
+        }
+
+        using impl::key_vector_small_t;
+        using impl::key_vector_large_t;
+        using impl::key_vector_for_t;
+        static inline key_vector_small_t generate_key_vector_encrypt(const key_128bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
+        static inline key_vector_large_t generate_key_vector_encrypt(const key_192bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
+        static inline key_vector_large_t generate_key_vector_encrypt(const key_256bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
+        static inline key_vector_small_t generate_key_vector_decrypt(const key_128bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
+        static inline key_vector_large_t generate_key_vector_decrypt(const key_192bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
+        static inline key_vector_large_t generate_key_vector_decrypt(const key_256bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
+        static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_small_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
+        static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_large_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
     }
 }

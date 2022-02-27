@@ -35,18 +35,33 @@ namespace arkana::camellia
         virtual void process_blocks(void* dst, const void* src, size_t length) = 0;
     };
 
-    std::unique_ptr<ecb_context_t> create_ecb_context(const key_128bit_t* key, bool encrypt);
-    std::unique_ptr<ecb_context_t> create_ecb_context(const key_192bit_t* key, bool encrypt);
-    std::unique_ptr<ecb_context_t> create_ecb_context(const key_256bit_t* key, bool encrypt);
-    std::unique_ptr<ecb_context_t> create_ecb_context_ia32(const key_128bit_t* key, bool encrypt);
-    std::unique_ptr<ecb_context_t> create_ecb_context_ia32(const key_192bit_t* key, bool encrypt);
-    std::unique_ptr<ecb_context_t> create_ecb_context_ia32(const key_256bit_t* key, bool encrypt);
-    std::unique_ptr<ecb_context_t> create_ecb_context_avx2(const key_128bit_t* key, bool encrypt);
-    std::unique_ptr<ecb_context_t> create_ecb_context_avx2(const key_192bit_t* key, bool encrypt);
-    std::unique_ptr<ecb_context_t> create_ecb_context_avx2(const key_256bit_t* key, bool encrypt);
-    std::unique_ptr<ecb_context_t> create_ecb_context_avx2aesni(const key_128bit_t* key, bool encrypt);
-    std::unique_ptr<ecb_context_t> create_ecb_context_avx2aesni(const key_192bit_t* key, bool encrypt);
-    std::unique_ptr<ecb_context_t> create_ecb_context_avx2aesni(const key_256bit_t* key, bool encrypt);
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context(const key_128bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context(const key_192bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context(const key_256bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context(const key_128bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context(const key_192bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context(const key_256bit_t* key);
+
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context_ia32(const key_128bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context_ia32(const key_192bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context_ia32(const key_256bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context_ia32(const key_128bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context_ia32(const key_192bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context_ia32(const key_256bit_t* key);
+
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context_avx2(const key_128bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context_avx2(const key_192bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context_avx2(const key_256bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context_avx2(const key_128bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context_avx2(const key_192bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context_avx2(const key_256bit_t* key);
+
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context_avx2aesni(const key_128bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context_avx2aesni(const key_192bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_encrypt_context_avx2aesni(const key_256bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context_avx2aesni(const key_128bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context_avx2aesni(const key_192bit_t* key);
+    std::unique_ptr<ecb_context_t> create_ecb_decrypt_context_avx2aesni(const key_256bit_t* key);
 
     static_assert(std::is_pod_v<block_t> && sizeof(block_t) == sizeof(std::byte) * block_t{}.size());
 }
