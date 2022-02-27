@@ -74,21 +74,27 @@ namespace arkana::camellia
     std::unique_ptr<ctr_context_t> create_ctr_context(const key_128bit_t* key, const ctr_iv_t* iv, const ctr_nonce_t* nonce)
     {
         return (AVX2_SUPPORTED
-                    ? create_ctr_context_avx2(key, iv, nonce)
+                    ? (AESNI_SUPPORTED
+                           ? create_ctr_context_avx2aesni(key, iv, nonce)
+                           : create_ctr_context_avx2(key, iv, nonce))
                     : create_ctr_context_ia32(key, iv, nonce));
     }
 
     std::unique_ptr<ctr_context_t> create_ctr_context(const key_192bit_t* key, const ctr_iv_t* iv, const ctr_nonce_t* nonce)
     {
         return (AVX2_SUPPORTED
-            ? create_ctr_context_avx2(key, iv, nonce)
-            : create_ctr_context_ia32(key, iv, nonce));
+                    ? (AESNI_SUPPORTED
+                           ? create_ctr_context_avx2aesni(key, iv, nonce)
+                           : create_ctr_context_avx2(key, iv, nonce))
+                    : create_ctr_context_ia32(key, iv, nonce));
     }
 
     std::unique_ptr<ctr_context_t> create_ctr_context(const key_256bit_t* key, const ctr_iv_t* iv, const ctr_nonce_t* nonce)
     {
         return (AVX2_SUPPORTED
-            ? create_ctr_context_avx2(key, iv, nonce)
-            : create_ctr_context_ia32(key, iv, nonce));
+                    ? (AESNI_SUPPORTED
+                           ? create_ctr_context_avx2aesni(key, iv, nonce)
+                           : create_ctr_context_avx2(key, iv, nonce))
+                    : create_ctr_context_ia32(key, iv, nonce));
     }
 }

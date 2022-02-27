@@ -256,6 +256,10 @@ struct avx2aesni_ecb_contexts
     static auto camellia128_decrypt_context_t(const key_128bit_t* key) { return ecb_context(create_ecb_decrypt_context_avx2aesni(key)); }
     static auto camellia192_decrypt_context_t(const key_192bit_t* key) { return ecb_context(create_ecb_decrypt_context_avx2aesni(key)); }
     static auto camellia256_decrypt_context_t(const key_256bit_t* key) { return ecb_context(create_ecb_decrypt_context_avx2aesni(key)); }
+    static auto camellia128_ctr_context_t(const key_128bit_t* key, const ctr_iv_t* iv, const ctr_nonce_t* nonce) { return ctr_context(create_ctr_context_avx2aesni(key, iv, nonce)); }
+    static auto camellia192_ctr_context_t(const key_192bit_t* key, const ctr_iv_t* iv, const ctr_nonce_t* nonce) { return ctr_context(create_ctr_context_avx2aesni(key, iv, nonce)); }
+    static auto camellia256_ctr_context_t(const key_256bit_t* key, const ctr_iv_t* iv, const ctr_nonce_t* nonce) { return ctr_context(create_ctr_context_avx2aesni(key, iv, nonce)); }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(avx2aesni, CamelliaTest, avx2aesni_ecb_contexts);
+INSTANTIATE_TYPED_TEST_CASE_P(avx2aesni, CamelliaCtrTest, avx2_ecb_contexts);
