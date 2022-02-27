@@ -1,0 +1,206 @@
+﻿{
+    "version": 2,
+    "configurePresets": [
+        {
+            "hidden": true,
+            "name": "x-windows-generator-use-vs2019",
+            "generator": "Visual Studio 16 2019",
+            "cacheVariables": { "CMAKE_GENERATOR": "Visual Studio 16 2019" }
+        },
+        {
+            "hidden": true,
+            "name": "x-windows-generator-use-vs2022",
+            "generator": "Visual Studio 17 2022",
+            "cacheVariables": { "CMAKE_GENERATOR": "Visual Studio 17 2022" }
+        },
+        {
+            "hidden": true,
+            "name": "x-windows-vs-default",
+            "inherits": "x-windows-generator-use-vs2022",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": { "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}/install" },
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "hostOS": [ "Windows" ] } }
+        },
+        {
+            "hidden": true,
+            "name": "x-arch-x64",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_GENERATOR_PLATFORM": "x64"
+            }
+        },
+        {
+            "hidden": true,
+            "name": "x-arch-win32",
+            "architecture": {
+                "value": "Win32",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_GENERATOR_PLATFORM": "Win32"
+            }
+        },
+        {
+            "name": "windows-vs-msvc-x86",
+            "inherits": [ "x-windows-vs-default", "x-arch-win32" ],
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-msvc-x86" } }
+        },
+        {
+            "name": "windows-vs-msvc-x64",
+            "inherits": [ "x-windows-vs-default", "x-arch-x64" ],
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-msvc-x64" } }
+        },
+        {
+            "name": "windows-vs-clang-x86",
+            "toolset": { "value": "CLangCL" },
+            "inherits": [ "x-windows-vs-default", "x-arch-win32" ],
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-clang-x86" } }
+        },
+        {
+            "name": "windows-vs-clang-x64",
+            "toolset": { "value": "CLangCL" },
+            "inherits": [ "x-windows-vs-default", "x-arch-x64" ],
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-clang-x64" } }
+        },
+        {
+            "name": "windows-vs-icx-x86",
+            "toolset": { "value": "Intel C++ Compiler 2022" },
+            "inherits": [ "x-windows-vs-default", "x-arch-win32" ],
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-clang-x86" } }
+        },
+        {
+            "name": "windows-vs-icx-x64",
+            "toolset": { "value": "Intel C++ Compiler 2022" },
+            "inherits": [ "x-windows-vs-default", "x-arch-x64" ],
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-clang-x64" } }
+        },
+        {
+            "name": "windows-vs-msvc-x86-Debug",
+            "inherits": "windows-vs-msvc-x86",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "windows-vs-msvc-x86-Release",
+            "inherits": "windows-vs-msvc-x86",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+        },
+        {
+            "name": "windows-vs-msvc-x86-RelWithDebInfo",
+            "inherits": "windows-vs-msvc-x86",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+        },
+        {
+            "name": "windows-vs-msvc-x64-Debug",
+            "inherits": "windows-vs-msvc-x64",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "windows-vs-msvc-x64-Release",
+            "inherits": "windows-vs-msvc-x64",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+        },
+        {
+            "name": "windows-vs-msvc-x64-RelWithDebInfo",
+            "inherits": "windows-vs-msvc-x64",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+        },
+        {
+            "name": "windows-vs-clang-x86-Debug",
+            "inherits": "windows-vs-clang-x86",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "windows-vs-clang-x86-Release",
+            "inherits": "windows-vs-clang-x86",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+        },
+        {
+            "name": "windows-vs-clang-x86-RelWithDebInfo",
+            "inherits": "windows-vs-clang-x86",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+        },
+        {
+            "name": "windows-vs-clang-x64-Debug",
+            "inherits": "windows-vs-clang-x64",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "windows-vs-clang-x64-Release",
+            "inherits": "windows-vs-clang-x64",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+        },
+        {
+            "name": "windows-vs-clang-x64-RelWithDebInfo",
+            "inherits": "windows-vs-clang-x64",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+        },
+        {
+            "name": "windows-vs-icx-x86-Debug",
+            "inherits": "windows-vs-icx-x86",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "windows-vs-icx-x86-Release",
+            "inherits": "windows-vs-icx-x86",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+        },
+        {
+            "name": "windows-vs-icx-x86-RelWithDebInfo",
+            "inherits": "windows-vs-icx-x86",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+        },
+        {
+            "name": "windows-vs-icx-x64-Debug",
+            "inherits": "windows-vs-icx-x64",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "windows-vs-icx-x64-Release",
+            "inherits": "windows-vs-icx-x64",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+        },
+        {
+            "name": "windows-vs-icx-x64-RelWithDebInfo",
+            "inherits": "windows-vs-icx-x64",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+        },
+        {
+            "name": "linux-x64-default",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": { "CMAKE_INSTALL_PREFIX": "${sourceDir}/${presetName}/install" },
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": [ "Linux" ],
+                    "intelliSenseMode": "linux-gcc-x64"
+                },
+                "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+                    "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+                }
+            }
+        },
+        {
+            "name": "linux-x64-Debug",
+            "inherits": "linux-x64-default",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "linux-x64-Release",
+            "inherits": "linux-x64-default",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+        },
+        {
+            "name": "linux-x64-RelWithDebInfo",
+            "inherits": "linux-x64-default",
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+        }
+    ]
+}
