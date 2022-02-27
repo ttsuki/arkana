@@ -106,6 +106,14 @@ namespace arkana::camellia
                 };
             }
 
+            ARKXMM_API store_v128(v128* dst, const v128& reg)
+            {
+                xmm::store_u(&dst->l.l, reg.l.l);
+                xmm::store_u(&dst->l.r, reg.l.r);
+                xmm::store_u(&dst->r.l, reg.r.l);
+                xmm::store_u(&dst->r.r, reg.r.r);
+            }
+
             ARKXMM_API swap_xor128(v128& v, const v128& k) -> v128&
             {
                 v.r.l ^= k.l.l;
@@ -191,7 +199,7 @@ namespace arkana::camellia
                     camellia_postwhite,
                     load_v128,
                     swap_xor128,
-                    swap_store_v128>(dst, src, position, length, kv, ctr);
+                    store_v128>(dst, src, position, length, kv, ctr);
             }
         }
 

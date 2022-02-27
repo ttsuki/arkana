@@ -593,8 +593,8 @@ namespace arkana::camellia
                         b = process_block_inlined<block_t&, camellia_prewhite, camellia_f, camellia_fl, camellia_fl_inv, camellia_postwhite>(b, kv);
 
                         block_t d = load_block(src + i);
-                        b = xor_block(b, d);
-                        store_block(dst + i, b);
+                        d = xor_block(d, b);
+                        store_block(dst + i, d);
                     }
                 };
 
