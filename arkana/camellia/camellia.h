@@ -214,6 +214,57 @@ namespace arkana::camellia
             return recompose(v, l, r);
         }
 
+        template <class v128 = v128>
+        static ARKANA_FORCEINLINE constexpr auto xor_block(v128& v, const v128& k) noexcept -> v128&
+        {
+            auto& [l, r] = decompose(v); // copy
+            auto& [kl, kr] = decompose(k);
+            l ^= kl;
+            r ^= kr;
+            return recompose(v, l, r);
+        }
+
+        static constexpr auto generate_rfc5528_ctr_provider(const byte_array<8>& iv, const byte_array<4>& nonce)
+        {
+            struct ctr0_t
+            {
+                uint32_t n, ivl, ivr, ctr;
+            } ctr0{};
+            ctr0.n = load_u<uint32_t>(nonce.data() + 0);
+            ctr0.ivl = load_u<uint32_t>(iv.data() + 0);
+            ctr0.ivr = load_u<uint32_t>(iv.data() + 4);
+
+            return [ctr0](size_t index)
+            {
+                auto r = ctr0;
+                r.ctr = bits::byteswap(static_cast<uint32_t>(index + 1));
+                return load_u<v128>(&r);
+            };
+        }
+
+        using rfc5528_ctr_provider_t = decltype(generate_rfc5528_ctr_provider({}, {}));
+
+        template <class v128 = v128, class custom_ctr_provider_t>
+        static constexpr auto generate_custom_ctr_provider(custom_ctr_provider_t&& provider)
+        {
+            using custom_ctr_vector_t = std::invoke_result_t<custom_ctr_provider_t, size_t>;
+            static_assert(std::is_trivial_v<custom_ctr_vector_t>);
+            static_assert(sizeof(custom_ctr_vector_t) == 16);
+
+            return [provider = std::forward<custom_ctr_provider_t>(provider)](size_t index)
+            {
+                constexpr size_t vectors_per_block = sizeof(v128) / sizeof(custom_ctr_vector_t);
+
+                v128 v;
+                for (size_t i = 0; i < vectors_per_block; i++)
+                    arkana::store_u<custom_ctr_vector_t>(
+                        reinterpret_cast<custom_ctr_vector_t*>(&v) + i,
+                        provider(index * vectors_per_block + i));
+
+                return v;
+            };
+        }
+
         inline namespace key_scheduling
         {
             template <size_t key_length> using key_t = byte_array<key_length>;
@@ -267,7 +318,7 @@ namespace arkana::camellia
                 std::conditional_t<std::is_same_v<key_t, key_128bit_t>, key_vector_small_t<key64>, key_vector_large_t<key64>>>;
 
             template <size_t key_length, bool encrypting, auto camellia_f = camellia_f_table_lookup<v64, lookup_sbox32, lookup_sbox64, key64>>
-            static constexpr auto generate_key_vector(const key_t<key_length>& key, bool_constant_t<encrypting> = {}) noexcept
+            static constexpr auto generate_key_vector(const key_t<key_length>& key, bool_constant_t<encrypting>  = {}) noexcept
             -> key_vector_for_t<key_t<key_length>, key64>
             {
                 struct uint128_t
@@ -531,6 +582,92 @@ namespace arkana::camellia
                     memcpy(static_cast<std::byte*>(dst) + unit_count * sizeof(block_t), &buf, remain_bytes);
                 }
             }
+
+            template <
+                class block_t = v128,
+                auto camellia_prewhite = functions::camellia_prewhite<v128&, key64>,
+                auto camellia_f = functions::camellia_f_table_lookup<v64&, lookup_sbox32, lookup_sbox64, key64>,
+                auto camellia_fl = functions::camellia_fl<v64&, rotl_be1, key64>,
+                auto camellia_fl_inv = functions::camellia_fl_inv<v64&, rotl_be1, key64>,
+                auto camellia_postwhite = functions::camellia_postwhite<v128&, key64>,
+                auto load_block = load_u<v128>,
+                auto xor_block = xor_block<v128>,
+                auto store_block = store_u<v128>,
+                class key_vector_t,
+                class ctr_generator_t>
+            static void process_bytes_ctr(
+                void* dst,
+                const void* src,
+                size_t pos,
+                size_t length,
+                const key_vector_t& kv,
+                ctr_generator_t&& load_ctr)
+            {
+                static_assert(std::is_trivial_v<block_t>);
+                constexpr size_t block_size = sizeof(block_t);
+
+                auto f = [&load_ctr](block_t* dst, const block_t* src, size_t start, size_t count, const auto& kv)
+                {
+                    for (size_t i = 0; i < count; i++)
+                    {
+                        block_t b = load_ctr(start + i);
+                        b = process_block_inlined<block_t&, camellia_prewhite, camellia_f, camellia_fl, camellia_fl_inv, camellia_postwhite>(b, kv);
+
+                        block_t d = load_block(src + i);
+                        d = xor_block(d, b);
+                        store_block(dst + i, d);
+                    }
+                };
+
+                auto* src_ptr = static_cast<const byte_t*>(src);
+                auto* dst_ptr = static_cast<byte_t*>(dst);
+
+                size_t i = pos / block_size;
+
+                // Processes first partial block if exists
+                if (const size_t s = pos % block_size)
+                {
+                    block_t buf{};
+                    const size_t sz = std::min(s + length, block_size) - s;
+                    auto* buf_ptr = reinterpret_cast<byte_t*>(&buf) + s;
+
+                    memcpy(buf_ptr, src_ptr, sz);
+                    f(&buf, &buf, i, 1, kv);
+                    memcpy(dst_ptr, buf_ptr, sz);
+
+                    i += 1;
+                    src_ptr += sz;
+                    dst_ptr += sz;
+                    length -= sz;
+                }
+
+                // Processes blocks
+                if (const size_t unit_count = length / block_size)
+                {
+                    f(reinterpret_cast<block_t*>(dst_ptr), reinterpret_cast<const block_t*>(src_ptr), i, unit_count, kv);
+
+                    i += unit_count;
+                    src_ptr += unit_count * block_size;
+                    dst_ptr += unit_count * block_size;
+                    length -= unit_count * block_size;
+                }
+
+                // Processes last partial block if exists
+                if (const size_t remain_bytes = length)
+                {
+                    block_t buf{};
+                    auto* buf_ptr = reinterpret_cast<byte_t*>(&buf);
+
+                    memcpy(buf_ptr, src_ptr, remain_bytes);
+                    f(&buf, &buf, i, 1, kv);
+                    memcpy(dst_ptr, buf_ptr, remain_bytes);
+
+                    //i += 1;
+                    //src_ptr += remain_bytes;
+                    //dst_ptr += remain_bytes;
+                    //length -= remain_bytes;
+                }
+            }
         }
     }
 
@@ -566,6 +703,33 @@ namespace arkana::camellia
                     camellia_postwhite<v128&, key64>,
                     store_u<v128>>(dst, src, length, kv);
             }
+
+            using functions::rfc5528_ctr_provider_t;
+            using functions::generate_rfc5528_ctr_provider;
+
+            template <class custom_ctr_provider_t>
+            static constexpr auto generate_custom_ctr_provider(custom_ctr_provider_t&& provider)
+            {
+                return functions::generate_custom_ctr_provider<functions::v128>(std::forward<custom_ctr_provider_t>(provider));
+            }
+
+            template <class key_vector_t, class ctr_provider_t>
+            static inline auto process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, ctr_provider_t&& ctr)
+            -> std::enable_if_t<std::is_same_v<key_vector_t, key_vector_small_t> || std::is_same_v<key_vector_t, key_vector_large_t>, void>
+            {
+                using namespace functions;
+
+                key_scheduling::process_bytes_ctr<
+                    v128,
+                    camellia_prewhite<v128&, key64>,
+                    camellia_f_table_lookup<v64&, lookup_sbox32, lookup_sbox64, key64>,
+                    camellia_fl<v64&, rotl_be1, key64>,
+                    camellia_fl_inv<v64&, rotl_be1, key64>,
+                    camellia_postwhite<v128&, key64>,
+                    load_u<v128>,
+                    xor_block<v128>,
+                    store_u<v128>>(dst, src, position, length, kv, ctr);
+            }
         }
 
         using impl::key_vector_small_t;
@@ -579,5 +743,10 @@ namespace arkana::camellia
         static inline key_vector_large_t generate_key_vector_decrypt(const key_256bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
         static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_small_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
         static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_large_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
+
+        using impl::rfc5528_ctr_provider_t;
+        static inline rfc5528_ctr_provider_t generate_ctr_provider(const byte_array<8>& iv, const byte_array<4>& nonce) { return impl::generate_rfc5528_ctr_provider(iv, nonce); }
+        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_small_t& kv, const rfc5528_ctr_provider_t& ctr) { return impl::process_bytes_ctr(dst, src, position, length, kv, std::forward<decltype(ctr)>(ctr)); }
+        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_large_t& kv, const rfc5528_ctr_provider_t& ctr) { return impl::process_bytes_ctr(dst, src, position, length, kv, std::forward<decltype(ctr)>(ctr)); }
     }
 }
