@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bits.h" />
+    <ClInclude Include="bits\base64-decoder.h" />
     <ClInclude Include="bits\bit-manip.h" />
     <ClInclude Include="bits\cpuid.h" />
     <ClInclude Include="bits\hex-int-literals.h" />

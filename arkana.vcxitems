@@ -14,6 +14,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\base64-decoder.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\bit-manip.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\cpuid.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\hex-int-literals.h" />

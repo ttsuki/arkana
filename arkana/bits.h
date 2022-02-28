@@ -15,6 +15,7 @@
 #include "./bits/cpuid.h"
 #include "./bits/hex-int-literals.h"
 #include "./bits/uint128.h"
+#include "./bits/base64-decoder.h"
 
 #ifdef __AVX2__
 #include "./bits/xmm.h"
