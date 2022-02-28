@@ -501,6 +501,12 @@ namespace arkana::camellia
             }
 
             using rfc5528_ctr_provider_t = decltype(generate_rfc5528_ctr_provider({}, {}));
+
+            template <class custom_ctr_provider_t>
+            static constexpr auto generate_custom_ctr_provider(custom_ctr_provider_t&& provider)
+            {
+                return functions::generate_custom_ctr_provider<v128>(std::forward<custom_ctr_provider_t>(provider));
+            }
         }
 
         using ref::key_vector_small_t;
@@ -530,6 +536,7 @@ namespace arkana::camellia
 
             using impl::rfc5528_ctr_provider_t;
             using impl::generate_rfc5528_ctr_provider;
+            using impl::generate_custom_ctr_provider;
 
             template <class key_vector_t, class ctr_provider_t>
             static inline auto process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, ctr_provider_t&& ctr)

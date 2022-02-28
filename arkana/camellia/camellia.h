@@ -244,6 +244,27 @@ namespace arkana::camellia
 
         using rfc5528_ctr_provider_t = decltype(generate_rfc5528_ctr_provider({}, {}));
 
+        template <class v128 = v128, class custom_ctr_provider_t>
+        static constexpr auto generate_custom_ctr_provider(custom_ctr_provider_t&& provider)
+        {
+            using custom_ctr_vector_t = std::invoke_result_t<custom_ctr_provider_t, size_t>;
+            static_assert(std::is_trivial_v<custom_ctr_vector_t>);
+            static_assert(sizeof(custom_ctr_vector_t) == 16);
+
+            return [provider = std::forward<custom_ctr_provider_t>(provider)](size_t index)
+            {
+                constexpr size_t vectors_per_block = sizeof(v128) / sizeof(custom_ctr_vector_t);
+
+                v128 v;
+                for (size_t i = 0; i < vectors_per_block; i++)
+                    arkana::store_u<custom_ctr_vector_t>(
+                        reinterpret_cast<custom_ctr_vector_t*>(&v) + i,
+                        provider(index * vectors_per_block + i));
+
+                return v;
+            };
+        }
+
         inline namespace key_scheduling
         {
             template <size_t key_length> using key_t = byte_array<key_length>;
@@ -297,7 +318,7 @@ namespace arkana::camellia
                 std::conditional_t<std::is_same_v<key_t, key_128bit_t>, key_vector_small_t<key64>, key_vector_large_t<key64>>>;
 
             template <size_t key_length, bool encrypting, auto camellia_f = camellia_f_table_lookup<v64, lookup_sbox32, lookup_sbox64, key64>>
-            static constexpr auto generate_key_vector(const key_t<key_length>& key, bool_constant_t<encrypting> = {}) noexcept
+            static constexpr auto generate_key_vector(const key_t<key_length>& key, bool_constant_t<encrypting>  = {}) noexcept
             -> key_vector_for_t<key_t<key_length>, key64>
             {
                 struct uint128_t
@@ -685,6 +706,12 @@ namespace arkana::camellia
 
             using functions::rfc5528_ctr_provider_t;
             using functions::generate_rfc5528_ctr_provider;
+
+            template <class custom_ctr_provider_t>
+            static constexpr auto generate_custom_ctr_provider(custom_ctr_provider_t&& provider)
+            {
+                return functions::generate_custom_ctr_provider<functions::v128>(std::forward<custom_ctr_provider_t>(provider));
+            }
 
             template <class key_vector_t, class ctr_provider_t>
             static inline auto process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, ctr_provider_t&& ctr)
