@@ -87,6 +87,16 @@ namespace arkana::camellia
                 return block;
             }
 
+            ARKXMM_API camellia_prewhite_transposed(v128& block, const key64& kl, const key64& kr) -> v128&
+            {
+                const vu32x8 kx = reinterpret<vu32x8>(u64x4(kl, kr));
+                block.l.l ^= shuffle<0b00000000>(kx);
+                block.l.r ^= shuffle<0b01010101>(kx);
+                block.r.l ^= shuffle<0b10101010>(kx);
+                block.r.r ^= shuffle<0b11111111>(kx);
+                return block;
+            }
+
             ARKXMM_API camellia_postwhite(v128& block, const uint64_t& kl, const key64& kr) -> v128&
             {
                 const vu32x8 kx = reinterpret<vu32x8>(u64x4(kl, kr));
@@ -143,7 +153,7 @@ namespace arkana::camellia
 
                 return [ctr0](size_t index)
                 {
-                    v128 block{
+                    return v128{
                         {
                             u32x8(ctr0.n),
                             u32x8(ctr0.ivl)
@@ -153,8 +163,6 @@ namespace arkana::camellia
                             byteswap(u32x8(static_cast<uint32_t>(index * 8)) + u32x8(1, 3, 5, 7, 2, 4, 6, 8))
                         }
                     };
-                    transpose_32x4x4(block.l.l, block.l.r, block.r.l, block.r.r);
-                    return block;
                 };
             }
 
@@ -163,7 +171,12 @@ namespace arkana::camellia
             template <class custom_ctr_provider_t>
             static constexpr auto generate_custom_ctr_provider(custom_ctr_provider_t&& provider)
             {
-                return functions::generate_custom_ctr_provider<v128>(std::forward<custom_ctr_provider_t>(provider));
+                return [provider = functions::generate_custom_ctr_provider<v128>(std::forward<custom_ctr_provider_t>(provider))](size_t index)
+                {
+                    v128 block = provider(index);
+                    transpose_32x4x4(block.l.l, block.l.r, block.r.l, block.r.r);
+                    return block;
+                };
             }
         }
 
@@ -199,7 +212,7 @@ namespace arkana::camellia
             {
                 functions::key_scheduling::process_bytes_ctr<
                     v128,
-                    camellia_prewhite,
+                    camellia_prewhite_transposed,
                     functions::camellia_f_table_lookup_32<v64&, lookup_sbox32>,
                     functions::camellia_fl<v64&, rotl_be1>,
                     functions::camellia_fl_inv<v64&, rotl_be1>,
