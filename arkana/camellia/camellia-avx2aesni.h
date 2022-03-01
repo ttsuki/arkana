@@ -367,6 +367,30 @@ namespace arkana::camellia
                 return block;
             }
 
+            ARKXMM_API camellia_prewhite_transposed(v128& block, const key64& kl, const key64& kr) -> v128&
+            {
+                const vi8x32 ze = zero<vi8x32>();
+                const vu64x4 klx = u64x4(kl);
+                const vu64x4 krx = u64x4(kr);
+                block.l.l.x0 ^= reinterpret<vu8x32>(byte_shuffle_128(klx >> 0 * 8, ze));
+                block.l.l.x1 ^= reinterpret<vu8x32>(byte_shuffle_128(klx >> 1 * 8, ze));
+                block.l.l.x2 ^= reinterpret<vu8x32>(byte_shuffle_128(klx >> 2 * 8, ze));
+                block.l.l.x3 ^= reinterpret<vu8x32>(byte_shuffle_128(klx >> 3 * 8, ze));
+                block.l.r.x0 ^= reinterpret<vu8x32>(byte_shuffle_128(klx >> 4 * 8, ze));
+                block.l.r.x1 ^= reinterpret<vu8x32>(byte_shuffle_128(klx >> 5 * 8, ze));
+                block.l.r.x2 ^= reinterpret<vu8x32>(byte_shuffle_128(klx >> 6 * 8, ze));
+                block.l.r.x3 ^= reinterpret<vu8x32>(byte_shuffle_128(klx >> 7 * 8, ze));
+                block.r.l.x0 ^= reinterpret<vu8x32>(byte_shuffle_128(krx >> 0 * 8, ze));
+                block.r.l.x1 ^= reinterpret<vu8x32>(byte_shuffle_128(krx >> 1 * 8, ze));
+                block.r.l.x2 ^= reinterpret<vu8x32>(byte_shuffle_128(krx >> 2 * 8, ze));
+                block.r.l.x3 ^= reinterpret<vu8x32>(byte_shuffle_128(krx >> 3 * 8, ze));
+                block.r.r.x0 ^= reinterpret<vu8x32>(byte_shuffle_128(krx >> 4 * 8, ze));
+                block.r.r.x1 ^= reinterpret<vu8x32>(byte_shuffle_128(krx >> 5 * 8, ze));
+                block.r.r.x2 ^= reinterpret<vu8x32>(byte_shuffle_128(krx >> 6 * 8, ze));
+                block.r.r.x3 ^= reinterpret<vu8x32>(byte_shuffle_128(krx >> 7 * 8, ze));
+                return block;
+            }
+
             ARKXMM_API camellia_postwhite(v128& block, const key64& kl, const key64& kr) -> v128&
             {
                 const vu8x32 kx = reinterpret<vu8x32>(u64x4(kl, kr));
@@ -480,23 +504,43 @@ namespace arkana::camellia
 
                 return [ctr0](size_t index)
                 {
-                    auto k = u32x8(static_cast<uint32_t>(index * 32)) + u32x8(1, 3, 5, 7, 2, 4, 6, 8);
+                    v128 block;
 
-                    auto i0 = reinterpret<vu8x32>(u32x8(ctr0.n));
-                    auto i1 = reinterpret<vu8x32>(u32x8(ctr0.ivl));
-                    auto i2 = reinterpret<vu8x32>(u32x8(ctr0.ivr));
+                    auto ze = zero<vi8x32>();
+                    auto n = u32x8(ctr0.n);
+                    auto ivl = u32x8(ctr0.ivl);
+                    auto ivr = u32x8(ctr0.ivr);
+                    auto ctr = u32x8(static_cast<uint32_t>(index * 32));
+                    block.l.l.x0 = reinterpret<vu8x32>(byte_shuffle_128(n >> 0 * 8, ze));
+                    block.l.l.x1 = reinterpret<vu8x32>(byte_shuffle_128(n >> 1 * 8, ze));
+                    block.l.l.x2 = reinterpret<vu8x32>(byte_shuffle_128(n >> 2 * 8, ze));
+                    block.l.l.x3 = reinterpret<vu8x32>(byte_shuffle_128(n >> 3 * 8, ze));
+                    block.l.r.x0 = reinterpret<vu8x32>(byte_shuffle_128(ivl >> 0 * 8, ze));
+                    block.l.r.x1 = reinterpret<vu8x32>(byte_shuffle_128(ivl >> 1 * 8, ze));
+                    block.l.r.x2 = reinterpret<vu8x32>(byte_shuffle_128(ivl >> 2 * 8, ze));
+                    block.l.r.x3 = reinterpret<vu8x32>(byte_shuffle_128(ivl >> 3 * 8, ze));
+                    block.r.l.x0 = reinterpret<vu8x32>(byte_shuffle_128(ivr >> 0 * 8, ze));
+                    block.r.l.x1 = reinterpret<vu8x32>(byte_shuffle_128(ivr >> 1 * 8, ze));
+                    block.r.l.x2 = reinterpret<vu8x32>(byte_shuffle_128(ivr >> 2 * 8, ze));
+                    block.r.l.x3 = reinterpret<vu8x32>(byte_shuffle_128(ivr >> 3 * 8, ze));
+                    block.r.r.x3 = reinterpret<vu8x32>(byte_shuffle_128(ctr >> 0 * 8, ze));
+                    block.r.r.x2 = reinterpret<vu8x32>(byte_shuffle_128(ctr >> 1 * 8, ze));
+                    block.r.r.x1 = reinterpret<vu8x32>(byte_shuffle_128(ctr >> 2 * 8, ze));
+                    block.r.r.x0 = reinterpret<vu8x32>(byte_shuffle_128(ctr >> 3 * 8, ze));
 
-                    v128 v;
-                    v.l.l = {i0, i1, i2, reinterpret<vu8x32>(byteswap(k))};
-                    v.l.r = {i0, i1, i2, reinterpret<vu8x32>(byteswap(k += u32x8(8)))};
-                    v.r.l = {i0, i1, i2, reinterpret<vu8x32>(byteswap(k += u32x8(8)))};
-                    v.r.r = {i0, i1, i2, reinterpret<vu8x32>(byteswap(k += u32x8(8)))};
-                    transpose_32x4x4(v.l.l.x0, v.l.l.x1, v.l.l.x2, v.l.l.x3);
-                    transpose_32x4x4(v.l.r.x0, v.l.r.x1, v.l.r.x2, v.l.r.x3);
-                    transpose_32x4x4(v.r.l.x0, v.r.l.x1, v.r.l.x2, v.r.l.x3);
-                    transpose_32x4x4(v.r.l.x0, v.r.l.x1, v.r.l.x2, v.r.l.x3);
+                    block.r.r.x3 += u8x32(
+                        1, 9, 17, 25, 3, 11, 19, 27,
+                        5, 13, 21, 29, 7, 15, 23, 31,
+                        2, 10, 18, 26, 4, 12, 20, 28,
+                        6, 14, 22, 30, 8, 16, 24, 32);
+                    vu8x32 cf = reinterpret<vu8x32>(abs(reinterpret<vi8x32>(block.r.r.x3) == ze));
+                    block.r.r.x2 += cf;
+                    cf &= reinterpret<vu8x32>(abs(reinterpret<vi8x32>(block.r.r.x2) == ze));
+                    block.r.r.x1 += cf;
+                    cf &= reinterpret<vu8x32>(abs(reinterpret<vi8x32>(block.r.r.x1) == ze));
+                    block.r.r.x0 += cf;
 
-                    return v;
+                    return block;
                 };
             }
 
@@ -505,7 +549,16 @@ namespace arkana::camellia
             template <class custom_ctr_provider_t>
             static constexpr auto generate_custom_ctr_provider(custom_ctr_provider_t&& provider)
             {
-                return functions::generate_custom_ctr_provider<v128>(std::forward<custom_ctr_provider_t>(provider));
+                return [provider = functions::generate_custom_ctr_provider<v128>(std::forward<custom_ctr_provider_t>(provider))](size_t index)
+                {
+                    v128 block = provider(index);
+                    byte_slice_16x16(
+                        block.l.l.x0, block.l.l.x1, block.l.l.x2, block.l.l.x3,
+                        block.l.r.x0, block.l.r.x1, block.l.r.x2, block.l.r.x3,
+                        block.r.l.x0, block.r.l.x1, block.r.l.x2, block.r.l.x3,
+                        block.r.r.x0, block.r.r.x1, block.r.r.x2, block.r.r.x3);
+                    return block;
+                };
             }
         }
 
@@ -544,7 +597,7 @@ namespace arkana::camellia
             {
                 functions::key_scheduling::process_bytes_ctr<
                     v128,
-                    camellia_prewhite,
+                    camellia_prewhite_transposed,
                     camellia_f,
                     camellia_fl,
                     camellia_fl_inv,
