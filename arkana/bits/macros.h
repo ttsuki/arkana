@@ -1,4 +1,4 @@
-﻿/// @file
+/// @file
 /// @brief	arkana::config
 /// @author Copyright(c) 2021 ttsuki
 /// 

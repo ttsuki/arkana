@@ -1,4 +1,4 @@
-﻿/// @file
+/// @file
 /// @brief	arkana::bits - memcpy
 /// @author Copyright(c) 2021 ttsuki
 /// 

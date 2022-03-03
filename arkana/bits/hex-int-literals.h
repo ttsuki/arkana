@@ -1,4 +1,4 @@
-﻿/// @file
+/// @file
 /// @brief	arkana::hex_int_literals
 ///         - a hexadecimal integer literal parser
 /// @author Copyright(c) 2021 ttsuki

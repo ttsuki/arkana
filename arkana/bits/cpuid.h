@@ -1,4 +1,4 @@
-﻿/// @file
+/// @file
 /// @brief	arkana::cpuid
 ///         - Cpu feature flags
 /// @author Copyright(c) 2021 ttsuki

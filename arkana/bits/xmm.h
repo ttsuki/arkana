@@ -1,4 +1,4 @@
-﻿/// @file
+/// @file
 /// @brief	arkana::xmm - x86 SIMD Operation wrappers
 /// @author Copyright(c) 2021 ttsuki
 /// 
