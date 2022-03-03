@@ -7,3 +7,8 @@ end_of_line = lf
 insert_final_newline = true
 indent_style = space
 indent_size = 4
+
+[{*.sln,*.vcxitem,*.vcxproj,*.props,packages.config}]
+charset = utf-8-bom
+end_of_line = crlf
+insert_final_newline = false
