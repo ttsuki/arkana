@@ -49,22 +49,22 @@ namespace arkana::crc32
                     s.l.l ^= v;
 
                     v =
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 0>.data(), extract_byte<3>(s.r.r)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 1>.data(), extract_byte<2>(s.r.r)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 2>.data(), extract_byte<1>(s.r.r)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 3>.data(), extract_byte<0>(s.r.r)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 4>.data(), extract_byte<3>(s.r.l)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 5>.data(), extract_byte<2>(s.r.l)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 6>.data(), extract_byte<1>(s.r.l)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 7>.data(), extract_byte<0>(s.r.l)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 8>.data(), extract_byte<3>(s.l.r)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 9>.data(), extract_byte<2>(s.l.r)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 10>.data(), extract_byte<1>(s.l.r)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 11>.data(), extract_byte<0>(s.l.r)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 12>.data(), extract_byte<3>(s.l.l)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 13>.data(), extract_byte<2>(s.l.l)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 14>.data(), extract_byte<1>(s.l.l)) ^
-                        gather<vu32x8>(crc32_table_n<polynomial, 112 + 15>.data(), extract_byte<0>(s.l.l));
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 0>.data(), extract_byte<3>(s.r.r)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 1>.data(), extract_byte<2>(s.r.r)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 2>.data(), extract_byte<1>(s.r.r)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 3>.data(), extract_byte<0>(s.r.r)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 4>.data(), extract_byte<3>(s.r.l)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 5>.data(), extract_byte<2>(s.r.l)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 6>.data(), extract_byte<1>(s.r.l)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 7>.data(), extract_byte<0>(s.r.l)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 8>.data(), extract_byte<3>(s.l.r)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 9>.data(), extract_byte<2>(s.l.r)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 10>.data(), extract_byte<1>(s.l.r)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 11>.data(), extract_byte<0>(s.l.r)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 12>.data(), extract_byte<3>(s.l.l)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 13>.data(), extract_byte<2>(s.l.l)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 14>.data(), extract_byte<1>(s.l.l)) ^
+                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 15>.data(), extract_byte<0>(s.l.l));
 
                     --blockCount;
                 }

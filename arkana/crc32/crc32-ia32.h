@@ -40,22 +40,22 @@ namespace arkana::crc32
 
                     s[0] ^= crc;
                     p += sizeof(s);
-                    crc = crc32_table_n<polynomial, 4 * 0 + 0>[static_cast<uint8_t>(s[3] >> 24)]
-                        ^ crc32_table_n<polynomial, 4 * 0 + 1>[static_cast<uint8_t>(s[3] >> 16)]
-                        ^ crc32_table_n<polynomial, 4 * 0 + 2>[static_cast<uint8_t>(s[3] >> 8)]
-                        ^ crc32_table_n<polynomial, 4 * 0 + 3>[static_cast<uint8_t>(s[3] >> 0)]
-                        ^ crc32_table_n<polynomial, 4 * 1 + 0>[static_cast<uint8_t>(s[2] >> 24)]
-                        ^ crc32_table_n<polynomial, 4 * 1 + 1>[static_cast<uint8_t>(s[2] >> 16)]
-                        ^ crc32_table_n<polynomial, 4 * 1 + 2>[static_cast<uint8_t>(s[2] >> 8)]
-                        ^ crc32_table_n<polynomial, 4 * 1 + 3>[static_cast<uint8_t>(s[2] >> 0)]
-                        ^ crc32_table_n<polynomial, 4 * 2 + 0>[static_cast<uint8_t>(s[1] >> 24)]
-                        ^ crc32_table_n<polynomial, 4 * 2 + 1>[static_cast<uint8_t>(s[1] >> 16)]
-                        ^ crc32_table_n<polynomial, 4 * 2 + 2>[static_cast<uint8_t>(s[1] >> 8)]
-                        ^ crc32_table_n<polynomial, 4 * 2 + 3>[static_cast<uint8_t>(s[1] >> 0)]
-                        ^ crc32_table_n<polynomial, 4 * 3 + 0>[static_cast<uint8_t>(s[0] >> 24)]
-                        ^ crc32_table_n<polynomial, 4 * 3 + 1>[static_cast<uint8_t>(s[0] >> 16)]
-                        ^ crc32_table_n<polynomial, 4 * 3 + 2>[static_cast<uint8_t>(s[0] >> 8)]
-                        ^ crc32_table_n<polynomial, 4 * 3 + 3>[static_cast<uint8_t>(s[0] >> 0)];
+                    crc = tables::crc32_table_n<polynomial, 4 * 0 + 0>[static_cast<uint8_t>(s[3] >> 24)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 0 + 1>[static_cast<uint8_t>(s[3] >> 16)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 0 + 2>[static_cast<uint8_t>(s[3] >> 8)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 0 + 3>[static_cast<uint8_t>(s[3] >> 0)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 1 + 0>[static_cast<uint8_t>(s[2] >> 24)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 1 + 1>[static_cast<uint8_t>(s[2] >> 16)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 1 + 2>[static_cast<uint8_t>(s[2] >> 8)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 1 + 3>[static_cast<uint8_t>(s[2] >> 0)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 2 + 0>[static_cast<uint8_t>(s[1] >> 24)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 2 + 1>[static_cast<uint8_t>(s[1] >> 16)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 2 + 2>[static_cast<uint8_t>(s[1] >> 8)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 2 + 3>[static_cast<uint8_t>(s[1] >> 0)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 3 + 0>[static_cast<uint8_t>(s[0] >> 24)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 3 + 1>[static_cast<uint8_t>(s[0] >> 16)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 3 + 2>[static_cast<uint8_t>(s[0] >> 8)]
+                        ^ tables::crc32_table_n<polynomial, 4 * 3 + 3>[static_cast<uint8_t>(s[0] >> 0)];
                 }
                 length -= 64;
             }
