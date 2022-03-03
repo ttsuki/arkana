@@ -20,6 +20,7 @@ C++17 x86/AVX2 accelerated fs-infra library.
 
 ### [arkana::sha2](arkana/sha2.h) - SHA2 (224,256,384,512) (NIST FIPS PUB 180-4)
   - [sha2.h](arkana/sha2/sha2.h): Reference implementation
+  - [sha2-avx2.h](arkana/sha2/sha2-avx2.h): AVX2 accelerated implementation (based on ["Fast SHA-256 Implementations on Intel® Architecture Processors" -- J. Guilford, K. Yap, V. Gopal, 2012](https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/sha-256-implementations-paper.pdf))
 
 ### [arkana::bits](arkana/bits.h) - helper library
   - [bit-manip.h](arkana/bits/bit-manip.h): Bit-manipulation helper (rotl, rotr, byteswap)
