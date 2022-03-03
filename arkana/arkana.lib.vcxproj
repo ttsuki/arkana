@@ -73,7 +73,6 @@
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <ClCompile Include="crc32\crc32-ia32.cpp" />
-    <ClCompile Include="crc32\crc32-ref.cpp" />
     <ClCompile Include="crc32\crc32.cpp" />
     <ClCompile Include="sha2\sha2-avx2.cpp">
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
