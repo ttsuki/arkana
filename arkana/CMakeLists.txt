@@ -35,10 +35,12 @@ if ( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC"
     set_source_files_properties(camellia/camellia-avx2aesni.cpp  PROPERTIES COMPILE_FLAGS "/arch:AVX2")
     set_source_files_properties(crc32/crc32-avx2.cpp             PROPERTIES COMPILE_FLAGS "/arch:AVX2")
     set_source_files_properties(crc32/crc32-avx2clmul.cpp        PROPERTIES COMPILE_FLAGS "/arch:AVX2")
+    set_source_files_properties(sha2/sha2-avx2.cpp               PROPERTIES COMPILE_FLAGS "/arch:AVX2")
 else ()
     set_source_files_properties(camellia/camellia-avx2.cpp       PROPERTIES COMPILE_FLAGS "-mavx2")
     set_source_files_properties(camellia/camellia-avx2aesni.cpp  PROPERTIES COMPILE_FLAGS "-mavx2 -maes")
     set_source_files_properties(crc32/crc32-avx2.cpp             PROPERTIES COMPILE_FLAGS "-mavx2")
     set_source_files_properties(crc32/crc32-avx2clmul.cpp        PROPERTIES COMPILE_FLAGS "-mavx2 -mpclmul")
+    set_source_files_properties(sha2/sha2-avx2.cpp               PROPERTIES COMPILE_FLAGS "-mavx2")
 endif ()
 

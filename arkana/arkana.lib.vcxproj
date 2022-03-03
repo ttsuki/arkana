@@ -41,6 +41,7 @@
     <ClInclude Include="crc32\crc32-ia32.h" />
     <ClInclude Include="crc32\crc32.h" />
     <ClInclude Include="sha2.h" />
+    <ClInclude Include="sha2\sha2-avx2.h" />
     <ClInclude Include="sha2\sha2.h" />
   </ItemGroup>
   <ItemGroup>
@@ -74,6 +75,12 @@
     <ClCompile Include="crc32\crc32-ia32.cpp" />
     <ClCompile Include="crc32\crc32-ref.cpp" />
     <ClCompile Include="crc32\crc32.cpp" />
+    <ClCompile Include="sha2\sha2-avx2.cpp">
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
     <ClCompile Include="sha2\sha2.cpp" />
   </ItemGroup>
   <ItemGroup>
