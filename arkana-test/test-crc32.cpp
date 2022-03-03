@@ -5,15 +5,34 @@
 
 using namespace arkana::crc32;
 
-template <auto context_factory = create_crc32_context>
-crc32_value_t calculate_crc32(const void *data, size_t length)
+template <class context_t>
+crc32_value_t calculate_crc32(context_t ctx, const void* data, size_t length)
 {
-    auto ctx = context_factory(0);
     ctx->update(data, length);
     return ctx->current();
 }
 
-TEST(CRC32, zero)
+struct Crc32TestBase : testing::Test
+{
+#ifndef NDEBUG
+    static inline const auto& data = static_random_bytes_1m;
+#else
+    static inline const auto& data = static_random_bytes_256m;
+#endif
+
+    static inline const crc32_value_t expected_a = calculate_crc32(create_crc32_context_ref(), data.data() + 0, data.size() - 0);
+    static inline const crc32_value_t expected_u = calculate_crc32(create_crc32_context_ref(), data.data() + 1, data.size() - 2);
+};
+
+
+template <typename T>
+struct Crc32Test : Crc32TestBase
+{
+};
+
+TYPED_TEST_CASE_P(Crc32Test);
+
+TYPED_TEST_P(Crc32Test, ZeroVector)
 {
     constexpr std::array<std::byte, 257> zero_data{};
     constexpr std::array<crc32_value_t, 256> expect_zero
@@ -54,57 +73,49 @@ TEST(CRC32, zero)
 
     for (size_t i = 0; i < 256; i++)
     {
-        EXPECT_EQ(calculate_crc32<create_crc32_context_ref>(zero_data.data(), i), expect_zero[i]);
-        EXPECT_EQ(calculate_crc32<create_crc32_context_ia32>(zero_data.data(), i), expect_zero[i]);
-        EXPECT_EQ(calculate_crc32<create_crc32_context_avx2>(zero_data.data(), i), expect_zero[i]);
-        EXPECT_EQ(calculate_crc32<create_crc32_context_avx2clmul>(zero_data.data(), i), expect_zero[i]);
+        // aligned
+        EXPECT_EQ(calculate_crc32(TypeParam::create_context(), zero_data.data(), i), expect_zero[i]);
     }
 
     for (size_t i = 0; i < 256; i++)
     {
         // unaligned
-        EXPECT_EQ(calculate_crc32<create_crc32_context_ref>(zero_data.data() + 1, i), expect_zero[i]);
-        EXPECT_EQ(calculate_crc32<create_crc32_context_ia32>(zero_data.data() + 1, i), expect_zero[i]);
-        EXPECT_EQ(calculate_crc32<create_crc32_context_avx2>(zero_data.data() + 1, i), expect_zero[i]);
-        EXPECT_EQ(calculate_crc32<create_crc32_context_avx2clmul>(zero_data.data() + 1, i), expect_zero[i]);
+        EXPECT_EQ(calculate_crc32(TypeParam::create_context(), zero_data.data() + 1, i), expect_zero[i]);
     }
 }
 
-
-TEST(CRC32, tests)
+TYPED_TEST_P(Crc32Test, MatchWithRefImpl)
 {
-    crc32_value_t expect = calculate_crc32<create_crc32_context_ref>(static_random_bytes_1m.data(), static_random_bytes_1m.size());
-    EXPECT_EQ(expect, calculate_crc32<create_crc32_context_ia32>(static_random_bytes_1m.data(), static_random_bytes_1m.size()));
-    EXPECT_EQ(expect, calculate_crc32<create_crc32_context_avx2>(static_random_bytes_1m.data(), static_random_bytes_1m.size()));
-    EXPECT_EQ(expect, calculate_crc32<create_crc32_context_avx2clmul>(static_random_bytes_1m.data(), static_random_bytes_1m.size()));
+    EXPECT_EQ(calculate_crc32(TypeParam::create_context(), TestFixture::data.data() + 0, TestFixture::data.size() - 0), TestFixture::expected_a);
+    EXPECT_EQ(calculate_crc32(TypeParam::create_context(), TestFixture::data.data() + 1, TestFixture::data.size() - 2), TestFixture::expected_u);
 }
 
-#ifdef NDEBUG
+REGISTER_TYPED_TEST_CASE_P(Crc32Test, ZeroVector, MatchWithRefImpl);
 
-static crc32_value_t expect_a = calculate_crc32<create_crc32_context_ref>(static_random_bytes_256m.data(), static_random_bytes_256m.size());
-static crc32_value_t expect_u = calculate_crc32<create_crc32_context_ref>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2);
-
-TEST(CRC32, bench_ref)
+struct ref_impl
 {
-    EXPECT_EQ(expect_a, calculate_crc32<create_crc32_context_ref>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
-    EXPECT_EQ(expect_u, calculate_crc32<create_crc32_context_ref>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
-}
+    static auto create_context() { return create_crc32_context_ref(); }
+};
 
-TEST(CRC32, bench_ia32)
-{
-    EXPECT_EQ(expect_a, calculate_crc32<create_crc32_context_ia32>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
-    EXPECT_EQ(expect_u, calculate_crc32<create_crc32_context_ia32>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
-}
+INSTANTIATE_TYPED_TEST_CASE_P(ref, Crc32Test, ref_impl);
 
-TEST(CRC32, bench_avx2)
+struct ia32_impl
 {
-    EXPECT_EQ(expect_a, calculate_crc32<create_crc32_context_avx2>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
-    EXPECT_EQ(expect_u, calculate_crc32<create_crc32_context_avx2>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
-}
+    static auto create_context() { return create_crc32_context_ia32(); }
+};
 
-TEST(CRC32, bench_avx2clmul)
+INSTANTIATE_TYPED_TEST_CASE_P(ia32, Crc32Test, ia32_impl);
+
+struct avx2_impl
 {
-    EXPECT_EQ(expect_a, calculate_crc32<create_crc32_context_avx2clmul>(static_random_bytes_256m.data(), static_random_bytes_256m.size()));
-    EXPECT_EQ(expect_u, calculate_crc32<create_crc32_context_avx2clmul>(static_random_bytes_256m.data() + 1, static_random_bytes_256m.size() - 2));
-}
-#endif
+    static auto create_context() { return create_crc32_context_avx2(); }
+};
+
+INSTANTIATE_TYPED_TEST_CASE_P(avx2, Crc32Test, avx2_impl);
+
+struct avx2clmul_impl
+{
+    static auto create_context() { return create_crc32_context_avx2clmul(); }
+};
+
+INSTANTIATE_TYPED_TEST_CASE_P(avx2clmul, Crc32Test, avx2clmul_impl);
