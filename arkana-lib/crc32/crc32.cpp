@@ -8,7 +8,7 @@
 
 #include "../crc32.h"
 
-#include "../bits/cpuid.h"
+#include <arkana/bits/cpuid.h>
 
 namespace arkana::crc32
 {
@@ -24,7 +24,7 @@ namespace arkana::crc32
     }
 }
 
-#include "./crc32.h"
+#include <arkana/crc32/crc32.h>
 
 namespace arkana::crc32
 {

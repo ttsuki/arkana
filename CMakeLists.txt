@@ -29,8 +29,11 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-long-long -fstrict-aliasing")
 endif ()
 
-## MAIN PROJECT
-add_subdirectory(arkana)
+## REFERENCE TO MAIN PROJECT
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+## LIB PROJECT
+add_subdirectory(arkana-lib)
 
 ## TEST PROJECT
 add_subdirectory(arkana-test)

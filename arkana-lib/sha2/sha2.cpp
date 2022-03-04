@@ -8,7 +8,7 @@
 
 #include "../sha2.h"
 
-#include "../bits/cpuid.h"
+#include <arkana/bits/cpuid.h>
 
 namespace arkana::sha2
 {
@@ -41,7 +41,7 @@ namespace arkana::sha2
     }
 }
 
-#include "./sha2.h"
+#include <arkana/sha2/sha2.h>
 
 namespace arkana::sha2
 {

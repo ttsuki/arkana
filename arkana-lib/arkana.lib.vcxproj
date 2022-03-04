@@ -20,29 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bits.h" />
-    <ClInclude Include="bits\base64-decoder.h" />
-    <ClInclude Include="bits\bit-manip.h" />
-    <ClInclude Include="bits\cpuid.h" />
-    <ClInclude Include="bits\hex-int-literals.h" />
-    <ClInclude Include="bits\macros.h" />
-    <ClInclude Include="bits\memory.h" />
-    <ClInclude Include="bits\table.h" />
-    <ClInclude Include="bits\types.h" />
-    <ClInclude Include="bits\uint128.h" />
-    <ClInclude Include="bits\xmm.h" />
     <ClInclude Include="camellia.h" />
-    <ClInclude Include="camellia\camellia-avx2.h" />
-    <ClInclude Include="camellia\camellia-avx2aesni.h" />
-    <ClInclude Include="camellia\camellia-ia32.h" />
-    <ClInclude Include="camellia\camellia.h" />
     <ClInclude Include="crc32.h" />
-    <ClInclude Include="crc32\crc32-avx2.h" />
-    <ClInclude Include="crc32\crc32-avx2clmul.h" />
-    <ClInclude Include="crc32\crc32-ia32.h" />
-    <ClInclude Include="crc32\crc32.h" />
     <ClInclude Include="sha2.h" />
-    <ClInclude Include="sha2\sha2-avx2.h" />
-    <ClInclude Include="sha2\sha2.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bits\bits.cpp" />
@@ -114,7 +94,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
-  <ImportGroup Label="Shared" />
+  <ImportGroup Label="Shared">
+    <Import Project="..\arkana.vcxitems" Label="Shared" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="arkana.lib.props" />

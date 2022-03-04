@@ -1,6 +1,6 @@
 #include "./gtest.h"
-#include "../arkana/bits.h"
-#include "../arkana/camellia.h"
+#include "../arkana-lib/bits.h"
+#include "../arkana-lib/camellia.h"
 #include "./helper.h"
 
 using namespace arkana::hex_int_literals;
