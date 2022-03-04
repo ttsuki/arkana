@@ -1,4 +1,5 @@
-﻿.vs/
-build/
-packages/
+/.vs
+/out
+/build
+/packages
 *.user
