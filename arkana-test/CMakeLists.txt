@@ -1,5 +1,6 @@
 set(PROJECT_NAME "arkana-test")
 message(STATUS "PROJECT_NAME: ${PROJECT_NAME}")
+cmake_minimum_required(VERSION 3.15)
 
 enable_testing()
 
@@ -9,10 +10,9 @@ FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/tags/release-1.8.1.zip
 )
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+set(gtest_force_shared_crt OFF CACHE BOOL "" FORCE)
+set(BUILD_GMOCK OFF CACHE INTERNAL "" FORCE)
+set(INSTALL_GTEST OFF CACHE INTERNAL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 include(GoogleTest)
 
@@ -41,6 +41,7 @@ endforeach ()
 ## MSVC CRT linckage setting
 if (BUILD_WITH_STATIC_MSVC_CRT)
     set_property(TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-else()
-    set_property(TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    set_property(TARGET gtest PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    set_property(TARGET gtest_main PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
+
