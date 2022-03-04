@@ -34,16 +34,40 @@ A header-only library collection
   - [hex-int-literals.h](arkana/bits/hex-int-literals.h): Compile-time hexadecimal-integer parser
   - [base64-decoder.h](arkana/bits/base64-decoder.h): Compile-time base64 decoder  
 
+### Getting started
+
+#### Visual Studio
+
+1. Include `arkana.vcxitem` into your solution.
+2. Reference it from your project.
+
+#### CMake
+
+Do `cmake`.
+
 ---
 
 ## arkana.lib
 
-A library that contains all compiled arkana library
+A library that contains all compiled arkana library archive
 
 - [arkana::camellia](arkana-lib/camellia.h)
 - [arkana::crc32](arkana-lib/crc32.h)
 - [arkana::sha2](arkana-lib/sha2.h)
 
+
+### Getting started
+
+#### Visual Studio
+
+1. Include `arkana.vcxitem` and `arkana-lib/arkana.lib.vcxproj` into your solution.
+2. Reference them from your project.
+
+#### CMake
+
+Do `cmake`.
+
+---
 
 ## arkana.test
 
