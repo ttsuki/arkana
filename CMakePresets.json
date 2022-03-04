@@ -5,12 +5,11 @@
             "name": "generator-ninja",
             "hidden": true,
             "generator": "Ninja",
-            "cacheVariables": { "CMAKE_GENERATOR": "Ninja" }
         },
         {
             "name": "generator-vs2017",
             "hidden": true,
-            "generator": "Visual Studio 16 2017"
+            "generator": "Visual Studio 15 2017"
         },
         {
             "name": "generator-vs2019",
@@ -130,7 +129,7 @@
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo"
             },
             "vendor": {
-                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
                     "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
                 }
             }
@@ -153,7 +152,6 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo"
             },
-
             "vendor": {
                 "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
                     "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
