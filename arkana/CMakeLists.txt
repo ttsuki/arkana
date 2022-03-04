@@ -1,6 +1,6 @@
 set(PROJECT_NAME "arkana")
 message(STATUS "PROJECT_NAME: ${PROJECT_NAME}")
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 
 ## Glob source files
 file(GLOB_RECURSE SOURCE_FILES 
@@ -24,8 +24,6 @@ endforeach ()
 ## MSVC CRT linckage setting
 if (BUILD_WITH_STATIC_MSVC_CRT)
     set_property(TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-else()
-    set_property(TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
 
 ## Compiler options

@@ -1,0 +1,169 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "generator-ninja",
+            "hidden": true,
+            "generator": "Ninja",
+            "cacheVariables": { "CMAKE_GENERATOR": "Ninja" }
+        },
+        {
+            "name": "generator-vs2017",
+            "hidden": true,
+            "generator": "Visual Studio 16 2017"
+        },
+        {
+            "name": "generator-vs2019",
+            "hidden": true,
+            "generator": "Visual Studio 16 2019"
+        },
+        {
+            "name": "generator-vs2022",
+            "hidden": true,
+            "generator": "Visual Studio 17 2022"
+        },
+        {
+            "name": "windows-default",
+            "displayName": "windows-default-vs2022",
+            "inherits": "generator-vs2022",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" },
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "hostOS": ["Windows"] } }
+        },
+        {
+            "name": "arch-x64",
+            "hidden": true,
+            "architecture": "x64"
+        },
+        {
+            "name": "arch-x86",
+            "hidden": true,
+            "architecture": "Win32"
+        },
+        {
+            "name": "toolset-clang",
+            "hidden": true,
+            "toolset": "CLangCL"
+        },
+        {
+            "name": "toolset-icx",
+            "hidden": true,
+            "toolset": "Intel C++ Compiler 2022"
+        },
+        {
+            "name": "windows-default-x64",
+            "inherits": ["windows-default", "arch-x64"],
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-msvc-x64" } }
+        },
+        {
+            "name": "windows-default-x64 debug",
+            "inherits": ["windows-default-x64"],
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "windows-default-x86",
+            "inherits": ["windows-default", "arch-x86"],
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-msvc-x86" } }
+        },
+        {
+            "name": "windows-default-x86 debug",
+            "inherits": ["windows-default-x86"],
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "windows-vs-clang-x64",
+            "inherits": ["windows-default", "arch-x64", "toolset-clang"],
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-clang-x64" } }
+        },
+        {
+            "name": "windows-vs-clang-x64 debug",
+            "inherits": ["windows-vs-clang-x64"],
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "windows-vs-clang-x86",
+            "inherits": ["windows-default", "arch-x86", "toolset-clang"],
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-clang-x86" } }
+        },
+        {
+            "name": "windows-vs-clang-x86 debug",
+            "inherits": ["windows-vs-clang-x86"],
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "windows-vs-icx-x64",
+            "inherits": ["windows-default", "arch-x64", "toolset-icx"],
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-clang-x64" } }
+        },
+        {
+            "name": "windows-vs-icx-x64 debug",
+            "inherits": ["windows-vs-icx-x64"],
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "windows-vs-icx-x86",
+            "inherits": ["windows-default", "arch-x86", "toolset-icx"],
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-clang-x86" } }
+        },
+        {
+            "name": "windows-vs-icx-x86 debug",
+            "inherits": ["windows-vs-icx-x86"],
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "linux-default",
+            "inherits": ["generator-ninja"],
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+                }
+            }
+        },
+        {
+            "name": "linux-default debug",
+            "inherits": ["linux-default"],
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        },
+        {
+            "name": "macos-default",
+            "inherits": ["generator-ninja"],
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            },
+
+            "vendor": {
+                "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+                    "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+                }
+            }
+        },
+        {
+            "name": "macos-default debug",
+            "inherits": ["macos-default"],
+            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+        }
+    ]
+}

@@ -1,6 +1,7 @@
 #include "./gtest.h"
 #include "../arkana/bits.h"
 #include "../arkana/sha2.h"
+#include "./helper.h"
 
 using namespace arkana::hex_int_literals;
 using namespace arkana::sha2;
@@ -9,11 +10,6 @@ using namespace arkana::sha2;
 template <typename T>
 struct Sha2Test : testing::Test
 {
-#ifndef NDEBUG
-    static const auto& source_for_benchmark() { return static_random_bytes_1m; }
-#else
-    static const auto& source_for_benchmark() { return static_random_bytes_256m; }
-#endif
 };
 
 TYPED_TEST_CASE_P(Sha2Test);
