@@ -34,3 +34,4 @@ add_subdirectory(arkana)
 
 ## TEST PROJECT
 add_subdirectory(arkana-test)
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT arkana-test)
