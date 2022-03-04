@@ -2,7 +2,7 @@
 // python3 test-uint128.gen.py
 
 #include "./gtest.h"
-#include "../arkana/bits.h"
+#include "../arkana-lib/bits.h"
 
 using arkana::bits::uint128::uint128_t;
 using arkana::bits::uint128::rotl;

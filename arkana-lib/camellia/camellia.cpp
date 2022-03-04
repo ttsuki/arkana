@@ -10,7 +10,7 @@
 
 #include "../camellia.h"
 
-#include "../bits/cpuid.h"
+#include <arkana/bits/cpuid.h>
 
 namespace arkana::camellia
 {

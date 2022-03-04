@@ -1,6 +1,6 @@
 #include "./gtest.h"
-#include "../arkana/bits.h"
-#include "../arkana/crc32.h"
+#include "../arkana-lib/bits.h"
+#include "../arkana-lib/crc32.h"
 #include "./helper.h"
 
 using namespace arkana::crc32;
