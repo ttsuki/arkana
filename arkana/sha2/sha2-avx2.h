@@ -89,7 +89,7 @@ namespace arkana::sha2
 
             template <
                 class T, class V,
-                const T* round_constants, size_t rounds,
+                class round_constants,
                 int s00, int s01, int s02, int s10, int s11, int s12,
                 int S00, int S01, int S02, int S10, int S11, int S12>
             static inline void process_chunk_impl(vector_t<T>& vec, chunk_t<T> input) noexcept
@@ -101,12 +101,12 @@ namespace arkana::sha2
                 V x2 = byteswap(xmm::load_u(reinterpret_cast<const V*>(input.data() + 8)));
                 V x3 = byteswap(xmm::load_u(reinterpret_cast<const V*>(input.data() + 12)));
 
-                for (size_t i = 0; i < (rounds / 16); i++)
+                for (size_t i = 0; i < (round_constants::rounds / 16); i++)
                 {
-                    xmm::store_u(reinterpret_cast<V*>(input.data() + 0), x0 + xmm::load_u(reinterpret_cast<const V*>(round_constants + i * 16 + 0)));
-                    xmm::store_u(reinterpret_cast<V*>(input.data() + 4), x1 + xmm::load_u(reinterpret_cast<const V*>(round_constants + i * 16 + 4)));
-                    xmm::store_u(reinterpret_cast<V*>(input.data() + 8), x2 + xmm::load_u(reinterpret_cast<const V*>(round_constants + i * 16 + 8)));
-                    xmm::store_u(reinterpret_cast<V*>(input.data() + 12), x3 + xmm::load_u(reinterpret_cast<const V*>(round_constants + i * 16 + 12)));
+                    xmm::store_u(reinterpret_cast<V*>(input.data() + 0), x0 + xmm::load_u(reinterpret_cast<const V*>(round_constants::constants + i * 16 + 0)));
+                    xmm::store_u(reinterpret_cast<V*>(input.data() + 4), x1 + xmm::load_u(reinterpret_cast<const V*>(round_constants::constants + i * 16 + 4)));
+                    xmm::store_u(reinterpret_cast<V*>(input.data() + 8), x2 + xmm::load_u(reinterpret_cast<const V*>(round_constants::constants + i * 16 + 8)));
+                    xmm::store_u(reinterpret_cast<V*>(input.data() + 12), x3 + xmm::load_u(reinterpret_cast<const V*>(round_constants::constants + i * 16 + 12)));
                     compress<T, S00, S01, S02, S10, S11, S12, 0>(vec, input[0]);
                     compress<T, S00, S01, S02, S10, S11, S12, 1>(vec, input[1]);
                     compress<T, S00, S01, S02, S10, S11, S12, 2>(vec, input[2]);
@@ -137,7 +137,7 @@ namespace arkana::sha2
             {
                 return process_chunk_impl<
                     uint32_t, xmm::vu32x4,
-                    functions::round_constants_32, 64,
+                    functions::round_constants_256,
                     7, 18, 3, 17, 19, 10,
                     2, 13, 22, 6, 11, 25>(v, input);
             }
@@ -146,7 +146,7 @@ namespace arkana::sha2
             {
                 return process_chunk_impl<
                     uint64_t, xmm::vu64x4,
-                    functions::round_constants_64, 80,
+                    functions::round_constants_512,
                     1, 8, 7, 19, 61, 6,
                     28, 34, 39, 14, 18, 41>(v, input);
             }
