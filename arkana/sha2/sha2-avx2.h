@@ -25,10 +25,10 @@ namespace arkana::sha2
         {
             using functions::vector_t;
             using functions::chunk_t;
-            using functions::compress;
+            using functions::compress_sha2;
 
             template <int s00, int s01, int s02, int s10, int s11, int s12>
-            ARKXMM_API rotate4x(xmm::vu32x4& x0, xmm::vu32x4& x1, xmm::vu32x4& x2, xmm::vu32x4& x3)
+            ARKXMM_API rotate_sha2_x4(xmm::vu32x4& x0, xmm::vu32x4& x1, xmm::vu32x4& x2, xmm::vu32x4& x3)
             {
                 //  in: x0 = w[-16] w[-15] w[-14] w[-13]
                 //  in: x1 = w[-12] w[-11] w[-10] w[ -9]
@@ -64,7 +64,7 @@ namespace arkana::sha2
 
 
             template <int s00, int s01, int s02, int s10, int s11, int s12>
-            ARKXMM_API rotate4x(xmm::vu64x4& x0, xmm::vu64x4& x1, xmm::vu64x4& x2, xmm::vu64x4& x3)
+            ARKXMM_API rotate_sha2_x4(xmm::vu64x4& x0, xmm::vu64x4& x1, xmm::vu64x4& x2, xmm::vu64x4& x3)
             {
                 //  in: x0 = w[-16] w[-15] w[-14] w[-13]
                 //  in: x1 = w[-12] w[-11] w[-10] w[ -9]
@@ -92,61 +92,63 @@ namespace arkana::sha2
                 class round_constants,
                 int s00, int s01, int s02, int s10, int s11, int s12,
                 int S00, int S01, int S02, int S10, int S11, int S12>
-            static inline void process_chunk_impl(vector_t<T>& vec, chunk_t<T> input) noexcept
+            static void process_chunk_sha2(vector_t<T>& vec, const chunk_t<T>& input) noexcept
             {
                 vector_t<T> x = vec;
+                chunk_t<T> ck = input;
 
-                V x0 = byteswap(xmm::load_u(reinterpret_cast<const V*>(input.data() + 0)));
-                V x1 = byteswap(xmm::load_u(reinterpret_cast<const V*>(input.data() + 4)));
-                V x2 = byteswap(xmm::load_u(reinterpret_cast<const V*>(input.data() + 8)));
-                V x3 = byteswap(xmm::load_u(reinterpret_cast<const V*>(input.data() + 12)));
+                V x0 = byteswap(xmm::load_u(reinterpret_cast<const V*>(ck.data() + 0)));
+                V x1 = byteswap(xmm::load_u(reinterpret_cast<const V*>(ck.data() + 4)));
+                V x2 = byteswap(xmm::load_u(reinterpret_cast<const V*>(ck.data() + 8)));
+                V x3 = byteswap(xmm::load_u(reinterpret_cast<const V*>(ck.data() + 12)));
 
                 for (size_t i = 0; i < (round_constants::rounds / 16); i++)
                 {
-                    xmm::store_u(reinterpret_cast<V*>(input.data() + 0), x0 + xmm::load_u(reinterpret_cast<const V*>(round_constants::constants + i * 16 + 0)));
-                    xmm::store_u(reinterpret_cast<V*>(input.data() + 4), x1 + xmm::load_u(reinterpret_cast<const V*>(round_constants::constants + i * 16 + 4)));
-                    xmm::store_u(reinterpret_cast<V*>(input.data() + 8), x2 + xmm::load_u(reinterpret_cast<const V*>(round_constants::constants + i * 16 + 8)));
-                    xmm::store_u(reinterpret_cast<V*>(input.data() + 12), x3 + xmm::load_u(reinterpret_cast<const V*>(round_constants::constants + i * 16 + 12)));
-                    compress<T, S00, S01, S02, S10, S11, S12, 0>(vec, input[0]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 1>(vec, input[1]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 2>(vec, input[2]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 3>(vec, input[3]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 4>(vec, input[4]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 5>(vec, input[5]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 6>(vec, input[6]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 7>(vec, input[7]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 0>(vec, input[8]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 1>(vec, input[9]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 2>(vec, input[10]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 3>(vec, input[11]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 4>(vec, input[12]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 5>(vec, input[13]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 6>(vec, input[14]);
-                    compress<T, S00, S01, S02, S10, S11, S12, 7>(vec, input[15]);
-                    rotate4x<s00, s01, s02, s10, s11, s12>(x0, x1, x2, x3);
-                    rotate4x<s00, s01, s02, s10, s11, s12>(x1, x2, x3, x0);
-                    rotate4x<s00, s01, s02, s10, s11, s12>(x2, x3, x0, x1);
-                    rotate4x<s00, s01, s02, s10, s11, s12>(x3, x0, x1, x2);
+                    auto k = round_constants::constants + i * 0x10;
+                    xmm::store_u(reinterpret_cast<V*>(ck.data() + 0x0), x0 + xmm::load_u(reinterpret_cast<const V*>(k + 0x0)));
+                    xmm::store_u(reinterpret_cast<V*>(ck.data() + 0x4), x1 + xmm::load_u(reinterpret_cast<const V*>(k + 0x4)));
+                    xmm::store_u(reinterpret_cast<V*>(ck.data() + 0x8), x2 + xmm::load_u(reinterpret_cast<const V*>(k + 0x8)));
+                    xmm::store_u(reinterpret_cast<V*>(ck.data() + 0xC), x3 + xmm::load_u(reinterpret_cast<const V*>(k + 0xC)));
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 0>(vec, ck[0]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 1>(vec, ck[1]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 2>(vec, ck[2]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 3>(vec, ck[3]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 4>(vec, ck[4]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 5>(vec, ck[5]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 6>(vec, ck[6]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 7>(vec, ck[7]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 0>(vec, ck[8]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 1>(vec, ck[9]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 2>(vec, ck[10]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 3>(vec, ck[11]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 4>(vec, ck[12]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 5>(vec, ck[13]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 6>(vec, ck[14]);
+                    compress_sha2<S00, S01, S02, S10, S11, S12, 7>(vec, ck[15]);
+                    rotate_sha2_x4<s00, s01, s02, s10, s11, s12>(x0, x1, x2, x3);
+                    rotate_sha2_x4<s00, s01, s02, s10, s11, s12>(x1, x2, x3, x0);
+                    rotate_sha2_x4<s00, s01, s02, s10, s11, s12>(x2, x3, x0, x1);
+                    rotate_sha2_x4<s00, s01, s02, s10, s11, s12>(x3, x0, x1, x2);
                 }
 
                 xmm::store_u(reinterpret_cast<V*>(vec.data() + 0), xmm::load_u(reinterpret_cast<V*>(vec.data() + 0)) + xmm::load_u(reinterpret_cast<const V*>(x.data() + 0)));
                 xmm::store_u(reinterpret_cast<V*>(vec.data() + 4), xmm::load_u(reinterpret_cast<V*>(vec.data() + 4)) + xmm::load_u(reinterpret_cast<const V*>(x.data() + 4)));
             }
 
-            static inline void process_chunk_256(vector_t<uint32_t>& v, const chunk_t<uint32_t>& input)
+            static inline void process_chunk_sha256(vector_t<uint32_t>& v, const chunk_t<uint32_t>& input)
             {
-                return process_chunk_impl<
+                return process_chunk_sha2<
                     uint32_t, xmm::vu32x4,
-                    functions::round_constants_256,
+                    functions::round_constants_sha256,
                     7, 18, 3, 17, 19, 10,
                     2, 13, 22, 6, 11, 25>(v, input);
             }
 
-            static inline void process_chunk_512(vector_t<uint64_t>& v, const chunk_t<uint64_t>& input)
+            static inline void process_chunk_sha512(vector_t<uint64_t>& v, const chunk_t<uint64_t>& input)
             {
-                return process_chunk_impl<
+                return process_chunk_sha2<
                     uint64_t, xmm::vu64x4,
-                    functions::round_constants_512,
+                    functions::round_constants_sha512,
                     1, 8, 7, 19, 61, 6,
                     28, 34, 39, 14, 18, 41>(v, input);
             }
@@ -160,13 +162,13 @@ namespace arkana::sha2
         using ref::create_sha256_state;
         using ref::create_sha384_state;
         using ref::create_sha512_state;
-        static inline void process_bytes(sha224_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha224_state_t, impl::process_chunk_256>(stt, data, len); }
-        static inline void process_bytes(sha256_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha256_state_t, impl::process_chunk_256>(stt, data, len); }
-        static inline void process_bytes(sha384_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha384_state_t, impl::process_chunk_512>(stt, data, len); }
-        static inline void process_bytes(sha512_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha512_state_t, impl::process_chunk_512>(stt, data, len); }
-        static inline sha224_digest_t finalize_and_get_digest(sha224_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha224_state_t, impl::process_chunk_256>(stt); }
-        static inline sha256_digest_t finalize_and_get_digest(sha256_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha256_state_t, impl::process_chunk_256>(stt); }
-        static inline sha384_digest_t finalize_and_get_digest(sha384_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha384_state_t, impl::process_chunk_512>(stt); }
-        static inline sha512_digest_t finalize_and_get_digest(sha512_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha512_state_t, impl::process_chunk_512>(stt); }
+        static inline void process_bytes(sha224_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha224_state_t, impl::process_chunk_sha256>(stt, data, len); }
+        static inline void process_bytes(sha256_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha256_state_t, impl::process_chunk_sha256>(stt, data, len); }
+        static inline void process_bytes(sha384_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha384_state_t, impl::process_chunk_sha512>(stt, data, len); }
+        static inline void process_bytes(sha512_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha512_state_t, impl::process_chunk_sha512>(stt, data, len); }
+        static inline sha224_digest_t finalize_and_get_digest(sha224_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha224_state_t, impl::process_chunk_sha256>(stt); }
+        static inline sha256_digest_t finalize_and_get_digest(sha256_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha256_state_t, impl::process_chunk_sha256>(stt); }
+        static inline sha384_digest_t finalize_and_get_digest(sha384_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha384_state_t, impl::process_chunk_sha512>(stt); }
+        static inline sha512_digest_t finalize_and_get_digest(sha512_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha512_state_t, impl::process_chunk_sha512>(stt); }
     }
 }

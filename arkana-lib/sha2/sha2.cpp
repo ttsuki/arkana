@@ -49,7 +49,7 @@ namespace arkana::sha2
     static inline auto make_sha2_context_ref(sha2_state_t state)
     {
         class sha2_context_impl_t
-            : public virtual sha2_context_t<sha2_digest_t<sha2_state_t::digest_bits>>
+            : public virtual sha2_context_t<typename sha2_state_t::digest_t>
         {
         public:
             sha2_state_t state;
@@ -64,7 +64,7 @@ namespace arkana::sha2
                 ref::process_bytes(state, data, len);
             }
 
-            sha2_digest_t<sha2_state_t::digest_bits> finalize() noexcept override
+            typename sha2_state_t::digest_t finalize() noexcept override
             {
                 return ref::finalize_and_get_digest(state);
             }
