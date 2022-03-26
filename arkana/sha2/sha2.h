@@ -1,6 +1,6 @@
 /// @file
 /// @brief	arkana::sha2
-///			- An implementation of SHA-2
+///			- An implementation of SHA-1, SHA-2
 /// @author Copyright(c) 2021 ttsuki
 /// 
 /// This software is released under the MIT License.
@@ -16,6 +16,8 @@ namespace arkana::sha2
 {
     template <size_t bits>
     using sha2_digest_t = byte_array<bits / 8>;
+
+    using sha1_digest_t = sha2_digest_t<160>;
     using sha224_digest_t = sha2_digest_t<224>;
     using sha256_digest_t = sha2_digest_t<256>;
     using sha384_digest_t = sha2_digest_t<384>;
@@ -23,18 +25,149 @@ namespace arkana::sha2
 
     namespace functions
     {
-        using bits::rotr;
-        using bits::byteswap;
-
         template <class T> using vector_t = std::array<T, 8>;
         template <class T> using chunk_t = std::array<T, 16>;
 
+        static constexpr inline vector_t<uint32_t> sha1_initial_vector = {0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0};
         static constexpr inline vector_t<uint32_t> sha224_initial_vector = {0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939, 0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4};
         static constexpr inline vector_t<uint32_t> sha256_initial_vector = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
         static constexpr inline vector_t<uint64_t> sha384_initial_vector = {0xcbbb9d5dc1059ed8, 0x629a292a367cd507, 0x9159015a3070dd17, 0x152fecd8f70e5939, 0x67332667ffc00b31, 0x8eb44a8768581511, 0xdb0c2e0d64f98fa7, 0x47b5481dbefa4fa4};
         static constexpr inline vector_t<uint64_t> sha512_initial_vector = {0x6a09e667f3bcc908, 0xbb67ae8584caa73b, 0x3c6ef372fe94f82b, 0xa54ff53a5f1d36f1, 0x510e527fade682d1, 0x9b05688c2b3e6c1f, 0x1f83d9abfb41bd6b, 0x5be0cd19137e2179};
 
-        struct round_constants_256
+        template <size_t i, class T>
+        static inline constexpr void compress_sha1(vector_t<T>& vec, T kwi) noexcept
+        {
+            using bits::rotl;
+            static_assert(i < 80);
+
+            T a = vec[(80 - i) % 5];
+            T b = vec[(81 - i) % 5];
+            T c = vec[(82 - i) % 5];
+            T d = vec[(83 - i) % 5];
+            T e = vec[(84 - i) % 5];
+
+            T f = 0;
+            if constexpr (i < 20) f = (b & c) | (~b & d);
+            else if constexpr (i < 40) f = b ^ c ^ d;
+            else if constexpr (i < 60) f = (b & c) | (b & d) | (c & d);
+            else f = b ^ c ^ d;
+
+            vec[(81 - i) % 5] = rotl(b, 30);
+            vec[(84 - i) % 5] = rotl(a, 5) + f + e + kwi;
+        }
+
+        template <size_t i, class T>
+        static inline constexpr uint32_t rotate_sha1(std::array<T, 20>& ck) noexcept
+        {
+            using bits::rotl;
+            static_assert(i < 20);
+            T w16 = ck[(i - 16 + 20) % 20];
+            T w14 = ck[(i - 14 + 20) % 20];
+            T w8 = ck[(i - 8 + 20) % 20];
+            T w3 = ck[(i - 3 + 20) % 20];
+            return ck[i % 20] = rotl(w3 ^ w8 ^ w14 ^ w16, 1);
+        }
+
+        static constexpr void process_chunk_sha1(vector_t<uint32_t>& vec, const chunk_t<uint32_t>& input) noexcept
+        {
+            using bits::byteswap;
+
+            vector_t<uint32_t> x = vec;
+            std::array<uint32_t, 20> ck{};
+            constexpr uint32_t k[4] = {0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6};
+
+            compress_sha1<00 + 0>(x, k[0] + (ck[0x0] = byteswap(input[0x0])));
+            compress_sha1<00 + 1>(x, k[0] + (ck[0x1] = byteswap(input[0x1])));
+            compress_sha1<00 + 2>(x, k[0] + (ck[0x2] = byteswap(input[0x2])));
+            compress_sha1<00 + 3>(x, k[0] + (ck[0x3] = byteswap(input[0x3])));
+            compress_sha1<00 + 4>(x, k[0] + (ck[0x4] = byteswap(input[0x4])));
+            compress_sha1<00 + 0>(x, k[0] + (ck[0x5] = byteswap(input[0x5])));
+            compress_sha1<00 + 1>(x, k[0] + (ck[0x6] = byteswap(input[0x6])));
+            compress_sha1<00 + 2>(x, k[0] + (ck[0x7] = byteswap(input[0x7])));
+            compress_sha1<00 + 3>(x, k[0] + (ck[0x8] = byteswap(input[0x8])));
+            compress_sha1<00 + 4>(x, k[0] + (ck[0x9] = byteswap(input[0x9])));
+            compress_sha1<00 + 0>(x, k[0] + (ck[0xA] = byteswap(input[0xA])));
+            compress_sha1<00 + 1>(x, k[0] + (ck[0xB] = byteswap(input[0xB])));
+            compress_sha1<00 + 2>(x, k[0] + (ck[0xC] = byteswap(input[0xC])));
+            compress_sha1<00 + 3>(x, k[0] + (ck[0xD] = byteswap(input[0xD])));
+            compress_sha1<00 + 4>(x, k[0] + (ck[0xE] = byteswap(input[0xE])));
+            compress_sha1<00 + 0>(x, k[0] + (ck[0xF] = byteswap(input[0xF])));
+            compress_sha1<00 + 1>(x, k[0] + rotate_sha1<16>(ck));
+            compress_sha1<00 + 2>(x, k[0] + rotate_sha1<17>(ck));
+            compress_sha1<00 + 3>(x, k[0] + rotate_sha1<18>(ck));
+            compress_sha1<00 + 4>(x, k[0] + rotate_sha1<19>(ck));
+
+            compress_sha1<20 + 0>(x, k[1] + rotate_sha1<0>(ck));
+            compress_sha1<20 + 1>(x, k[1] + rotate_sha1<1>(ck));
+            compress_sha1<20 + 2>(x, k[1] + rotate_sha1<2>(ck));
+            compress_sha1<20 + 3>(x, k[1] + rotate_sha1<3>(ck));
+            compress_sha1<20 + 4>(x, k[1] + rotate_sha1<4>(ck));
+            compress_sha1<20 + 0>(x, k[1] + rotate_sha1<5>(ck));
+            compress_sha1<20 + 1>(x, k[1] + rotate_sha1<6>(ck));
+            compress_sha1<20 + 2>(x, k[1] + rotate_sha1<7>(ck));
+            compress_sha1<20 + 3>(x, k[1] + rotate_sha1<8>(ck));
+            compress_sha1<20 + 4>(x, k[1] + rotate_sha1<9>(ck));
+            compress_sha1<20 + 0>(x, k[1] + rotate_sha1<10>(ck));
+            compress_sha1<20 + 1>(x, k[1] + rotate_sha1<11>(ck));
+            compress_sha1<20 + 2>(x, k[1] + rotate_sha1<12>(ck));
+            compress_sha1<20 + 3>(x, k[1] + rotate_sha1<13>(ck));
+            compress_sha1<20 + 4>(x, k[1] + rotate_sha1<14>(ck));
+            compress_sha1<20 + 0>(x, k[1] + rotate_sha1<15>(ck));
+            compress_sha1<20 + 1>(x, k[1] + rotate_sha1<16>(ck));
+            compress_sha1<20 + 2>(x, k[1] + rotate_sha1<17>(ck));
+            compress_sha1<20 + 3>(x, k[1] + rotate_sha1<18>(ck));
+            compress_sha1<20 + 4>(x, k[1] + rotate_sha1<19>(ck));
+
+            compress_sha1<40 + 0>(x, k[2] + rotate_sha1<0>(ck));
+            compress_sha1<40 + 1>(x, k[2] + rotate_sha1<1>(ck));
+            compress_sha1<40 + 2>(x, k[2] + rotate_sha1<2>(ck));
+            compress_sha1<40 + 3>(x, k[2] + rotate_sha1<3>(ck));
+            compress_sha1<40 + 4>(x, k[2] + rotate_sha1<4>(ck));
+            compress_sha1<40 + 0>(x, k[2] + rotate_sha1<5>(ck));
+            compress_sha1<40 + 1>(x, k[2] + rotate_sha1<6>(ck));
+            compress_sha1<40 + 2>(x, k[2] + rotate_sha1<7>(ck));
+            compress_sha1<40 + 3>(x, k[2] + rotate_sha1<8>(ck));
+            compress_sha1<40 + 4>(x, k[2] + rotate_sha1<9>(ck));
+            compress_sha1<40 + 0>(x, k[2] + rotate_sha1<10>(ck));
+            compress_sha1<40 + 1>(x, k[2] + rotate_sha1<11>(ck));
+            compress_sha1<40 + 2>(x, k[2] + rotate_sha1<12>(ck));
+            compress_sha1<40 + 3>(x, k[2] + rotate_sha1<13>(ck));
+            compress_sha1<40 + 4>(x, k[2] + rotate_sha1<14>(ck));
+            compress_sha1<40 + 0>(x, k[2] + rotate_sha1<15>(ck));
+            compress_sha1<40 + 1>(x, k[2] + rotate_sha1<16>(ck));
+            compress_sha1<40 + 2>(x, k[2] + rotate_sha1<17>(ck));
+            compress_sha1<40 + 3>(x, k[2] + rotate_sha1<18>(ck));
+            compress_sha1<40 + 4>(x, k[2] + rotate_sha1<19>(ck));
+
+            compress_sha1<60 + 0>(x, k[3] + rotate_sha1<0>(ck));
+            compress_sha1<60 + 1>(x, k[3] + rotate_sha1<1>(ck));
+            compress_sha1<60 + 2>(x, k[3] + rotate_sha1<2>(ck));
+            compress_sha1<60 + 3>(x, k[3] + rotate_sha1<3>(ck));
+            compress_sha1<60 + 4>(x, k[3] + rotate_sha1<4>(ck));
+            compress_sha1<60 + 0>(x, k[3] + rotate_sha1<5>(ck));
+            compress_sha1<60 + 1>(x, k[3] + rotate_sha1<6>(ck));
+            compress_sha1<60 + 2>(x, k[3] + rotate_sha1<7>(ck));
+            compress_sha1<60 + 3>(x, k[3] + rotate_sha1<8>(ck));
+            compress_sha1<60 + 4>(x, k[3] + rotate_sha1<9>(ck));
+            compress_sha1<60 + 0>(x, k[3] + rotate_sha1<10>(ck));
+            compress_sha1<60 + 1>(x, k[3] + rotate_sha1<11>(ck));
+            compress_sha1<60 + 2>(x, k[3] + rotate_sha1<12>(ck));
+            compress_sha1<60 + 3>(x, k[3] + rotate_sha1<13>(ck));
+            compress_sha1<60 + 4>(x, k[3] + rotate_sha1<14>(ck));
+            compress_sha1<60 + 0>(x, k[3] + rotate_sha1<15>(ck));
+            compress_sha1<60 + 1>(x, k[3] + rotate_sha1<16>(ck));
+            compress_sha1<60 + 2>(x, k[3] + rotate_sha1<17>(ck));
+            compress_sha1<60 + 3>(x, k[3] + rotate_sha1<18>(ck));
+            compress_sha1<60 + 4>(x, k[3] + rotate_sha1<19>(ck));
+
+            vec[0] += x[0];
+            vec[1] += x[1];
+            vec[2] += x[2];
+            vec[3] += x[3];
+            vec[4] += x[4];
+        }
+
+        struct round_constants_sha256
         {
             static constexpr inline size_t rounds = 64;
             static constexpr inline uint32_t constants[rounds] = {
@@ -49,8 +182,7 @@ namespace arkana::sha2
             };
         };
 
-
-        struct round_constants_512
+        struct round_constants_sha512
         {
             static constexpr inline size_t rounds = 80;
             static constexpr inline uint64_t constants[rounds] = {
@@ -77,9 +209,11 @@ namespace arkana::sha2
             };
         };
 
-        template <class T, int S00, int S01, int S02, int S10, int S11, int S12, int i>
-        static inline constexpr void compress(vector_t<T>& vec, T kwi) noexcept
+        template <int S00, int S01, int S02, int S10, int S11, int S12, size_t i, class T>
+        static inline constexpr void compress_sha2(vector_t<T>& vec, T kwi) noexcept
         {
+            using bits::rotr;
+
             T a = vec[(0 - i) & 7];
             T b = vec[(1 - i) & 7];
             T c = vec[(2 - i) & 7];
@@ -102,8 +236,8 @@ namespace arkana::sha2
             vec[(7 - i) & 7] = h;
         }
 
-        template <class T, int s00, int s01, int s02, int s10, int s11, int s12, size_t i>
-        static inline constexpr T rotate(chunk_t<T>& ck) noexcept
+        template <int s00, int s01, int s02, int s10, int s11, int s12, size_t i, class T>
+        static inline constexpr T rotate_sha2(chunk_t<T>& ck) noexcept
         {
             using bits::rotr;
 
@@ -115,53 +249,55 @@ namespace arkana::sha2
             return ck[i & 15] += s0 + w7 + s1;
         }
 
-        template <
-            class T,
-            class round_constants,
-            int s00, int s01, int s02, int s10, int s11, int s12,
-            int S00, int S01, int S02, int S10, int S11, int S12>
-        static constexpr void process_chunk_impl(vector_t<T>& vec, chunk_t<T> input) noexcept
+        template <class T, class round_constants,
+                  int s00, int s01, int s02, int s10, int s11, int s12,
+                  int S00, int S01, int S02, int S10, int S11, int S12>
+        static constexpr void process_chunk_sha2(vector_t<T>& vec, const chunk_t<T>& input) noexcept
         {
             using bits::byteswap;
 
-            for (auto&& i : input) { i = byteswap(i); }
-
             vector_t<T> x = vec;
-            compress<T, S00, S01, S02, S10, S11, S12, 0>(x, round_constants::constants[0] + input[0]);
-            compress<T, S00, S01, S02, S10, S11, S12, 1>(x, round_constants::constants[1] + input[1]);
-            compress<T, S00, S01, S02, S10, S11, S12, 2>(x, round_constants::constants[2] + input[2]);
-            compress<T, S00, S01, S02, S10, S11, S12, 3>(x, round_constants::constants[3] + input[3]);
-            compress<T, S00, S01, S02, S10, S11, S12, 4>(x, round_constants::constants[4] + input[4]);
-            compress<T, S00, S01, S02, S10, S11, S12, 5>(x, round_constants::constants[5] + input[5]);
-            compress<T, S00, S01, S02, S10, S11, S12, 6>(x, round_constants::constants[6] + input[6]);
-            compress<T, S00, S01, S02, S10, S11, S12, 7>(x, round_constants::constants[7] + input[7]);
-            compress<T, S00, S01, S02, S10, S11, S12, 0>(x, round_constants::constants[8] + input[8]);
-            compress<T, S00, S01, S02, S10, S11, S12, 1>(x, round_constants::constants[9] + input[9]);
-            compress<T, S00, S01, S02, S10, S11, S12, 2>(x, round_constants::constants[10] + input[10]);
-            compress<T, S00, S01, S02, S10, S11, S12, 3>(x, round_constants::constants[11] + input[11]);
-            compress<T, S00, S01, S02, S10, S11, S12, 4>(x, round_constants::constants[12] + input[12]);
-            compress<T, S00, S01, S02, S10, S11, S12, 5>(x, round_constants::constants[13] + input[13]);
-            compress<T, S00, S01, S02, S10, S11, S12, 6>(x, round_constants::constants[14] + input[14]);
-            compress<T, S00, S01, S02, S10, S11, S12, 7>(x, round_constants::constants[15] + input[15]);
+            chunk_t<T> ck{};
 
-            for (size_t i = 1; i < (round_constants::rounds / 16); i++)
             {
-                compress<T, S00, S01, S02, S10, S11, S12, 0>(x, round_constants::constants[i * 16 + 0] + rotate<T, s00, s01, s02, s10, s11, s12, 0>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 1>(x, round_constants::constants[i * 16 + 1] + rotate<T, s00, s01, s02, s10, s11, s12, 1>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 2>(x, round_constants::constants[i * 16 + 2] + rotate<T, s00, s01, s02, s10, s11, s12, 2>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 3>(x, round_constants::constants[i * 16 + 3] + rotate<T, s00, s01, s02, s10, s11, s12, 3>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 4>(x, round_constants::constants[i * 16 + 4] + rotate<T, s00, s01, s02, s10, s11, s12, 4>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 5>(x, round_constants::constants[i * 16 + 5] + rotate<T, s00, s01, s02, s10, s11, s12, 5>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 6>(x, round_constants::constants[i * 16 + 6] + rotate<T, s00, s01, s02, s10, s11, s12, 6>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 7>(x, round_constants::constants[i * 16 + 7] + rotate<T, s00, s01, s02, s10, s11, s12, 7>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 0>(x, round_constants::constants[i * 16 + 8] + rotate<T, s00, s01, s02, s10, s11, s12, 8>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 1>(x, round_constants::constants[i * 16 + 9] + rotate<T, s00, s01, s02, s10, s11, s12, 9>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 2>(x, round_constants::constants[i * 16 + 10] + rotate<T, s00, s01, s02, s10, s11, s12, 10>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 3>(x, round_constants::constants[i * 16 + 11] + rotate<T, s00, s01, s02, s10, s11, s12, 11>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 4>(x, round_constants::constants[i * 16 + 12] + rotate<T, s00, s01, s02, s10, s11, s12, 12>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 5>(x, round_constants::constants[i * 16 + 13] + rotate<T, s00, s01, s02, s10, s11, s12, 13>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 6>(x, round_constants::constants[i * 16 + 14] + rotate<T, s00, s01, s02, s10, s11, s12, 14>(input));
-                compress<T, S00, S01, S02, S10, S11, S12, 7>(x, round_constants::constants[i * 16 + 15] + rotate<T, s00, s01, s02, s10, s11, s12, 15>(input));
+                auto k = round_constants::constants;
+                compress_sha2<S00, S01, S02, S10, S11, S12, 0>(x, k[0x0] + (ck[0x0] = byteswap(input[0x0])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 1>(x, k[0x1] + (ck[0x1] = byteswap(input[0x1])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 2>(x, k[0x2] + (ck[0x2] = byteswap(input[0x2])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 3>(x, k[0x3] + (ck[0x3] = byteswap(input[0x3])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 4>(x, k[0x4] + (ck[0x4] = byteswap(input[0x4])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 5>(x, k[0x5] + (ck[0x5] = byteswap(input[0x5])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 6>(x, k[0x6] + (ck[0x6] = byteswap(input[0x6])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 7>(x, k[0x7] + (ck[0x7] = byteswap(input[0x7])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 0>(x, k[0x8] + (ck[0x8] = byteswap(input[0x8])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 1>(x, k[0x9] + (ck[0x9] = byteswap(input[0x9])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 2>(x, k[0xA] + (ck[0xA] = byteswap(input[0xA])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 3>(x, k[0xB] + (ck[0xB] = byteswap(input[0xB])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 4>(x, k[0xC] + (ck[0xC] = byteswap(input[0xC])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 5>(x, k[0xD] + (ck[0xD] = byteswap(input[0xD])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 6>(x, k[0xE] + (ck[0xE] = byteswap(input[0xE])));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 7>(x, k[0xF] + (ck[0xF] = byteswap(input[0xF])));
+            }
+
+            for (size_t i = 1; i < round_constants::rounds / 16; i++)
+            {
+                auto k = round_constants::constants + i * 0x10;
+                compress_sha2<S00, S01, S02, S10, S11, S12, 0>(x, k[0x0] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x0>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 1>(x, k[0x1] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x1>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 2>(x, k[0x2] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x2>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 3>(x, k[0x3] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x3>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 4>(x, k[0x4] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x4>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 5>(x, k[0x5] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x5>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 6>(x, k[0x6] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x6>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 7>(x, k[0x7] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x7>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 0>(x, k[0x8] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x8>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 1>(x, k[0x9] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x9>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 2>(x, k[0xA] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xA>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 3>(x, k[0xB] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xB>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 4>(x, k[0xC] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xC>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 5>(x, k[0xD] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xD>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 6>(x, k[0xE] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xE>(ck));
+                compress_sha2<S00, S01, S02, S10, S11, S12, 7>(x, k[0xF] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xF>(ck));
             }
 
             vec[0] += x[0];
@@ -174,51 +310,42 @@ namespace arkana::sha2
             vec[7] += x[7];
         }
 
-        static inline constexpr void process_chunk_256(vector_t<uint32_t>& v, const chunk_t<uint32_t>& input)
+        static inline constexpr void process_chunk_sha256(vector_t<uint32_t>& v, const chunk_t<uint32_t>& input)
         {
-            return process_chunk_impl<
-                uint32_t,
-                round_constants_256,
-                7, 18, 3, 17, 19, 10,
-                2, 13, 22, 6, 11, 25>(v, input);
+            return process_chunk_sha2<uint32_t, round_constants_sha256, 7, 18, 3, 17, 19, 10, 2, 13, 22, 6, 11, 25>(v, input);
         }
 
-        static inline constexpr void process_chunk_512(vector_t<uint64_t>& v, const chunk_t<uint64_t>& input)
+        static inline constexpr void process_chunk_sha512(vector_t<uint64_t>& v, const chunk_t<uint64_t>& input)
         {
-            return process_chunk_impl<
-                uint64_t,
-                round_constants_512,
-                1, 8, 7, 19, 61, 6,
-                28, 34, 39, 14, 18, 41>(v, input);
+            return process_chunk_sha2<uint64_t, round_constants_sha512, 1, 8, 7, 19, 61, 6, 28, 34, 39, 14, 18, 41>(v, input);
         }
 
         inline namespace context
         {
-            using functions::vector_t;
-            using functions::chunk_t;
-
-            template <size_t t_digest_bits, class T>
+            template <class T, class TDigest>
             struct sha2_state_t
             {
                 using unit_t = T;
-                static inline constexpr size_t digest_bits = t_digest_bits;
+                using digest_t = TDigest;
 
                 vector_t<T> vec;
                 chunk_t<T> input;
                 uintmax_t wrote;
             };
 
-            using sha224_state_t = sha2_state_t<224, uint32_t>;
-            using sha256_state_t = sha2_state_t<256, uint32_t>;
-            using sha384_state_t = sha2_state_t<384, uint64_t>;
-            using sha512_state_t = sha2_state_t<512, uint64_t>;
+            using sha1_state_t = sha2_state_t<uint32_t, sha1_digest_t>;
+            using sha224_state_t = sha2_state_t<uint32_t, sha224_digest_t>;
+            using sha256_state_t = sha2_state_t<uint32_t, sha256_digest_t>;
+            using sha384_state_t = sha2_state_t<uint64_t, sha384_digest_t>;
+            using sha512_state_t = sha2_state_t<uint64_t, sha512_digest_t>;
 
-            static inline constexpr sha224_state_t create_sha224_state() { return {functions::sha224_initial_vector, {}, 0}; }
-            static inline constexpr sha256_state_t create_sha256_state() { return {functions::sha256_initial_vector, {}, 0}; }
-            static inline constexpr sha384_state_t create_sha384_state() { return {functions::sha384_initial_vector, {}, 0}; }
-            static inline constexpr sha512_state_t create_sha512_state() { return {functions::sha512_initial_vector, {}, 0}; }
+            static inline constexpr sha1_state_t create_sha1_state() { return {sha1_initial_vector, {}, 0}; }
+            static inline constexpr sha224_state_t create_sha224_state() { return {sha224_initial_vector, {}, 0}; }
+            static inline constexpr sha256_state_t create_sha256_state() { return {sha256_initial_vector, {}, 0}; }
+            static inline constexpr sha384_state_t create_sha384_state() { return {sha384_initial_vector, {}, 0}; }
+            static inline constexpr sha512_state_t create_sha512_state() { return {sha512_initial_vector, {}, 0}; }
 
-            template <class sha2_state_t = sha256_state_t, auto process_chunk = functions::process_chunk_256>
+            template <class sha2_state_t = sha256_state_t, auto process_chunk = functions::process_chunk_sha256>
             static void process_bytes(sha2_state_t& stt, const void* data, size_t len) noexcept
             {
                 const byte_t* src = static_cast<const byte_t*>(data);
@@ -243,10 +370,13 @@ namespace arkana::sha2
                 }
             }
 
-            template <class sha2_state_t = sha256_state_t, auto process_chunk = functions::process_chunk_256>
-            static auto finalize_and_get_digest(sha2_state_t& stt) noexcept -> sha2_digest_t<sha2_state_t::digest_bits>
+            template <class sha2_state_t = sha256_state_t, auto process_chunk = functions::process_chunk_sha256>
+            static auto finalize_and_get_digest(sha2_state_t& stt) noexcept -> typename sha2_state_t::digest_t
             {
-                using T = typename decltype(stt.vec)::value_type;
+                using T = typename sha2_state_t::unit_t;
+                using digest_t = typename sha2_state_t::digest_t;
+                using bits::byteswap;
+
                 byte_t* const buf = reinterpret_cast<byte_t*>(stt.input.data());
                 size_t constexpr buf_sz = sizeof(stt.input);
                 size_t used = stt.wrote % sizeof(stt.input);
@@ -275,7 +405,7 @@ namespace arkana::sha2
                     vector_t<T> vec = stt.vec;
                     for (auto&& i : vec) { i = byteswap(i); }
 
-                    sha2_digest_t<sha2_state_t::digest_bits> digest{};
+                    digest_t digest{};
                     memcpy(&digest, &vec, sizeof(digest));
                     return digest;
                 }
@@ -285,22 +415,26 @@ namespace arkana::sha2
 
     namespace ref
     {
+        using functions::sha1_state_t;
         using functions::sha224_state_t;
         using functions::sha256_state_t;
         using functions::sha384_state_t;
         using functions::sha512_state_t;
+        using functions::create_sha1_state;
         using functions::create_sha224_state;
         using functions::create_sha256_state;
         using functions::create_sha384_state;
         using functions::create_sha512_state;
-        static inline void process_bytes(sha224_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha224_state_t, functions::process_chunk_256>(stt, data, len); }
-        static inline void process_bytes(sha256_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha256_state_t, functions::process_chunk_256>(stt, data, len); }
-        static inline void process_bytes(sha384_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha384_state_t, functions::process_chunk_512>(stt, data, len); }
-        static inline void process_bytes(sha512_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha512_state_t, functions::process_chunk_512>(stt, data, len); }
-        static inline sha224_digest_t finalize_and_get_digest(sha224_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha224_state_t, functions::process_chunk_256>(stt); }
-        static inline sha256_digest_t finalize_and_get_digest(sha256_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha256_state_t, functions::process_chunk_256>(stt); }
-        static inline sha384_digest_t finalize_and_get_digest(sha384_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha384_state_t, functions::process_chunk_512>(stt); }
-        static inline sha512_digest_t finalize_and_get_digest(sha512_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha512_state_t, functions::process_chunk_512>(stt); }
+        static inline void process_bytes(sha1_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha1_state_t, functions::process_chunk_sha1>(stt, data, len); }
+        static inline void process_bytes(sha224_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha224_state_t, functions::process_chunk_sha256>(stt, data, len); }
+        static inline void process_bytes(sha256_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha256_state_t, functions::process_chunk_sha256>(stt, data, len); }
+        static inline void process_bytes(sha384_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha384_state_t, functions::process_chunk_sha512>(stt, data, len); }
+        static inline void process_bytes(sha512_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha512_state_t, functions::process_chunk_sha512>(stt, data, len); }
+        static inline sha1_digest_t finalize_and_get_digest(sha1_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha1_state_t, functions::process_chunk_sha1>(stt); }
+        static inline sha224_digest_t finalize_and_get_digest(sha224_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha224_state_t, functions::process_chunk_sha256>(stt); }
+        static inline sha256_digest_t finalize_and_get_digest(sha256_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha256_state_t, functions::process_chunk_sha256>(stt); }
+        static inline sha384_digest_t finalize_and_get_digest(sha384_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha384_state_t, functions::process_chunk_sha512>(stt); }
+        static inline sha512_digest_t finalize_and_get_digest(sha512_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha512_state_t, functions::process_chunk_sha512>(stt); }
     }
 
     using namespace ref;
