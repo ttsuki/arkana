@@ -350,20 +350,28 @@ namespace arkana::sha2
         using ref::sha256_state_t;
         using ref::sha384_state_t;
         using ref::sha512_state_t;
+        using ref::sha512_224_state_t;
+        using ref::sha512_256_state_t;
         using ref::create_sha1_state;
         using ref::create_sha224_state;
         using ref::create_sha256_state;
         using ref::create_sha384_state;
         using ref::create_sha512_state;
+        using ref::create_sha512_224_state;
+        using ref::create_sha512_256_state;
         static inline void process_bytes(sha1_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha1_state_t, impl::process_chunk_sha1>(stt, data, len); }
         static inline void process_bytes(sha224_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha224_state_t, impl::process_chunk_sha256>(stt, data, len); }
         static inline void process_bytes(sha256_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha256_state_t, impl::process_chunk_sha256>(stt, data, len); }
         static inline void process_bytes(sha384_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha384_state_t, impl::process_chunk_sha512>(stt, data, len); }
         static inline void process_bytes(sha512_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha512_state_t, impl::process_chunk_sha512>(stt, data, len); }
+        static inline void process_bytes(sha512_224_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha512_224_state_t, impl::process_chunk_sha512>(stt, data, len); }
+        static inline void process_bytes(sha512_256_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha512_256_state_t, impl::process_chunk_sha512>(stt, data, len); }
         static inline sha1_digest_t finalize_and_get_digest(sha1_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha1_state_t, impl::process_chunk_sha1>(stt); }
         static inline sha224_digest_t finalize_and_get_digest(sha224_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha224_state_t, impl::process_chunk_sha256>(stt); }
         static inline sha256_digest_t finalize_and_get_digest(sha256_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha256_state_t, impl::process_chunk_sha256>(stt); }
         static inline sha384_digest_t finalize_and_get_digest(sha384_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha384_state_t, impl::process_chunk_sha512>(stt); }
         static inline sha512_digest_t finalize_and_get_digest(sha512_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha512_state_t, impl::process_chunk_sha512>(stt); }
+        static inline sha512_224_digest_t finalize_and_get_digest(sha512_224_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha512_224_state_t, impl::process_chunk_sha512>(stt); }
+        static inline sha512_256_digest_t finalize_and_get_digest(sha512_256_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha512_256_state_t, impl::process_chunk_sha512>(stt); }
     }
 }

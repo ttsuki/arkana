@@ -49,4 +49,6 @@ namespace arkana::sha2
     std::unique_ptr<sha256_context_t> create_sha256_context_avx2() { return make_sha2_context_avx2(create_sha256_state()); }
     std::unique_ptr<sha384_context_t> create_sha384_context_avx2() { return make_sha2_context_avx2(create_sha384_state()); }
     std::unique_ptr<sha512_context_t> create_sha512_context_avx2() { return make_sha2_context_avx2(create_sha512_state()); }
+    std::unique_ptr<sha512_224_context_t> create_sha512_224_context_avx2() { return make_sha2_context_avx2(create_sha512_224_state()); }
+    std::unique_ptr<sha512_256_context_t> create_sha512_256_context_avx2() { return make_sha2_context_avx2(create_sha512_256_state()); }
 }

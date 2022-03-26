@@ -46,6 +46,20 @@ namespace arkana::sha2
                    ? create_sha512_context_avx2()
                    : create_sha512_context_ref();
     }
+
+    std::unique_ptr<sha512_224_context_t> create_sha512_224_context()
+    {
+        return cpuid::cpu_supports::AVX2
+            ? create_sha512_224_context_avx2()
+            : create_sha512_224_context_ref();
+    }
+
+    std::unique_ptr<sha512_256_context_t> create_sha512_256_context()
+    {
+        return cpuid::cpu_supports::AVX2
+            ? create_sha512_256_context_avx2()
+            : create_sha512_256_context_ref();
+    }
 }
 
 #include <arkana/sha2/sha2.h>
@@ -85,4 +99,6 @@ namespace arkana::sha2
     std::unique_ptr<sha256_context_t> create_sha256_context_ref() { return make_sha2_context_ref(create_sha256_state()); }
     std::unique_ptr<sha384_context_t> create_sha384_context_ref() { return make_sha2_context_ref(create_sha384_state()); }
     std::unique_ptr<sha512_context_t> create_sha512_context_ref() { return make_sha2_context_ref(create_sha512_state()); }
+    std::unique_ptr<sha512_224_context_t> create_sha512_224_context_ref() { return make_sha2_context_ref(create_sha512_224_state()); }
+    std::unique_ptr<sha512_256_context_t> create_sha512_256_context_ref() { return make_sha2_context_ref(create_sha512_256_state()); }
 }

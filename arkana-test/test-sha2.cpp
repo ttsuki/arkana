@@ -121,6 +121,9 @@ TYPED_TEST_P(Sha2Test, Sha512_TestVectors)
         EXPECT_EQ(ctx.finalize(), 0xB47C933421EA2DB1'49AD6E10FCE6C7F9'3D0752380180FFD7'F4629A712134831D'77BE6091B819ED35'2C2967A2E2D4FA50'50723C9630691F1A'05A7281DBE6C1086_byte_array);
     }
 #endif
+
+    EXPECT_EQ(TypeParam::sha512_224_context().finalize(), 0x6ED0DD02'806FA89E'25DE060C'19D3AC86'CABB87D6'A0DDD05C'333B84F4_byte_array);
+    EXPECT_EQ(TypeParam::sha512_256_context().finalize(), 0xC672B8D1'EF56ED28'AB87C362'2C511406'9BDD3AD7'B8F97374'98D0C01E'CEF0967A_byte_array);
 }
 
 REGISTER_TYPED_TEST_CASE_P(
@@ -138,6 +141,8 @@ struct ref_impl
     static auto sha256_context() { return sha2_context(create_sha256_context_ref()); }
     static auto sha384_context() { return sha2_context(create_sha384_context_ref()); }
     static auto sha512_context() { return sha2_context(create_sha512_context_ref()); }
+    static auto sha512_224_context() { return sha2_context(create_sha512_224_context_ref()); }
+    static auto sha512_256_context() { return sha2_context(create_sha512_256_context_ref()); }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(ref, Sha2Test, ref_impl);
@@ -149,6 +154,8 @@ struct avx2_impl
     static auto sha256_context() { return sha2_context(create_sha256_context_avx2()); }
     static auto sha384_context() { return sha2_context(create_sha384_context_avx2()); }
     static auto sha512_context() { return sha2_context(create_sha512_context_avx2()); }
+    static auto sha512_224_context() { return sha2_context(create_sha512_224_context_avx2()); }
+    static auto sha512_256_context() { return sha2_context(create_sha512_256_context_avx2()); }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(avx2, Sha2Test, avx2_impl);
