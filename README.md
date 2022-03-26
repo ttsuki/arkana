@@ -20,7 +20,7 @@ A header-only library collection
   - [crc32-avx2.h](arkana/crc32/crc32-avx2.h): AVX2 LUT accelerated implementation (approx. 7x faster than ref-impl)
   - [crc32-avx2clmul.h](arkana/crc32/crc32-avx2clmul.h): pclmul accelerated implementation (based on ["Fast CRC Computation for Generic Polynomials Using PCLMULQDQ Instruction"  -- V. Gopal, E. Ozturk, J. Guilford, et al., 2009](https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf)) (approx. 20x faster than ref-impl)
 
-### arkana::sha2 - SHA2 (224,256,384,512) (NIST FIPS PUB 180-4)
+### arkana::sha2 - SHA-1, SHA-2(SHA-256,SHA-224,SHA-512,SHA-384,SHA-512/224,SHA-512/256) (NIST FIPS PUB 180-4)
   - [sha2.h](arkana/sha2/sha2.h): Reference implementation
   - [sha2-avx2.h](arkana/sha2/sha2-avx2.h): AVX2 accelerated implementation (based on ["Fast SHA-256 Implementations on Intel® Architecture Processors" -- J. Guilford, K. Yap, V. Gopal, 2012](https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/sha-256-implementations-paper.pdf))
 
