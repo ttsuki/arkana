@@ -1,11 +1,9 @@
 #include "./gtest.h"
 #include "../arkana-lib/bits.h"
-#include "../arkana-lib/sha1.h"
 #include "../arkana-lib/sha2.h"
 #include "./helper.h"
 
 using namespace arkana::hex_int_literals;
-using namespace arkana::sha1;
 using namespace arkana::sha2;
 
 

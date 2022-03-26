@@ -1,12 +1,12 @@
 /// @file
 /// @brief	arkana::sha2
-///			- An implementation of SHA-2
+///			- An implementation of SHA-1, SHA-2
 /// @author Copyright(c) 2021 ttsuki
 /// 
 /// This software is released under the MIT License.
 /// https://opensource.org/licenses/MIT
 ///
-/// This implementation based on
+/// This SHA-2 implementation based on
 ///   "Fast SHA-256 Implementations on Intel® Architecture Processors"
 ///   -- J. Guilford, K. Yap, V. Gopal, 2012,
 /// https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/sha-256-implementations-paper.pdf
@@ -44,6 +44,7 @@ namespace arkana::sha2
         return std::make_unique<sha2_context_impl_t>(std::move(state));
     }
 
+    std::unique_ptr<sha1_context_t> create_sha1_context_avx2() { return make_sha2_context_avx2(create_sha1_state()); }
     std::unique_ptr<sha224_context_t> create_sha224_context_avx2() { return make_sha2_context_avx2(create_sha224_state()); }
     std::unique_ptr<sha256_context_t> create_sha256_context_avx2() { return make_sha2_context_avx2(create_sha256_state()); }
     std::unique_ptr<sha384_context_t> create_sha384_context_avx2() { return make_sha2_context_avx2(create_sha384_state()); }

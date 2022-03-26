@@ -1,6 +1,6 @@
 /// @file
 /// @brief	arkana::sha2
-///			- An implementation of SHA-2
+///			- An implementation of SHA-1, SHA-2
 /// @author Copyright(c) 2021 ttsuki
 /// 
 /// This software is released under the MIT License.
@@ -15,6 +15,7 @@
 namespace arkana::sha2
 {
     template <size_t bits> using sha2_digest_t = std::array<std::byte, bits / 8>;
+    using sha1_digest_t = std::array<std::byte, 160 / 8>;
     using sha224_digest_t = std::array<std::byte, 224 / 8>;
     using sha256_digest_t = std::array<std::byte, 256 / 8>;
     using sha384_digest_t = std::array<std::byte, 384 / 8>;
@@ -37,21 +38,25 @@ namespace arkana::sha2
         virtual digest_t finalize() noexcept = 0;
     };
 
+    using sha1_context_t = sha2_context_t<sha1_digest_t>;
     using sha224_context_t = sha2_context_t<sha224_digest_t>;
     using sha256_context_t = sha2_context_t<sha256_digest_t>;
     using sha384_context_t = sha2_context_t<sha384_digest_t>;
     using sha512_context_t = sha2_context_t<sha512_digest_t>;
 
+    std::unique_ptr<sha1_context_t> create_sha1_context();
     std::unique_ptr<sha224_context_t> create_sha224_context();
     std::unique_ptr<sha256_context_t> create_sha256_context();
     std::unique_ptr<sha384_context_t> create_sha384_context();
     std::unique_ptr<sha512_context_t> create_sha512_context();
 
+    std::unique_ptr<sha1_context_t> create_sha1_context_ref();
     std::unique_ptr<sha224_context_t> create_sha224_context_ref();
     std::unique_ptr<sha256_context_t> create_sha256_context_ref();
     std::unique_ptr<sha384_context_t> create_sha384_context_ref();
     std::unique_ptr<sha512_context_t> create_sha512_context_ref();
 
+    std::unique_ptr<sha1_context_t> create_sha1_context_avx2();
     std::unique_ptr<sha224_context_t> create_sha224_context_avx2();
     std::unique_ptr<sha256_context_t> create_sha256_context_avx2();
     std::unique_ptr<sha384_context_t> create_sha384_context_avx2();

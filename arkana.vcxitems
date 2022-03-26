@@ -32,8 +32,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\crc32\crc32-avx2clmul.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\crc32\crc32-ia32.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\crc32\crc32.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\sha1\sha1-avx2.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\sha1\sha1.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\sha2\sha2-avx2.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\sha2\sha2.h" />
   </ItemGroup>
