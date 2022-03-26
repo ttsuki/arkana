@@ -22,6 +22,7 @@
     <ClInclude Include="bits.h" />
     <ClInclude Include="camellia.h" />
     <ClInclude Include="crc32.h" />
+    <ClInclude Include="sha1.h" />
     <ClInclude Include="sha2.h" />
   </ItemGroup>
   <ItemGroup>
@@ -54,6 +55,8 @@
     </ClCompile>
     <ClCompile Include="crc32\crc32-ia32.cpp" />
     <ClCompile Include="crc32\crc32.cpp" />
+    <ClCompile Include="sha1\sha1-avx2.cpp" />
+    <ClCompile Include="sha1\sha1.cpp" />
     <ClCompile Include="sha2\sha2-avx2.cpp">
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>

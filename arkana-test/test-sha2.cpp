@@ -1,9 +1,11 @@
 #include "./gtest.h"
 #include "../arkana-lib/bits.h"
+#include "../arkana-lib/sha1.h"
 #include "../arkana-lib/sha2.h"
 #include "./helper.h"
 
 using namespace arkana::hex_int_literals;
+using namespace arkana::sha1;
 using namespace arkana::sha2;
 
 
@@ -30,6 +32,25 @@ namespace
         sha2_context& process_string(std::string_view text) noexcept { return process_bytes(text.data(), text.length()); }
         auto finalize() noexcept { return ctx->finalize(); }
     };
+}
+
+
+TYPED_TEST_P(Sha2Test, Sha1_TestVectors)
+{
+    EXPECT_EQ(TypeParam::sha1_context().finalize(), 0xDA39A3EE'5E6B4B0D'3255BFEF'95601890'AFD80709_byte_array);
+    EXPECT_EQ(TypeParam::sha1_context().process_string("abc").finalize(), 0xA9993E36'4706816A'BA3E2571'7850C26C'9CD0D89D_byte_array);
+    EXPECT_EQ(TypeParam::sha1_context().process_string("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq").finalize(), 0x84983E44'1C3BD26E'BAAE4AA1'F95129E5'E54670F1_byte_array);
+    EXPECT_EQ(TypeParam::sha1_context().process_string("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu").finalize(), 0xA49B2446'A02C645B'F419F995'B6709125'3A04A259_byte_array);
+    EXPECT_EQ(TypeParam::sha1_context().process_string(std::string(1000000, 'a')).finalize(), 0x34AA973C'D4C4DAA4'F61EEB2B'DBAD2731'6534016F_byte_array);
+
+#ifdef NDEBUG
+    {
+        auto ctx = TypeParam::sha1_context();
+        std::string s = "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmno";
+        for (int i = 0; i < 16777216; i++) ctx.process_string(s);
+        EXPECT_EQ(ctx.finalize(), 0x7789F0C9'EF7BFC40'D9331114'3DFBE69E'2017F592_byte_array);
+    }
+#endif
 }
 
 TYPED_TEST_P(Sha2Test, Sha224_TestVectors)
@@ -106,6 +127,7 @@ TYPED_TEST_P(Sha2Test, Sha512_TestVectors)
 
 REGISTER_TYPED_TEST_CASE_P(
     Sha2Test,
+    Sha1_TestVectors,
     Sha224_TestVectors,
     Sha256_TestVectors,
     Sha384_TestVectors,
@@ -113,6 +135,7 @@ REGISTER_TYPED_TEST_CASE_P(
 
 struct ref_impl
 {
+    static auto sha1_context() { return sha2_context(create_sha1_context_ref()); }
     static auto sha224_context() { return sha2_context(create_sha224_context_ref()); }
     static auto sha256_context() { return sha2_context(create_sha256_context_ref()); }
     static auto sha384_context() { return sha2_context(create_sha384_context_ref()); }
@@ -123,6 +146,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(ref, Sha2Test, ref_impl);
 
 struct avx2_impl
 {
+    static auto sha1_context() { return sha2_context(create_sha1_context_avx2()); }
     static auto sha224_context() { return sha2_context(create_sha224_context_avx2()); }
     static auto sha256_context() { return sha2_context(create_sha256_context_avx2()); }
     static auto sha384_context() { return sha2_context(create_sha384_context_avx2()); }
