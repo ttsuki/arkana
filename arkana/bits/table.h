@@ -1,3 +1,10 @@
+/// @file
+/// @brief	arkana::table - LUT generating helper
+/// @author Copyright(c) 2022 ttsuki
+/// 
+/// This software is released under the MIT License.
+/// https://opensource.org/licenses/MIT
+
 #pragma once
 
 #include <array>
