@@ -167,8 +167,15 @@ namespace arkana::sha2
             vec[3] += x[3];
         }
 
+        struct round_constants_sha1
+        {
+            static inline constexpr uint32_t k[4] = {
+                0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6
+            };
+        };
+
         template <size_t i, class T>
-        static inline constexpr void compress_sha1(vector_t<T>& vec, T kwi) noexcept
+        static inline constexpr void round_sha1(vector_t<T>& vec, T kwi) noexcept
         {
             using bits::rotl;
             static_assert(i < 80);
@@ -207,91 +214,90 @@ namespace arkana::sha2
 
             vector_t<uint32_t> x = vec;
             std::array<uint32_t, 20> ck{};
-            constexpr uint32_t k[4] = {0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6};
 
-            compress_sha1<00 + 0>(x, k[0] + (ck[0x0] = byteswap(input[0x0])));
-            compress_sha1<00 + 1>(x, k[0] + (ck[0x1] = byteswap(input[0x1])));
-            compress_sha1<00 + 2>(x, k[0] + (ck[0x2] = byteswap(input[0x2])));
-            compress_sha1<00 + 3>(x, k[0] + (ck[0x3] = byteswap(input[0x3])));
-            compress_sha1<00 + 4>(x, k[0] + (ck[0x4] = byteswap(input[0x4])));
-            compress_sha1<00 + 0>(x, k[0] + (ck[0x5] = byteswap(input[0x5])));
-            compress_sha1<00 + 1>(x, k[0] + (ck[0x6] = byteswap(input[0x6])));
-            compress_sha1<00 + 2>(x, k[0] + (ck[0x7] = byteswap(input[0x7])));
-            compress_sha1<00 + 3>(x, k[0] + (ck[0x8] = byteswap(input[0x8])));
-            compress_sha1<00 + 4>(x, k[0] + (ck[0x9] = byteswap(input[0x9])));
-            compress_sha1<00 + 0>(x, k[0] + (ck[0xA] = byteswap(input[0xA])));
-            compress_sha1<00 + 1>(x, k[0] + (ck[0xB] = byteswap(input[0xB])));
-            compress_sha1<00 + 2>(x, k[0] + (ck[0xC] = byteswap(input[0xC])));
-            compress_sha1<00 + 3>(x, k[0] + (ck[0xD] = byteswap(input[0xD])));
-            compress_sha1<00 + 4>(x, k[0] + (ck[0xE] = byteswap(input[0xE])));
-            compress_sha1<00 + 0>(x, k[0] + (ck[0xF] = byteswap(input[0xF])));
-            compress_sha1<00 + 1>(x, k[0] + rotate_sha1<16>(ck));
-            compress_sha1<00 + 2>(x, k[0] + rotate_sha1<17>(ck));
-            compress_sha1<00 + 3>(x, k[0] + rotate_sha1<18>(ck));
-            compress_sha1<00 + 4>(x, k[0] + rotate_sha1<19>(ck));
+            round_sha1<00 + 0>(x, round_constants_sha1::k[0] + (ck[0x0] = byteswap(input[0x0])));
+            round_sha1<00 + 1>(x, round_constants_sha1::k[0] + (ck[0x1] = byteswap(input[0x1])));
+            round_sha1<00 + 2>(x, round_constants_sha1::k[0] + (ck[0x2] = byteswap(input[0x2])));
+            round_sha1<00 + 3>(x, round_constants_sha1::k[0] + (ck[0x3] = byteswap(input[0x3])));
+            round_sha1<00 + 4>(x, round_constants_sha1::k[0] + (ck[0x4] = byteswap(input[0x4])));
+            round_sha1<00 + 0>(x, round_constants_sha1::k[0] + (ck[0x5] = byteswap(input[0x5])));
+            round_sha1<00 + 1>(x, round_constants_sha1::k[0] + (ck[0x6] = byteswap(input[0x6])));
+            round_sha1<00 + 2>(x, round_constants_sha1::k[0] + (ck[0x7] = byteswap(input[0x7])));
+            round_sha1<00 + 3>(x, round_constants_sha1::k[0] + (ck[0x8] = byteswap(input[0x8])));
+            round_sha1<00 + 4>(x, round_constants_sha1::k[0] + (ck[0x9] = byteswap(input[0x9])));
+            round_sha1<00 + 0>(x, round_constants_sha1::k[0] + (ck[0xA] = byteswap(input[0xA])));
+            round_sha1<00 + 1>(x, round_constants_sha1::k[0] + (ck[0xB] = byteswap(input[0xB])));
+            round_sha1<00 + 2>(x, round_constants_sha1::k[0] + (ck[0xC] = byteswap(input[0xC])));
+            round_sha1<00 + 3>(x, round_constants_sha1::k[0] + (ck[0xD] = byteswap(input[0xD])));
+            round_sha1<00 + 4>(x, round_constants_sha1::k[0] + (ck[0xE] = byteswap(input[0xE])));
+            round_sha1<00 + 0>(x, round_constants_sha1::k[0] + (ck[0xF] = byteswap(input[0xF])));
+            round_sha1<00 + 1>(x, round_constants_sha1::k[0] + rotate_sha1<16>(ck));
+            round_sha1<00 + 2>(x, round_constants_sha1::k[0] + rotate_sha1<17>(ck));
+            round_sha1<00 + 3>(x, round_constants_sha1::k[0] + rotate_sha1<18>(ck));
+            round_sha1<00 + 4>(x, round_constants_sha1::k[0] + rotate_sha1<19>(ck));
 
-            compress_sha1<20 + 0>(x, k[1] + rotate_sha1<0>(ck));
-            compress_sha1<20 + 1>(x, k[1] + rotate_sha1<1>(ck));
-            compress_sha1<20 + 2>(x, k[1] + rotate_sha1<2>(ck));
-            compress_sha1<20 + 3>(x, k[1] + rotate_sha1<3>(ck));
-            compress_sha1<20 + 4>(x, k[1] + rotate_sha1<4>(ck));
-            compress_sha1<20 + 0>(x, k[1] + rotate_sha1<5>(ck));
-            compress_sha1<20 + 1>(x, k[1] + rotate_sha1<6>(ck));
-            compress_sha1<20 + 2>(x, k[1] + rotate_sha1<7>(ck));
-            compress_sha1<20 + 3>(x, k[1] + rotate_sha1<8>(ck));
-            compress_sha1<20 + 4>(x, k[1] + rotate_sha1<9>(ck));
-            compress_sha1<20 + 0>(x, k[1] + rotate_sha1<10>(ck));
-            compress_sha1<20 + 1>(x, k[1] + rotate_sha1<11>(ck));
-            compress_sha1<20 + 2>(x, k[1] + rotate_sha1<12>(ck));
-            compress_sha1<20 + 3>(x, k[1] + rotate_sha1<13>(ck));
-            compress_sha1<20 + 4>(x, k[1] + rotate_sha1<14>(ck));
-            compress_sha1<20 + 0>(x, k[1] + rotate_sha1<15>(ck));
-            compress_sha1<20 + 1>(x, k[1] + rotate_sha1<16>(ck));
-            compress_sha1<20 + 2>(x, k[1] + rotate_sha1<17>(ck));
-            compress_sha1<20 + 3>(x, k[1] + rotate_sha1<18>(ck));
-            compress_sha1<20 + 4>(x, k[1] + rotate_sha1<19>(ck));
+            round_sha1<20 + 0>(x, round_constants_sha1::k[1] + rotate_sha1<0>(ck));
+            round_sha1<20 + 1>(x, round_constants_sha1::k[1] + rotate_sha1<1>(ck));
+            round_sha1<20 + 2>(x, round_constants_sha1::k[1] + rotate_sha1<2>(ck));
+            round_sha1<20 + 3>(x, round_constants_sha1::k[1] + rotate_sha1<3>(ck));
+            round_sha1<20 + 4>(x, round_constants_sha1::k[1] + rotate_sha1<4>(ck));
+            round_sha1<20 + 0>(x, round_constants_sha1::k[1] + rotate_sha1<5>(ck));
+            round_sha1<20 + 1>(x, round_constants_sha1::k[1] + rotate_sha1<6>(ck));
+            round_sha1<20 + 2>(x, round_constants_sha1::k[1] + rotate_sha1<7>(ck));
+            round_sha1<20 + 3>(x, round_constants_sha1::k[1] + rotate_sha1<8>(ck));
+            round_sha1<20 + 4>(x, round_constants_sha1::k[1] + rotate_sha1<9>(ck));
+            round_sha1<20 + 0>(x, round_constants_sha1::k[1] + rotate_sha1<10>(ck));
+            round_sha1<20 + 1>(x, round_constants_sha1::k[1] + rotate_sha1<11>(ck));
+            round_sha1<20 + 2>(x, round_constants_sha1::k[1] + rotate_sha1<12>(ck));
+            round_sha1<20 + 3>(x, round_constants_sha1::k[1] + rotate_sha1<13>(ck));
+            round_sha1<20 + 4>(x, round_constants_sha1::k[1] + rotate_sha1<14>(ck));
+            round_sha1<20 + 0>(x, round_constants_sha1::k[1] + rotate_sha1<15>(ck));
+            round_sha1<20 + 1>(x, round_constants_sha1::k[1] + rotate_sha1<16>(ck));
+            round_sha1<20 + 2>(x, round_constants_sha1::k[1] + rotate_sha1<17>(ck));
+            round_sha1<20 + 3>(x, round_constants_sha1::k[1] + rotate_sha1<18>(ck));
+            round_sha1<20 + 4>(x, round_constants_sha1::k[1] + rotate_sha1<19>(ck));
 
-            compress_sha1<40 + 0>(x, k[2] + rotate_sha1<0>(ck));
-            compress_sha1<40 + 1>(x, k[2] + rotate_sha1<1>(ck));
-            compress_sha1<40 + 2>(x, k[2] + rotate_sha1<2>(ck));
-            compress_sha1<40 + 3>(x, k[2] + rotate_sha1<3>(ck));
-            compress_sha1<40 + 4>(x, k[2] + rotate_sha1<4>(ck));
-            compress_sha1<40 + 0>(x, k[2] + rotate_sha1<5>(ck));
-            compress_sha1<40 + 1>(x, k[2] + rotate_sha1<6>(ck));
-            compress_sha1<40 + 2>(x, k[2] + rotate_sha1<7>(ck));
-            compress_sha1<40 + 3>(x, k[2] + rotate_sha1<8>(ck));
-            compress_sha1<40 + 4>(x, k[2] + rotate_sha1<9>(ck));
-            compress_sha1<40 + 0>(x, k[2] + rotate_sha1<10>(ck));
-            compress_sha1<40 + 1>(x, k[2] + rotate_sha1<11>(ck));
-            compress_sha1<40 + 2>(x, k[2] + rotate_sha1<12>(ck));
-            compress_sha1<40 + 3>(x, k[2] + rotate_sha1<13>(ck));
-            compress_sha1<40 + 4>(x, k[2] + rotate_sha1<14>(ck));
-            compress_sha1<40 + 0>(x, k[2] + rotate_sha1<15>(ck));
-            compress_sha1<40 + 1>(x, k[2] + rotate_sha1<16>(ck));
-            compress_sha1<40 + 2>(x, k[2] + rotate_sha1<17>(ck));
-            compress_sha1<40 + 3>(x, k[2] + rotate_sha1<18>(ck));
-            compress_sha1<40 + 4>(x, k[2] + rotate_sha1<19>(ck));
+            round_sha1<40 + 0>(x, round_constants_sha1::k[2] + rotate_sha1<0>(ck));
+            round_sha1<40 + 1>(x, round_constants_sha1::k[2] + rotate_sha1<1>(ck));
+            round_sha1<40 + 2>(x, round_constants_sha1::k[2] + rotate_sha1<2>(ck));
+            round_sha1<40 + 3>(x, round_constants_sha1::k[2] + rotate_sha1<3>(ck));
+            round_sha1<40 + 4>(x, round_constants_sha1::k[2] + rotate_sha1<4>(ck));
+            round_sha1<40 + 0>(x, round_constants_sha1::k[2] + rotate_sha1<5>(ck));
+            round_sha1<40 + 1>(x, round_constants_sha1::k[2] + rotate_sha1<6>(ck));
+            round_sha1<40 + 2>(x, round_constants_sha1::k[2] + rotate_sha1<7>(ck));
+            round_sha1<40 + 3>(x, round_constants_sha1::k[2] + rotate_sha1<8>(ck));
+            round_sha1<40 + 4>(x, round_constants_sha1::k[2] + rotate_sha1<9>(ck));
+            round_sha1<40 + 0>(x, round_constants_sha1::k[2] + rotate_sha1<10>(ck));
+            round_sha1<40 + 1>(x, round_constants_sha1::k[2] + rotate_sha1<11>(ck));
+            round_sha1<40 + 2>(x, round_constants_sha1::k[2] + rotate_sha1<12>(ck));
+            round_sha1<40 + 3>(x, round_constants_sha1::k[2] + rotate_sha1<13>(ck));
+            round_sha1<40 + 4>(x, round_constants_sha1::k[2] + rotate_sha1<14>(ck));
+            round_sha1<40 + 0>(x, round_constants_sha1::k[2] + rotate_sha1<15>(ck));
+            round_sha1<40 + 1>(x, round_constants_sha1::k[2] + rotate_sha1<16>(ck));
+            round_sha1<40 + 2>(x, round_constants_sha1::k[2] + rotate_sha1<17>(ck));
+            round_sha1<40 + 3>(x, round_constants_sha1::k[2] + rotate_sha1<18>(ck));
+            round_sha1<40 + 4>(x, round_constants_sha1::k[2] + rotate_sha1<19>(ck));
 
-            compress_sha1<60 + 0>(x, k[3] + rotate_sha1<0>(ck));
-            compress_sha1<60 + 1>(x, k[3] + rotate_sha1<1>(ck));
-            compress_sha1<60 + 2>(x, k[3] + rotate_sha1<2>(ck));
-            compress_sha1<60 + 3>(x, k[3] + rotate_sha1<3>(ck));
-            compress_sha1<60 + 4>(x, k[3] + rotate_sha1<4>(ck));
-            compress_sha1<60 + 0>(x, k[3] + rotate_sha1<5>(ck));
-            compress_sha1<60 + 1>(x, k[3] + rotate_sha1<6>(ck));
-            compress_sha1<60 + 2>(x, k[3] + rotate_sha1<7>(ck));
-            compress_sha1<60 + 3>(x, k[3] + rotate_sha1<8>(ck));
-            compress_sha1<60 + 4>(x, k[3] + rotate_sha1<9>(ck));
-            compress_sha1<60 + 0>(x, k[3] + rotate_sha1<10>(ck));
-            compress_sha1<60 + 1>(x, k[3] + rotate_sha1<11>(ck));
-            compress_sha1<60 + 2>(x, k[3] + rotate_sha1<12>(ck));
-            compress_sha1<60 + 3>(x, k[3] + rotate_sha1<13>(ck));
-            compress_sha1<60 + 4>(x, k[3] + rotate_sha1<14>(ck));
-            compress_sha1<60 + 0>(x, k[3] + rotate_sha1<15>(ck));
-            compress_sha1<60 + 1>(x, k[3] + rotate_sha1<16>(ck));
-            compress_sha1<60 + 2>(x, k[3] + rotate_sha1<17>(ck));
-            compress_sha1<60 + 3>(x, k[3] + rotate_sha1<18>(ck));
-            compress_sha1<60 + 4>(x, k[3] + rotate_sha1<19>(ck));
+            round_sha1<60 + 0>(x, round_constants_sha1::k[3] + rotate_sha1<0>(ck));
+            round_sha1<60 + 1>(x, round_constants_sha1::k[3] + rotate_sha1<1>(ck));
+            round_sha1<60 + 2>(x, round_constants_sha1::k[3] + rotate_sha1<2>(ck));
+            round_sha1<60 + 3>(x, round_constants_sha1::k[3] + rotate_sha1<3>(ck));
+            round_sha1<60 + 4>(x, round_constants_sha1::k[3] + rotate_sha1<4>(ck));
+            round_sha1<60 + 0>(x, round_constants_sha1::k[3] + rotate_sha1<5>(ck));
+            round_sha1<60 + 1>(x, round_constants_sha1::k[3] + rotate_sha1<6>(ck));
+            round_sha1<60 + 2>(x, round_constants_sha1::k[3] + rotate_sha1<7>(ck));
+            round_sha1<60 + 3>(x, round_constants_sha1::k[3] + rotate_sha1<8>(ck));
+            round_sha1<60 + 4>(x, round_constants_sha1::k[3] + rotate_sha1<9>(ck));
+            round_sha1<60 + 0>(x, round_constants_sha1::k[3] + rotate_sha1<10>(ck));
+            round_sha1<60 + 1>(x, round_constants_sha1::k[3] + rotate_sha1<11>(ck));
+            round_sha1<60 + 2>(x, round_constants_sha1::k[3] + rotate_sha1<12>(ck));
+            round_sha1<60 + 3>(x, round_constants_sha1::k[3] + rotate_sha1<13>(ck));
+            round_sha1<60 + 4>(x, round_constants_sha1::k[3] + rotate_sha1<14>(ck));
+            round_sha1<60 + 0>(x, round_constants_sha1::k[3] + rotate_sha1<15>(ck));
+            round_sha1<60 + 1>(x, round_constants_sha1::k[3] + rotate_sha1<16>(ck));
+            round_sha1<60 + 2>(x, round_constants_sha1::k[3] + rotate_sha1<17>(ck));
+            round_sha1<60 + 3>(x, round_constants_sha1::k[3] + rotate_sha1<18>(ck));
+            round_sha1<60 + 4>(x, round_constants_sha1::k[3] + rotate_sha1<19>(ck));
 
             vec[0] += x[0];
             vec[1] += x[1];
@@ -343,7 +349,7 @@ namespace arkana::sha2
         };
 
         template <int S00, int S01, int S02, int S10, int S11, int S12, size_t i, class T>
-        static inline constexpr void compress_sha2(vector_t<T>& vec, T kwi) noexcept
+        static inline constexpr void round_sha2(vector_t<T>& vec, T kwi) noexcept
         {
             using bits::rotr;
 
@@ -394,43 +400,43 @@ namespace arkana::sha2
 
             {
                 auto k = round_constants::constants;
-                compress_sha2<S00, S01, S02, S10, S11, S12, 0>(x, k[0x0] + (ck[0x0] = byteswap(input[0x0])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 1>(x, k[0x1] + (ck[0x1] = byteswap(input[0x1])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 2>(x, k[0x2] + (ck[0x2] = byteswap(input[0x2])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 3>(x, k[0x3] + (ck[0x3] = byteswap(input[0x3])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 4>(x, k[0x4] + (ck[0x4] = byteswap(input[0x4])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 5>(x, k[0x5] + (ck[0x5] = byteswap(input[0x5])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 6>(x, k[0x6] + (ck[0x6] = byteswap(input[0x6])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 7>(x, k[0x7] + (ck[0x7] = byteswap(input[0x7])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 0>(x, k[0x8] + (ck[0x8] = byteswap(input[0x8])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 1>(x, k[0x9] + (ck[0x9] = byteswap(input[0x9])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 2>(x, k[0xA] + (ck[0xA] = byteswap(input[0xA])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 3>(x, k[0xB] + (ck[0xB] = byteswap(input[0xB])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 4>(x, k[0xC] + (ck[0xC] = byteswap(input[0xC])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 5>(x, k[0xD] + (ck[0xD] = byteswap(input[0xD])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 6>(x, k[0xE] + (ck[0xE] = byteswap(input[0xE])));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 7>(x, k[0xF] + (ck[0xF] = byteswap(input[0xF])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 0>(x, k[0x0] + (ck[0x0] = byteswap(input[0x0])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 1>(x, k[0x1] + (ck[0x1] = byteswap(input[0x1])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 2>(x, k[0x2] + (ck[0x2] = byteswap(input[0x2])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 3>(x, k[0x3] + (ck[0x3] = byteswap(input[0x3])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 4>(x, k[0x4] + (ck[0x4] = byteswap(input[0x4])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 5>(x, k[0x5] + (ck[0x5] = byteswap(input[0x5])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 6>(x, k[0x6] + (ck[0x6] = byteswap(input[0x6])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 7>(x, k[0x7] + (ck[0x7] = byteswap(input[0x7])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 0>(x, k[0x8] + (ck[0x8] = byteswap(input[0x8])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 1>(x, k[0x9] + (ck[0x9] = byteswap(input[0x9])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 2>(x, k[0xA] + (ck[0xA] = byteswap(input[0xA])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 3>(x, k[0xB] + (ck[0xB] = byteswap(input[0xB])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 4>(x, k[0xC] + (ck[0xC] = byteswap(input[0xC])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 5>(x, k[0xD] + (ck[0xD] = byteswap(input[0xD])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 6>(x, k[0xE] + (ck[0xE] = byteswap(input[0xE])));
+                round_sha2<S00, S01, S02, S10, S11, S12, 7>(x, k[0xF] + (ck[0xF] = byteswap(input[0xF])));
             }
 
             for (size_t i = 1; i < round_constants::rounds / 16; i++)
             {
                 auto k = round_constants::constants + i * 0x10;
-                compress_sha2<S00, S01, S02, S10, S11, S12, 0>(x, k[0x0] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x0>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 1>(x, k[0x1] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x1>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 2>(x, k[0x2] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x2>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 3>(x, k[0x3] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x3>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 4>(x, k[0x4] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x4>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 5>(x, k[0x5] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x5>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 6>(x, k[0x6] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x6>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 7>(x, k[0x7] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x7>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 0>(x, k[0x8] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x8>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 1>(x, k[0x9] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x9>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 2>(x, k[0xA] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xA>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 3>(x, k[0xB] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xB>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 4>(x, k[0xC] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xC>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 5>(x, k[0xD] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xD>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 6>(x, k[0xE] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xE>(ck));
-                compress_sha2<S00, S01, S02, S10, S11, S12, 7>(x, k[0xF] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xF>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 0>(x, k[0x0] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x0>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 1>(x, k[0x1] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x1>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 2>(x, k[0x2] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x2>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 3>(x, k[0x3] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x3>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 4>(x, k[0x4] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x4>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 5>(x, k[0x5] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x5>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 6>(x, k[0x6] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x6>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 7>(x, k[0x7] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x7>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 0>(x, k[0x8] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x8>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 1>(x, k[0x9] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0x9>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 2>(x, k[0xA] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xA>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 3>(x, k[0xB] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xB>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 4>(x, k[0xC] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xC>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 5>(x, k[0xD] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xD>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 6>(x, k[0xE] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xE>(ck));
+                round_sha2<S00, S01, S02, S10, S11, S12, 7>(x, k[0xF] + rotate_sha2<s00, s01, s02, s10, s11, s12, 0xF>(ck));
             }
 
             vec[0] += x[0];
