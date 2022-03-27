@@ -19,12 +19,12 @@ namespace arkana::crc32
         static inline crc32_value_t calculate_crc32(const void* data, size_t length, crc32_value_t current = 0)
         {
             const byte_t* p = static_cast<const byte_t*>(data);
-            
+
             // process unaligned bytes
             constexpr size_t align_to = 16;
             if (size_t l = std::min<size_t>(length, static_cast<size_t>(-reinterpret_cast<intptr_t>(p) & (align_to - 1))))
             {
-                current = crc32::calculate_crc32<polynomial>(p, l, current);
+                current = ref::calculate_crc32<polynomial>(p, l, current);
                 length -= l;
                 p += l;
             }
@@ -62,7 +62,7 @@ namespace arkana::crc32
             current = ~crc;
 
             // process remain bytes
-            return crc32::calculate_crc32<polynomial>(p, length, current);
+            return ref::calculate_crc32<polynomial>(p, length, current);
         }
     }
 }

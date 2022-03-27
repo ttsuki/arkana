@@ -15,6 +15,11 @@
 namespace arkana::crc32
 {
     using crc32_value_t = std::uint32_t;
+    crc32_value_t calculate_crc32(const void* data, size_t length, crc32_value_t current = 0);
+    crc32_value_t calculate_crc32_ref(const void* data, size_t length, crc32_value_t current = 0);
+    crc32_value_t calculate_crc32_ia32(const void* data, size_t length, crc32_value_t current = 0);
+    crc32_value_t calculate_crc32_avx2(const void* data, size_t length, crc32_value_t current = 0);
+    crc32_value_t calculate_crc32_avx2clmul(const void* data, size_t length, crc32_value_t current = 0);
 
     class crc32_context_t
     {

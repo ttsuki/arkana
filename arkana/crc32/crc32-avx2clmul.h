@@ -50,7 +50,7 @@ namespace arkana::crc32
             constexpr size_t align_to = alignof(state128_t);
             if (size_t l = std::min<size_t>(length, static_cast<size_t>(-reinterpret_cast<intptr_t>(p) & (align_to - 1))))
             {
-                current = crc32::calculate_crc32<polynomial>(p, l, current);
+                current = ref::calculate_crc32<polynomial>(p, l, current);
                 length -= l;
                 p += l;
             }
@@ -164,7 +164,7 @@ namespace arkana::crc32
             }
 
             // process remain bytes
-            return crc32::calculate_crc32<polynomial>(p, length, current);
+            return ref::calculate_crc32<polynomial>(p, length, current);
         }
     }
 }
