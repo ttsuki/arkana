@@ -12,6 +12,13 @@
 
 namespace arkana::sha2
 {
+    std::unique_ptr<md5_context_t> create_md5_context()
+    {
+        return cpuid::cpu_supports::AVX2
+            ? create_md5_context_avx2()
+            : create_md5_context_ref();
+    }
+
     std::unique_ptr<sha1_context_t> create_sha1_context()
     {
         return cpuid::cpu_supports::AVX2
@@ -94,6 +101,7 @@ namespace arkana::sha2
         return std::make_unique<sha2_context_impl_t>(std::move(state));
     }
 
+    std::unique_ptr<md5_context_t> create_md5_context_ref() { return make_sha2_context_ref(create_md5_state()); }
     std::unique_ptr<sha1_context_t> create_sha1_context_ref() { return make_sha2_context_ref(create_sha1_state()); }
     std::unique_ptr<sha224_context_t> create_sha224_context_ref() { return make_sha2_context_ref(create_sha224_state()); }
     std::unique_ptr<sha256_context_t> create_sha256_context_ref() { return make_sha2_context_ref(create_sha256_state()); }

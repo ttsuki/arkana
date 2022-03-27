@@ -32,6 +32,23 @@ namespace
     };
 }
 
+TYPED_TEST_P(Sha2Test, Md5_TestVectors)
+{
+    EXPECT_EQ(TypeParam::md5_context().finalize(), 0xD41D8CD9'8F00B204'E9800998'ECF8427E_byte_array);
+    EXPECT_EQ(TypeParam::md5_context().process_string("abc").finalize(), 0x90015098'3cd24fb0'd6963f7d'28e17f72_byte_array);
+    EXPECT_EQ(TypeParam::md5_context().process_string("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq").finalize(), 0x8215EF07'96A20BCA'AAE116D3'876C664A_byte_array);
+    EXPECT_EQ(TypeParam::md5_context().process_string("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu").finalize(), 0x03DD8807'A93175FB'062DFB55'DC7D359C_byte_array);
+    EXPECT_EQ(TypeParam::md5_context().process_string(std::string(1000000, 'a')).finalize(), 0x7707D6AE'4E027C70'EEA2A935'C2296F21_byte_array);
+
+#ifdef NDEBUG
+    {
+        auto ctx = TypeParam::md5_context();
+        std::string s = "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmno";
+        for (int i = 0; i < 16777216; i++) ctx.process_string(s);
+        EXPECT_EQ(ctx.finalize(), 0xD3381391'69D50F55'526194C7'90EC0448_byte_array);
+    }
+#endif
+}
 
 TYPED_TEST_P(Sha2Test, Sha1_TestVectors)
 {
@@ -128,6 +145,7 @@ TYPED_TEST_P(Sha2Test, Sha512_TestVectors)
 
 REGISTER_TYPED_TEST_CASE_P(
     Sha2Test,
+    Md5_TestVectors,
     Sha1_TestVectors,
     Sha224_TestVectors,
     Sha256_TestVectors,
@@ -136,6 +154,7 @@ REGISTER_TYPED_TEST_CASE_P(
 
 struct ref_impl
 {
+    static auto md5_context() { return sha2_context(create_md5_context_ref()); }
     static auto sha1_context() { return sha2_context(create_sha1_context_ref()); }
     static auto sha224_context() { return sha2_context(create_sha224_context_ref()); }
     static auto sha256_context() { return sha2_context(create_sha256_context_ref()); }
@@ -149,6 +168,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(ref, Sha2Test, ref_impl);
 
 struct avx2_impl
 {
+    static auto md5_context() { return sha2_context(create_md5_context_avx2()); }
     static auto sha1_context() { return sha2_context(create_sha1_context_avx2()); }
     static auto sha224_context() { return sha2_context(create_sha224_context_avx2()); }
     static auto sha256_context() { return sha2_context(create_sha256_context_avx2()); }

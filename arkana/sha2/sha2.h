@@ -17,6 +17,7 @@ namespace arkana::sha2
     template <size_t bits>
     using sha2_digest_t = byte_array<bits / 8>;
 
+    using md5_digest_t = sha2_digest_t<128>;
     using sha1_digest_t = sha2_digest_t<160>;
     using sha224_digest_t = sha2_digest_t<224>;
     using sha256_digest_t = sha2_digest_t<256>;
@@ -30,6 +31,7 @@ namespace arkana::sha2
         template <class T> using vector_t = std::array<T, 8>;
         template <class T> using chunk_t = std::array<T, 16>;
 
+        static constexpr inline vector_t<uint32_t> md5_initial_vector = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};
         static constexpr inline vector_t<uint32_t> sha1_initial_vector = {0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0};
         static constexpr inline vector_t<uint32_t> sha224_initial_vector = {0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939, 0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4};
         static constexpr inline vector_t<uint32_t> sha256_initial_vector = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
@@ -37,6 +39,133 @@ namespace arkana::sha2
         static constexpr inline vector_t<uint64_t> sha512_initial_vector = {0x6a09e667f3bcc908, 0xbb67ae8584caa73b, 0x3c6ef372fe94f82b, 0xa54ff53a5f1d36f1, 0x510e527fade682d1, 0x9b05688c2b3e6c1f, 0x1f83d9abfb41bd6b, 0x5be0cd19137e2179};
         static constexpr inline vector_t<uint64_t> sha512_224_initial_vector = {0x8c3d37c819544da2, 0x73e1996689dcd4d6, 0x1dfab7ae32ff9c82, 0x679dd514582f9fcf, 0x0f6d2b697bd44da8, 0x77e36f7304c48942, 0x3f9d85a86a1d36c8, 0x1112e6ad91d692a1};
         static constexpr inline vector_t<uint64_t> sha512_256_initial_vector = {0x22312194fc2bf72c, 0x9f555fa3c84c64c2, 0x2393b86b6f53b151, 0x963877195940eabd, 0x96283ee2a88effe3, 0xbe5e1e2553863992, 0x2b0199fc2c85b8aa, 0x0eb72ddc81c52ca2};
+
+        struct round_constants_md5
+        {
+            static inline constexpr uint32_t g[64] = {
+                0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, // i * 1 + 0
+                1, 6, 11, 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12, // i * 5 + 1
+                5, 8, 11, 14, 1, 4, 7, 10, 13, 0, 3, 6, 9, 12, 15, 2, // i * 3 + 5
+                0, 7, 14, 5, 12, 3, 10, 1, 8, 15, 6, 13, 4, 11, 2, 9, // i * 7 + 0
+            };
+
+            static inline constexpr uint32_t s[64] = {
+                7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+                5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
+                4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
+                6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21,
+            };
+
+            static inline constexpr uint32_t k[64] = {
+                0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
+                0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be, 0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821,
+                0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa, 0xd62f105d, 0x02441453, 0xd8a1e681, 0xe7d3fbc8,
+                0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed, 0xa9e3e905, 0xfcefa3f8, 0x676f02d9, 0x8d2a4c8a,
+                0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c, 0xa4beea44, 0x4bdecfa9, 0xf6bb4b60, 0xbebfbc70,
+                0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05, 0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665,
+                0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1,
+                0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1, 0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391,
+            };
+        };
+
+        template <size_t i>
+        static constexpr inline void round_md5(std::array<uint32_t, 4>& x, const std::array<uint32_t, 16>& ck) noexcept
+        {
+            using bits::rotl;
+
+            uint32_t a = x[(0 - i) & 3];
+            uint32_t b = x[(1 - i) & 3];
+            uint32_t c = x[(2 - i) & 3];
+            uint32_t d = x[(3 - i) & 3];
+
+            constexpr uint32_t g = round_constants_md5::g[i];
+            constexpr uint32_t s = round_constants_md5::s[i];
+            constexpr uint32_t k = round_constants_md5::k[i];
+
+            if constexpr (!(i < 64)) static_assert(i < 64);
+            else if constexpr (i < 16) a = b + rotl(a + ck[g] + k + ((b & c) | (~b & d)), s);
+            else if constexpr (i < 32) a = b + rotl(a + ck[g] + k + ((b & d) | (c & ~d)), s);
+            else if constexpr (i < 48) a = b + rotl(a + ck[g] + k + (b ^ c ^ d), s);
+            else if constexpr (i < 64) a = b + rotl(a + ck[g] + k + (c ^ (b | ~d)), s);
+
+            x[(0 - i) & 3] = a;
+        }
+
+
+        static void process_chunk_md5(vector_t<uint32_t>& vec, chunk_t<uint32_t> ck) noexcept
+        {
+            std::array<uint32_t, 4> x{vec[0], vec[1], vec[2], vec[3]};
+
+            round_md5<0x00>(x, ck);
+            round_md5<0x01>(x, ck);
+            round_md5<0x02>(x, ck);
+            round_md5<0x03>(x, ck);
+            round_md5<0x04>(x, ck);
+            round_md5<0x05>(x, ck);
+            round_md5<0x06>(x, ck);
+            round_md5<0x07>(x, ck);
+            round_md5<0x08>(x, ck);
+            round_md5<0x09>(x, ck);
+            round_md5<0x0A>(x, ck);
+            round_md5<0x0B>(x, ck);
+            round_md5<0x0C>(x, ck);
+            round_md5<0x0D>(x, ck);
+            round_md5<0x0E>(x, ck);
+            round_md5<0x0F>(x, ck);
+            round_md5<0x10>(x, ck);
+            round_md5<0x11>(x, ck);
+            round_md5<0x12>(x, ck);
+            round_md5<0x13>(x, ck);
+            round_md5<0x14>(x, ck);
+            round_md5<0x15>(x, ck);
+            round_md5<0x16>(x, ck);
+            round_md5<0x17>(x, ck);
+            round_md5<0x18>(x, ck);
+            round_md5<0x19>(x, ck);
+            round_md5<0x1A>(x, ck);
+            round_md5<0x1B>(x, ck);
+            round_md5<0x1C>(x, ck);
+            round_md5<0x1D>(x, ck);
+            round_md5<0x1E>(x, ck);
+            round_md5<0x1F>(x, ck);
+            round_md5<0x20>(x, ck);
+            round_md5<0x21>(x, ck);
+            round_md5<0x22>(x, ck);
+            round_md5<0x23>(x, ck);
+            round_md5<0x24>(x, ck);
+            round_md5<0x25>(x, ck);
+            round_md5<0x26>(x, ck);
+            round_md5<0x27>(x, ck);
+            round_md5<0x28>(x, ck);
+            round_md5<0x29>(x, ck);
+            round_md5<0x2A>(x, ck);
+            round_md5<0x2B>(x, ck);
+            round_md5<0x2C>(x, ck);
+            round_md5<0x2D>(x, ck);
+            round_md5<0x2E>(x, ck);
+            round_md5<0x2F>(x, ck);
+            round_md5<0x30>(x, ck);
+            round_md5<0x31>(x, ck);
+            round_md5<0x32>(x, ck);
+            round_md5<0x33>(x, ck);
+            round_md5<0x34>(x, ck);
+            round_md5<0x35>(x, ck);
+            round_md5<0x36>(x, ck);
+            round_md5<0x37>(x, ck);
+            round_md5<0x38>(x, ck);
+            round_md5<0x39>(x, ck);
+            round_md5<0x3A>(x, ck);
+            round_md5<0x3B>(x, ck);
+            round_md5<0x3C>(x, ck);
+            round_md5<0x3D>(x, ck);
+            round_md5<0x3E>(x, ck);
+            round_md5<0x3F>(x, ck);
+
+            vec[0] += x[0];
+            vec[1] += x[1];
+            vec[2] += x[2];
+            vec[3] += x[3];
+        }
 
         template <size_t i, class T>
         static inline constexpr void compress_sha1(vector_t<T>& vec, T kwi) noexcept
@@ -337,6 +466,7 @@ namespace arkana::sha2
                 uintmax_t wrote;
             };
 
+            using md5_state_t = sha2_state_t<uint32_t, md5_digest_t>;
             using sha1_state_t = sha2_state_t<uint32_t, sha1_digest_t>;
             using sha224_state_t = sha2_state_t<uint32_t, sha224_digest_t>;
             using sha256_state_t = sha2_state_t<uint32_t, sha256_digest_t>;
@@ -345,6 +475,7 @@ namespace arkana::sha2
             using sha512_224_state_t = sha2_state_t<uint64_t, sha512_224_digest_t>;
             using sha512_256_state_t = sha2_state_t<uint64_t, sha512_256_digest_t>;
 
+            static inline constexpr md5_state_t create_md5_state() { return {md5_initial_vector, {}, 0}; }
             static inline constexpr sha1_state_t create_sha1_state() { return {sha1_initial_vector, {}, 0}; }
             static inline constexpr sha224_state_t create_sha224_state() { return {sha224_initial_vector, {}, 0}; }
             static inline constexpr sha256_state_t create_sha256_state() { return {sha256_initial_vector, {}, 0}; }
@@ -378,7 +509,7 @@ namespace arkana::sha2
                 }
             }
 
-            template <class sha2_state_t = sha256_state_t, auto process_chunk = functions::process_chunk_sha256>
+            template <class sha2_state_t = sha256_state_t, auto process_chunk = functions::process_chunk_sha256, bool big_endian = true>
             static auto finalize_and_get_digest(sha2_state_t& stt) noexcept -> typename sha2_state_t::digest_t
             {
                 using T = typename sha2_state_t::unit_t;
@@ -403,15 +534,26 @@ namespace arkana::sha2
                 // processes last chunk
                 {
                     // puts message length
-                    stt.input[14] = byteswap(static_cast<T>(stt.wrote >> (sizeof(T) * 8 - 3))); // higher
-                    stt.input[15] = byteswap(static_cast<T>(stt.wrote << 3));                   // lower
+                    if constexpr (big_endian)
+                    {
+                        stt.input[14] = byteswap(static_cast<T>(stt.wrote >> (sizeof(T) * 8 - 3))); // higher
+                        stt.input[15] = byteswap(static_cast<T>(stt.wrote << 3));                   // lower
+                    }
+                    else
+                    {
+                        stt.input[14] = (static_cast<T>(stt.wrote << 3));                   // lower
+                        stt.input[15] = (static_cast<T>(stt.wrote >> (sizeof(T) * 8 - 3))); // higher
+                    }
                     process_chunk(stt.vec, stt.input);
                 }
 
                 // to digest value
                 {
                     vector_t<T> vec = stt.vec;
-                    for (auto&& i : vec) { i = byteswap(i); }
+                    if constexpr (big_endian)
+                    {
+                        for (auto&& i : vec) { i = byteswap(i); }
+                    }
 
                     digest_t digest{};
                     memcpy(&digest, &vec, sizeof(digest));
@@ -423,6 +565,7 @@ namespace arkana::sha2
 
     namespace ref
     {
+        using functions::md5_state_t;
         using functions::sha1_state_t;
         using functions::sha224_state_t;
         using functions::sha256_state_t;
@@ -430,6 +573,7 @@ namespace arkana::sha2
         using functions::sha512_state_t;
         using functions::sha512_224_state_t;
         using functions::sha512_256_state_t;
+        using functions::create_md5_state;
         using functions::create_sha1_state;
         using functions::create_sha224_state;
         using functions::create_sha256_state;
@@ -437,6 +581,7 @@ namespace arkana::sha2
         using functions::create_sha512_state;
         using functions::create_sha512_224_state;
         using functions::create_sha512_256_state;
+        static inline void process_bytes(md5_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<md5_state_t, functions::process_chunk_md5>(stt, data, len); }
         static inline void process_bytes(sha1_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha1_state_t, functions::process_chunk_sha1>(stt, data, len); }
         static inline void process_bytes(sha224_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha224_state_t, functions::process_chunk_sha256>(stt, data, len); }
         static inline void process_bytes(sha256_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha256_state_t, functions::process_chunk_sha256>(stt, data, len); }
@@ -444,6 +589,7 @@ namespace arkana::sha2
         static inline void process_bytes(sha512_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha512_state_t, functions::process_chunk_sha512>(stt, data, len); }
         static inline void process_bytes(sha512_224_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha512_224_state_t, functions::process_chunk_sha512>(stt, data, len); }
         static inline void process_bytes(sha512_256_state_t& stt, const void* data, size_t len) noexcept { return functions::process_bytes<sha512_256_state_t, functions::process_chunk_sha512>(stt, data, len); }
+        static inline md5_digest_t finalize_and_get_digest(md5_state_t& stt) noexcept { return functions::finalize_and_get_digest<md5_state_t, functions::process_chunk_md5, false>(stt); }
         static inline sha1_digest_t finalize_and_get_digest(sha1_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha1_state_t, functions::process_chunk_sha1>(stt); }
         static inline sha224_digest_t finalize_and_get_digest(sha224_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha224_state_t, functions::process_chunk_sha256>(stt); }
         static inline sha256_digest_t finalize_and_get_digest(sha256_state_t& stt) noexcept { return functions::finalize_and_get_digest<sha256_state_t, functions::process_chunk_sha256>(stt); }
