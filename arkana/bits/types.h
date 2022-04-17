@@ -17,9 +17,12 @@ namespace arkana
     using std::array;
     using std::tuple;
 
-    template <bool b>using bool_constant_t = std::bool_constant<b>;
+    template <bool b> using bool_constant_t = std::bool_constant<b>;
     using true_t = bool_constant_t<true>;
     using false_t = bool_constant_t<false>;
 
     template <size_t S> using byte_array = array<byte_t, S>;
+
+    template <class T, class... Ts> using is_any_of = std::disjunction<std::is_same<T, Ts>...>;
+    template <class T, class... Ts> static constexpr bool is_any_of_v = is_any_of<T, Ts...>::value;
 }

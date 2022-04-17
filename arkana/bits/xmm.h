@@ -235,18 +235,26 @@ namespace arkana::xmm
     ARKXMM_API u8x16(uint8_t v) -> vu8x16 { return broadcast<vu8x16>(v); }
     ARKXMM_API i8x32(int8_t v) -> vi8x32 { return broadcast<vi8x32>(v); }
     ARKXMM_API u8x32(uint8_t v) -> vu8x32 { return broadcast<vu8x32>(v); }
+    ARKXMM_API i8x32(vi8x16 v) -> vi8x32 { return broadcast<vi8x32>(v); }
+    ARKXMM_API u8x32(vu8x16 v) -> vu8x32 { return broadcast<vu8x32>(v); }
     ARKXMM_API i16x8(int16_t v) -> vi16x8 { return broadcast<vi16x8>(v); }
     ARKXMM_API u16x8(uint16_t v) -> vu16x8 { return broadcast<vu16x8>(v); }
     ARKXMM_API i16x16(int16_t v) -> vi16x16 { return broadcast<vi16x16>(v); }
     ARKXMM_API u16x16(uint16_t v) -> vu16x16 { return broadcast<vu16x16>(v); }
+    ARKXMM_API i16x16(vi16x8 v) -> vi16x16 { return broadcast<vi16x16>(v); }
+    ARKXMM_API u16x16(vu16x8 v) -> vu16x16 { return broadcast<vu16x16>(v); }
     ARKXMM_API i32x4(int32_t v) -> vi32x4 { return broadcast<vi32x4>(v); }
     ARKXMM_API u32x4(uint32_t v) -> vu32x4 { return broadcast<vu32x4>(v); }
     ARKXMM_API i32x8(int32_t v) -> vi32x8 { return broadcast<vi32x8>(v); }
     ARKXMM_API u32x8(uint32_t v) -> vu32x8 { return broadcast<vu32x8>(v); }
+    ARKXMM_API i32x8(vi32x4 v) -> vi32x8 { return broadcast<vi32x8>(v); }
+    ARKXMM_API u32x8(vu32x4 v) -> vu32x8 { return broadcast<vu32x8>(v); }
     ARKXMM_API i64x2(int64_t v) -> vi64x2 { return broadcast<vi64x2>(v); }
     ARKXMM_API u64x2(uint64_t v) -> vu64x2 { return broadcast<vu64x2>(v); }
     ARKXMM_API i64x4(int64_t v) -> vi64x4 { return broadcast<vi64x4>(v); }
     ARKXMM_API u64x4(uint64_t v) -> vu64x4 { return broadcast<vu64x4>(v); }
+    ARKXMM_API i64x4(vi64x2 v) -> vi64x4 { return broadcast<vi64x4>(v); }
+    ARKXMM_API u64x4(vu64x2 v) -> vu64x4 { return broadcast<vu64x4>(v); }
 
     // from values shortcut
     ARKXMM_API i8x16(int8_t x0, int8_t x1, int8_t x2, int8_t x3, int8_t x4, int8_t x5, int8_t x6, int8_t x7, int8_t x8, int8_t x9, int8_t xA, int8_t xB, int8_t xC, int8_t xD, int8_t xE, int8_t xF) -> vi8x16 { return from_values<vi8x16>(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF); }
@@ -274,6 +282,14 @@ namespace arkana::xmm
     ARKXMM_API i64x4(int64_t x0, int64_t x1, int64_t x2, int64_t x3) -> vi64x4 { return from_values<vi64x4>(x0, x1, x2, x3); }
     ARKXMM_API u64x4(uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3) -> vu64x4 { return from_values<vu64x4>(x0, x1, x2, x3); }
 
+    ARKXMM_API i8x32(vi8x16 x0, vi8x16 x1) -> vi8x32 { return from_values<vi8x32>(x0, x1); }
+    ARKXMM_API u8x32(vu8x16 x0, vu8x16 x1) -> vu8x32 { return from_values<vu8x32>(x0, x1); }
+    ARKXMM_API i16x16(vi16x8 x0, vi16x8 x1) -> vi16x16 { return from_values<vi16x16>(x0, x1); }
+    ARKXMM_API u16x16(vu16x8 x0, vu16x8 x1) -> vu16x16 { return from_values<vu16x16>(x0, x1); }
+    ARKXMM_API i32x8(vi32x4 x0, vi32x4 x1) -> vi32x8 { return from_values<vi32x8>(x0, x1); }
+    ARKXMM_API u32x8(vu32x4 x0, vu32x4 x1) -> vu32x8 { return from_values<vu32x8>(x0, x1); }
+    ARKXMM_API i64x4(vi64x2 x0, vi64x2 x1) -> vi64x4 { return from_values<vi64x4>(x0, x1); }
+    ARKXMM_API u64x4(vu64x2 x0, vu64x2 x1) -> vu64x4 { return from_values<vu64x4>(x0, x1); }
 
     // insert single element into vector
     template <uint8_t index_4bit> ARKXMM_API insert_element(vi8x16 v, int8_t x) -> vi8x16 { return {_mm_insert_epi8(v.v, x, index_4bit)}; }        // SSE4.1

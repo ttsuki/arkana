@@ -87,16 +87,6 @@ namespace arkana::camellia
                 return block;
             }
 
-            ARKXMM_API camellia_prewhite_transposed(v128& block, const key64& kl, const key64& kr) -> v128&
-            {
-                const vu32x8 kx = reinterpret<vu32x8>(u64x4(kl, kr));
-                block.l.l ^= shuffle<0b00000000>(kx);
-                block.l.r ^= shuffle<0b01010101>(kx);
-                block.r.l ^= shuffle<0b10101010>(kx);
-                block.r.r ^= shuffle<0b11111111>(kx);
-                return block;
-            }
-
             ARKXMM_API camellia_postwhite(v128& block, const uint64_t& kl, const key64& kr) -> v128&
             {
                 const vu32x8 kx = reinterpret<vu32x8>(u64x4(kl, kr));
@@ -140,44 +130,6 @@ namespace arkana::camellia
                 xmm::store_u(&dst->r.l, reg.l.l);
                 xmm::store_u(&dst->r.r, reg.l.r);
             }
-
-            static constexpr auto generate_rfc5528_ctr_provider(const byte_array<8>& iv, const byte_array<4>& nonce)
-            {
-                struct ctr0_t
-                {
-                    uint32_t n, ivl, ivr, ctr;
-                } ctr0{};
-                ctr0.n = arkana::load_u<uint32_t>(nonce.data() + 0);
-                ctr0.ivl = arkana::load_u<uint32_t>(iv.data() + 0);
-                ctr0.ivr = arkana::load_u<uint32_t>(iv.data() + 4);
-
-                return [ctr0](size_t index)
-                {
-                    return v128{
-                        {
-                            u32x8(ctr0.n),
-                            u32x8(ctr0.ivl)
-                        },
-                        {
-                            u32x8(ctr0.ivr),
-                            byteswap(u32x8(static_cast<uint32_t>(index * 8)) + u32x8(1, 3, 5, 7, 2, 4, 6, 8))
-                        }
-                    };
-                };
-            }
-
-            using rfc5528_ctr_provider_t = decltype(generate_rfc5528_ctr_provider({}, {}));
-
-            template <class custom_ctr_provider_t>
-            static constexpr auto generate_custom_ctr_provider(custom_ctr_provider_t&& provider)
-            {
-                return [provider = functions::generate_custom_ctr_provider<v128>(std::forward<custom_ctr_provider_t>(provider))](size_t index)
-                {
-                    v128 block = provider(index);
-                    transpose_32x4x4(block.l.l, block.l.r, block.r.l, block.r.r);
-                    return block;
-                };
-            }
         }
 
         namespace impl
@@ -185,47 +137,106 @@ namespace arkana::camellia
             using ref::impl::key_vector_small_t;
             using ref::impl::key_vector_large_t;
             using ref::impl::generate_key_vector;
-            using ref::impl::key_vector_for_t;
 
             template <class key_vector_t>
             static inline auto process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_t& kv)
-            -> std::enable_if_t<std::is_same_v<key_vector_t, key_vector_small_t> || std::is_same_v<key_vector_t, key_vector_large_t>, void>
+            -> std::enable_if_t<is_any_of<key_vector_t, key_vector_small_t, key_vector_large_t>::value, void>
             {
-                functions::key_scheduling::process_blocks_ecb<
+                // rfc3713 ecb-mode
+                using namespace functions;
+                ecb_mode::process_blocks_ecb<
                     v128,
                     load_v128,
                     camellia_prewhite,
-                    functions::camellia_f_table_lookup_32<v64&, lookup_sbox32>,
-                    functions::camellia_fl<v64&, rotl_be1>,
-                    functions::camellia_fl_inv<v64&, rotl_be1>,
+                    camellia_f_table_lookup_32<v64&, lookup_sbox32>,
+                    camellia_fl<v64&, rotl_be1>,
+                    camellia_fl_inv<v64&, rotl_be1>,
                     camellia_postwhite,
                     swap_store_v128>(dst, src, length, kv);
             }
 
-            using impl::rfc5528_ctr_provider_t;
-            using impl::generate_rfc5528_ctr_provider;
-            using impl::generate_custom_ctr_provider;
+            using ref::impl::ctr_iv_t;
+            using ref::impl::ctr_nonce_t;
 
-            template <class key_vector_t, class ctr_provider_t>
-            static inline auto process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, ctr_provider_t&& ctr)
-            -> std::enable_if_t<std::is_same_v<key_vector_t, key_vector_small_t> || std::is_same_v<key_vector_t, key_vector_large_t>, void>
+            template <class key_vector_t>
+            static inline auto process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, const ctr_iv_t& ctr_iv, const ctr_nonce_t& ctr_nonce)
+            -> std::enable_if_t<is_any_of<key_vector_t, key_vector_small_t, key_vector_large_t>::value, void>
             {
-                functions::key_scheduling::process_bytes_ctr<
+                // rfc5528 ctr-mode
+                struct ctr_t
+                {
+                    uint32_t n, ivl, ivr, ctr;
+                };
+
+                ctr_t ctr0 = arkana::load_u<ctr_t>(&kv);
+                ctr0.n ^= arkana::load_u<uint32_t>(ctr_nonce.data() + 0);
+                ctr0.ivl ^= arkana::load_u<uint32_t>(ctr_iv.data() + 0);
+                ctr0.ivr ^= arkana::load_u<uint32_t>(ctr_iv.data() + 4);
+
+                using namespace functions;
+                ctr_mode::process_bytes_ctr<
                     v128,
-                    camellia_prewhite_transposed,
-                    functions::camellia_f_table_lookup_32<v64&, lookup_sbox32>,
-                    functions::camellia_fl<v64&, rotl_be1>,
-                    functions::camellia_fl_inv<v64&, rotl_be1>,
+                    camellia_thruwhite<v128&, key64>,
+                    camellia_f_table_lookup_32<v64&, lookup_sbox32>,
+                    camellia_fl<v64&, rotl_be1>,
+                    camellia_fl_inv<v64&, rotl_be1>,
                     camellia_postwhite,
                     load_v128,
                     swap_xor128,
-                    store_v128>(dst, src, position, length, kv, ctr);
+                    store_v128>(dst, src, position, length, kv, [ctr0](size_t index) -> v128
+                {
+                    // rfc5528 ctr generator
+                    v32 ctr = byteswap(u32x8(static_cast<uint32_t>(index * 8)) + u32x8(1, 3, 5, 7, 2, 4, 6, 8));
+                    v128 v;
+                    v.l.l = u32x8(ctr0.n);
+                    v.l.r = u32x8(ctr0.ivl);
+                    v.r.l = u32x8(ctr0.ivr);
+                    v.r.r = u32x8(ctr0.ctr) ^ ctr;
+                    return v;
+                });
+            }
+
+
+            template <class key_vector_t, class ctr_generator_t>
+            static inline auto process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, ctr_generator_t&& ctr)
+            -> std::enable_if_t<is_any_of<key_vector_t, key_vector_small_t, key_vector_large_t>::value, void>
+            {
+                // custom ctr-mode
+                using ctr_t = std::invoke_result_t<ctr_generator_t, size_t>;
+                static_assert(sizeof(ctr_t) == 16);
+                static_assert(std::is_trivially_copyable_v<ctr_t>);
+
+                using namespace functions;
+                ctr_mode::process_bytes_ctr<
+                    v128,
+                    camellia_prewhite,
+                    camellia_f_table_lookup_32<v64&, lookup_sbox32>,
+                    camellia_fl<v64&, rotl_be1>,
+                    camellia_fl_inv<v64&, rotl_be1>,
+                    camellia_postwhite,
+                    load_v128,
+                    swap_xor128,
+                    store_v128>(dst, src, position, length, kv, [ctr = std::forward<decltype(ctr)>(ctr)](size_t index) -> v128
+                {
+                    array<ctr_t, 8> v = {
+                        ctr(index * 8 + 0),
+                        ctr(index * 8 + 1),
+                        ctr(index * 8 + 2),
+                        ctr(index * 8 + 3),
+                        ctr(index * 8 + 4),
+                        ctr(index * 8 + 5),
+                        ctr(index * 8 + 6),
+                        ctr(index * 8 + 7),
+                    };
+
+                    return load_v128(reinterpret_cast<v128*>(v.data()));
+                });
             }
         }
 
         using impl::key_vector_small_t;
         using impl::key_vector_large_t;
-        using impl::key_vector_for_t;
+
         static inline key_vector_small_t generate_key_vector_encrypt(const key_128bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
         static inline key_vector_large_t generate_key_vector_encrypt(const key_192bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
         static inline key_vector_large_t generate_key_vector_encrypt(const key_256bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
@@ -235,9 +246,9 @@ namespace arkana::camellia
         static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_small_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
         static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_large_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
 
-        using impl::rfc5528_ctr_provider_t;
-        static inline rfc5528_ctr_provider_t generate_ctr_provider(const byte_array<8>& iv, const byte_array<4>& nonce) { return impl::generate_rfc5528_ctr_provider(iv, nonce); }
-        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_small_t& kv, const rfc5528_ctr_provider_t& ctr) { return impl::process_bytes_ctr(dst, src, position, length, kv, std::forward<decltype(ctr)>(ctr)); }
-        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_large_t& kv, const rfc5528_ctr_provider_t& ctr) { return impl::process_bytes_ctr(dst, src, position, length, kv, std::forward<decltype(ctr)>(ctr)); }
+        using impl::ctr_iv_t;
+        using impl::ctr_nonce_t;
+        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_small_t& kv, const ctr_iv_t& ctr_iv, const ctr_nonce_t& ctr_nonce) { return impl::process_bytes_ctr(dst, src, position, length, kv, ctr_iv, ctr_nonce); }
+        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_large_t& kv, const ctr_iv_t& ctr_iv, const ctr_nonce_t& ctr_nonce) { return impl::process_bytes_ctr(dst, src, position, length, kv, ctr_iv, ctr_nonce); }
     }
 }
