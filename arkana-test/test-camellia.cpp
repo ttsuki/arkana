@@ -194,6 +194,57 @@ TYPED_TEST_P(CamelliaTest, rfc5528_test_vectors)
     }
 }
 
+
+TYPED_TEST_P(CamelliaTest, ctr_partial128)
+{
+    auto key = 0x01'23'45'67'89'ab'cd'ef'fe'dc'ba'98'76'54'32'10_byte_array;
+    auto iv = 0x00'00'00'00'00'00'00'00_byte_array;
+    auto nonce = 0x00'00'00'30_byte_array;
+    auto& plain = TestFixture::source_for_benchmark();
+    std::array<std::byte, 2048> chiper{};
+    TypeParam::camellia128_ctr_context_t(key, iv, nonce)->process_bytes(chiper.data(), plain.data(), 0, chiper.size());
+
+#ifndef NDEBUG
+    for (auto i : {0, 1, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129, 255, 256, 257, 511, 512, 513})
+        for (auto j : {0, 1, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129, 255, 256, 257, 511, 512, 513, 1023, 1024, 1025})
+#else
+    for (size_t i = 0; i <= 512; i++)
+        for (size_t j = 0; j < chiper.size() - i; j++)
+#endif
+        {
+            std::array<std::byte, 4096> x{};
+            TypeParam::camellia128_ctr_context_t(key, iv, nonce)->process_bytes(x.data() + 1, chiper.data() + i, i, j);
+            EXPECT_EQ(x[0], std::byte{});
+            EXPECT_EQ(memcmp(x.data() + 1, plain.data() + i, j), 0);
+            EXPECT_EQ(x[j + 1], std::byte{});
+        }
+}
+
+TYPED_TEST_P(CamelliaTest, ctr_partial256)
+{
+    auto key = 0x01'23'45'67'89'ab'cd'ef'fe'dc'ba'98'76'54'32'10'00'11'22'33'44'55'66'77'88'99'aa'bb'cc'dd'ee'ff_byte_array;
+    auto iv = 0x00'00'00'00'00'00'00'00_byte_array;
+    auto nonce = 0x00'00'00'30_byte_array;
+    auto& plain = TestFixture::source_for_benchmark();
+    std::array<std::byte, 2048> chiper{};
+    TypeParam::camellia256_ctr_context_t(key, iv, nonce)->process_bytes(chiper.data(), plain.data(), 0, chiper.size());
+
+#ifndef NDEBUG
+    for (auto i : {0, 1, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129, 255, 256, 257, 511, 512, 513})
+        for (auto j : {0, 1, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129, 255, 256, 257, 511, 512, 513, 1023, 1024, 1025})
+#else
+    for (size_t i = 0; i <= 512; i++)
+        for (size_t j = 0; j < chiper.size() - i; j++)
+#endif
+        {
+            std::array<std::byte, 4096> x{};
+            TypeParam::camellia256_ctr_context_t(key, iv, nonce)->process_bytes(x.data() + 1, chiper.data() + i, i, j);
+            EXPECT_EQ(x[0], std::byte{});
+            EXPECT_EQ(memcmp(x.data() + 1, plain.data() + i, j), 0);
+            EXPECT_EQ(x[j + 1], std::byte{});
+        }
+}
+
 TYPED_TEST_P(CamelliaTest, ecb_benchmark128)
 {
     auto key = 0x01'23'45'67'89'ab'cd'ef'fe'dc'ba'98'76'54'32'10_byte_array;
@@ -243,6 +294,8 @@ REGISTER_TYPED_TEST_CASE_P(
     rfc3713_test_vectors,
     t_camellia_txt_test_vectors,
     rfc5528_test_vectors,
+    ctr_partial128,
+    ctr_partial256,
     ecb_benchmark128,
     ecb_benchmark256,
     ctr_benchmark128,
