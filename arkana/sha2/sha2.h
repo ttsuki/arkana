@@ -201,10 +201,10 @@ namespace arkana::sha2
         {
             using bits::rotl;
             static_assert(i < 20);
-            T w16 = ck[(i - 16 + 20) % 20];
-            T w14 = ck[(i - 14 + 20) % 20];
-            T w8 = ck[(i - 8 + 20) % 20];
-            T w3 = ck[(i - 3 + 20) % 20];
+            T w16 = ck[(20 + i - 16) % 20];
+            T w14 = ck[(20 + i - 14) % 20];
+            T w8 = ck[(20 + i - 8) % 20];
+            T w3 = ck[(20 + i - 3) % 20];
             return ck[i % 20] = rotl(w3 ^ w8 ^ w14 ^ w16, 1);
         }
 

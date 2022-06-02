@@ -70,8 +70,8 @@ namespace arkana::bits::intrinsics
 
     static inline uint8_t adc64(uint8_t cf, uint64_t a, uint64_t b, uint64_t* result) noexcept
     {
-#if defined(_M_X64) || defined(__x86_64__)
-        // MSVC, GCC, clang
+#if (defined(_MSC_VER) && _MSC_VER >= 1920 && defined(_M_X64)) || defined(__x86_64__)
+        // 64bit MSVC(2019 or later: VS2017 has bug?), GCC, clang
         static_assert(sizeof(uint64_t) == sizeof(unsigned long long));
         return _addcarry_u64(cf, a, b, reinterpret_cast<unsigned long long*>(result));
 #else
@@ -85,12 +85,11 @@ namespace arkana::bits::intrinsics
 
     static inline uint8_t sbb64(uint8_t cf, uint64_t a, uint64_t b, uint64_t* result) noexcept
     {
-#if defined(_M_X64)|| defined(__x86_64__)
-        // 64bit MSVC, GCC, clang
+#if (defined(_MSC_VER) && _MSC_VER >= 1920 && defined(_M_X64)) || defined(__x86_64__)
+        // 64bit MSVC(2019 or later: VS2017 has bug?), GCC, clang
         static_assert(sizeof(uint64_t) == sizeof(unsigned long long));
         return _subborrow_u64(cf, a, b, reinterpret_cast<unsigned long long*>(result));
 #else
-        // 32bit MSVC, GCC, clang
         uint32_t l32, h32;
         cf = sbb32(cf, static_cast<uint32_t>(a), static_cast<uint32_t>(b), &l32);
         cf = sbb32(cf, static_cast<uint32_t>(a >> 32), static_cast<uint32_t>(b >> 32), &h32);
