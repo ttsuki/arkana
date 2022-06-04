@@ -41,7 +41,6 @@ namespace arkana::crc32
         {
             using namespace xmm;
             using state128_t = vx128x1;
-            using state512_t = PAIR<PAIR<vx128x1>>;
             using constants = constants<polynomial>;
 
             const byte_t* p = static_cast<const byte_t*>(data);
@@ -60,25 +59,17 @@ namespace arkana::crc32
             {
                 struct f
                 {
-                    static ARKXMM_INLINE state128_t ARKXMM_VECTORCALL fold_128(state128_t current, vu64x2 k)
+                    ARKXMM_API fold_128(state128_t current, vu64x2 k) -> state128_t
                     {
                         return clmul<0, 0>(reinterpret<vu64x2>(current), k)
                             ^ clmul<1, 1>(reinterpret<vu64x2>(current), k);
                     }
 
-                    static ARKXMM_INLINE state128_t ARKXMM_VECTORCALL read_128(const byte_t*& p, size_t& length)
+                    ARKXMM_API read_128(const byte_t*& p, size_t& length) -> state128_t
                     {
                         state128_t t = load_s(reinterpret_cast<const state128_t*>(p));
                         p += sizeof(state128_t);
                         length -= sizeof(state128_t);
-                        return t;
-                    }
-
-                    static ARKXMM_INLINE state512_t ARKXMM_VECTORCALL read_512(const byte_t*& p, size_t& length)
-                    {
-                        state512_t t = load_s(reinterpret_cast<const state512_t*>(p));
-                        p += sizeof(state512_t);
-                        length -= sizeof(state512_t);
                         return t;
                     }
                 };
@@ -88,39 +79,42 @@ namespace arkana::crc32
                 // fold by 4 loop
                 if (length >= 64)
                 {
-                    state512_t state512 = {};
-                    state512.l.l = state128;
-                    state512.l.r = zero<state128_t>();
-                    state512.r.l = zero<state128_t>();
-                    state512.r.r = zero<state128_t>();
+                    state128_t state512_0 = state128;
+                    state128_t state512_1 = zero<state128_t>();
+                    state128_t state512_2 = zero<state128_t>();
+                    state128_t state512_3 = zero<state128_t>();
 
                     // read first block
-                    state512 ^= f::read_512(p, length);
+                    state512_0 ^= f::read_128(p, length);
+                    state512_1 ^= f::read_128(p, length);
+                    state512_2 ^= f::read_128(p, length);
+                    state512_3 ^= f::read_128(p, length);
+                    prefetch_nta(p);
 
                     // fold by 4 loop
                     while (length >= 64)
                     {
                         const vu64x2 k1_k2 = u64x2(constants::k1, constants::k2);
+                        state128_t s0 = f::read_128(p, length);
+                        state128_t s1 = f::read_128(p, length);
+                        state128_t s2 = f::read_128(p, length);
+                        state128_t s3 = f::read_128(p, length);
                         prefetch_nta(p);
 
                         // calculates next state
-                        state512.l.l = f::fold_128(state512.l.l, k1_k2);
-                        state512.l.r = f::fold_128(state512.l.r, k1_k2);
-                        state512.r.l = f::fold_128(state512.r.l, k1_k2);
-                        state512.r.r = f::fold_128(state512.r.r, k1_k2);
-                        state512 ^= f::read_512(p, length);
+                        state512_0 = f::fold_128(state512_0, k1_k2) ^ s0;
+                        state512_1 = f::fold_128(state512_1, k1_k2) ^ s1;
+                        state512_2 = f::fold_128(state512_2, k1_k2) ^ s2;
+                        state512_3 = f::fold_128(state512_3, k1_k2) ^ s3;
                     }
 
                     // fold 4x128 state into 1x128 state
                     {
                         const vu64x2 k3_k4 = u64x2(constants::k3, constants::k4);
-                        state128 = state512.l.l;
-                        state128 = f::fold_128(state128, k3_k4);
-                        state128 ^= state512.l.r;
-                        state128 = f::fold_128(state128, k3_k4);
-                        state128 ^= state512.r.l;
-                        state128 = f::fold_128(state128, k3_k4);
-                        state128 ^= state512.r.r;
+                        state128 = state512_0;
+                        state128 = f::fold_128(state128, k3_k4) ^ state512_1;
+                        state128 = f::fold_128(state128, k3_k4) ^ state512_2;
+                        state128 = f::fold_128(state128, k3_k4) ^ state512_3;
                     }
                 }
                 else
@@ -133,11 +127,8 @@ namespace arkana::crc32
                 while (length >= 16)
                 {
                     const vu64x2 k3_k4 = u64x2(constants::k3, constants::k4);
-                    prefetch_nta(p);
-
-                    // calculates next state
-                    state128 = f::fold_128(state128, k3_k4);
-                    state128 ^= f::read_128(p, length);
+                    state128_t s = f::read_128(p, length);
+                    state128 = f::fold_128(state128, k3_k4) ^ s;
                 }
 
                 // fold 1x128 state into crc32

@@ -135,7 +135,6 @@ namespace arkana::crc32
 #endif
 
             using namespace arkana::xmm;
-            using vu32x8x4 = PAIR<PAIR<vu32x8>>;
 
             const byte_t* p = static_cast<const byte_t*>(data);
 
@@ -149,45 +148,59 @@ namespace arkana::crc32
             }
 
             // process aligned 128-byte blocks
-            if (std::size_t blockCount = length / sizeof(vu32x8x4))
+            constexpr size_t block_size = sizeof(uint32_t) * 8 * 4;
+            if (std::size_t block_count = length / block_size)
             {
                 vu32x8 v = from_values<vu32x8>(~current, 0, 0, 0, 0, 0, 0, 0);
 
-                while (blockCount > 1)
+                while (block_count > 1)
                 {
-                    vu32x8x4 s = load_s(reinterpret_cast<const vu32x8x4*>(p));
-                    p += sizeof(vu32x8x4);
-                    prefetch_nta(p + sizeof(vu32x8x4)); // prefetch next next block
+                    vu32x8 s0 = load_s(reinterpret_cast<const vu32x8*>(p) + 0);
+                    vu32x8 s1 = load_s(reinterpret_cast<const vu32x8*>(p) + 1);
+                    vu32x8 s2 = load_s(reinterpret_cast<const vu32x8*>(p) + 2);
+                    vu32x8 s3 = load_s(reinterpret_cast<const vu32x8*>(p) + 3);
+                    p += block_size;
+                    prefetch_nta(p); // prefetch next next block
 
-                    s = transpose_32x4x4(s);
+                    // transpose_32x4x4
+                    {
+                        vu64x4 t0 = reinterpret<vu64x4>(unpack_lo(s0, s1)); // t0 = | 00010203 10111213|04050607 14151617 |
+                        vu64x4 t1 = reinterpret<vu64x4>(unpack_hi(s0, s1)); // t1 = | 08090A0B 18191A1B|0C0D0E0F 1C1D1E1F |
+                        vu64x4 t2 = reinterpret<vu64x4>(unpack_lo(s2, s3)); // t2 = | 20210223 30313233|24252627 34353637 |
+                        vu64x4 t3 = reinterpret<vu64x4>(unpack_hi(s2, s3)); // t3 = | 28290A2B 38393A3B|2C2D2E2F 3C3D3E3F |
+                        s0 = reinterpret<vu32x8>(unpack_lo(t0, t2));        // s0 = | 00010203 10111213 20212223 30313233 |
+                        s1 = reinterpret<vu32x8>(unpack_hi(t0, t2));        // s1 = | 04050607 14151617 24252627 34353637 |
+                        s2 = reinterpret<vu32x8>(unpack_lo(t1, t3));        // s2 = | 08090A0B 18191A1B 28292A2B 38393A3B |
+                        s3 = reinterpret<vu32x8>(unpack_hi(t1, t3));        // s3 = | 0C0D0E0F 1C1D1E1F 2C2D2E2F 3C3D3E3F |
+                    }
 
-                    s.l.l ^= v;
+                    s0 ^= v;
 
                     v =
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 0>.data(), extract_byte<3>(s.r.r)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 1>.data(), extract_byte<2>(s.r.r)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 2>.data(), extract_byte<1>(s.r.r)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 3>.data(), extract_byte<0>(s.r.r)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 4>.data(), extract_byte<3>(s.r.l)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 5>.data(), extract_byte<2>(s.r.l)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 6>.data(), extract_byte<1>(s.r.l)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 7>.data(), extract_byte<0>(s.r.l)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 8>.data(), extract_byte<3>(s.l.r)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 9>.data(), extract_byte<2>(s.l.r)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 10>.data(), extract_byte<1>(s.l.r)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 11>.data(), extract_byte<0>(s.l.r)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 12>.data(), extract_byte<3>(s.l.l)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 13>.data(), extract_byte<2>(s.l.l)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 14>.data(), extract_byte<1>(s.l.l)) ^
-                        gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 15>.data(), extract_byte<0>(s.l.l));
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 0>.data(), extract_byte<3>(s3)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 1>.data(), extract_byte<2>(s3)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 2>.data(), extract_byte<1>(s3)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 3>.data(), extract_byte<0>(s3)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 4>.data(), extract_byte<3>(s2)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 5>.data(), extract_byte<2>(s2)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 6>.data(), extract_byte<1>(s2)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 7>.data(), extract_byte<0>(s2)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 8>.data(), extract_byte<3>(s1)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 9>.data(), extract_byte<2>(s1)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 10>.data(), extract_byte<1>(s1)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 11>.data(), extract_byte<0>(s1)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 12>.data(), extract_byte<3>(s0)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 13>.data(), extract_byte<2>(s0)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 14>.data(), extract_byte<1>(s0)) ^
+                        xmm::gather<vu32x8>(tables::crc32_table_n<polynomial, 112 + 15>.data(), extract_byte<0>(s0));
 
-                    --blockCount;
+                    --block_count;
                 }
 
                 // process last 128-byte block
                 {
-                    auto block = to_array(load_s(reinterpret_cast<const vu32x8x4*>(p)));
-                    p += sizeof(vu32x8x4);
+                    auto block = load_u<std::array<uint32_t, 32>>(p);
+                    p += block_size;
 
                     auto varr = to_array(permute32<0, 4, 1, 5, 2, 6, 3, 7>(v));
                     block[0] ^= varr[0];
@@ -202,7 +215,7 @@ namespace arkana::crc32
                     current = ia32::calculate_crc32<polynomial>(block.data(), sizeof(block), ~0u);
                 }
 
-                length %= sizeof(vu32x8x4);
+                length %= block_size;
             }
 
             // process remain bytes

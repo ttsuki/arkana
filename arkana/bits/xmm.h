@@ -88,17 +88,6 @@ namespace arkana::xmm
     using vu64x4 = YMM<uint64_t>;
     using vx128x2 = YMM<xm128>;
 
-    /// Register pair
-    template <class T>
-    struct PAIR
-    {
-        T l, r;
-        using elem_t = typename T::elem_t;
-        static constexpr inline size_t elem_bits = T::elem_bits;
-        static constexpr inline int size = sizeof(T) * 2 / sizeof(elem_t);
-        using array_t = std::array<elem_t, size>;
-    };
-
     struct SHIFT
     {
         int64_t i;
@@ -685,29 +674,6 @@ namespace arkana::xmm
     template <class T, class U> ARKXMM_API operator <(T lhs, U rhs) -> ARKXMM_DEFINE_EXTENSION(andnot(lhs <= rhs, lhs == rhs));
     template <class T, class U> ARKXMM_API operator >(T lhs, U rhs) -> ARKXMM_DEFINE_EXTENSION(andnot(lhs >= rhs, lhs == rhs));
 
-    // pair operator extensions (recursive)
-    template <class T> ARKXMM_API load_u(const PAIR<T>* src) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{load_u(&src->l), load_u(&src->r)});
-    template <class T> ARKXMM_API load_a(const PAIR<T>* src) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{load_a(&src->l), load_a(&src->r)});
-    template <class T> ARKXMM_API load_s(const PAIR<T>* src) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{load_s(&src->l), load_s(&src->r)});
-    template <class T> ARKXMM_API store_u(PAIR<T>* dst, PAIR<T> v) -> ARKXMM_DEFINE_EXTENSION(store_u(&dst->l, v.l), store_u(&dst->r, v.r));
-    template <class T> ARKXMM_API store_a(PAIR<T>* dst, PAIR<T> v) -> ARKXMM_DEFINE_EXTENSION(store_a(&dst->l, v.l), store_a(&dst->r, v.r));
-    template <class T> ARKXMM_API store_s(PAIR<T>* dst, PAIR<T> v) -> ARKXMM_DEFINE_EXTENSION(store_s(&dst->l, v.l), store_s(&dst->r, v.r));
-    template <class T> ARKXMM_API operator ~(PAIR<T> a) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{~a.l, ~a.r});
-    template <class T> ARKXMM_API operator &(PAIR<T> a, PAIR<T> b) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{a.l & b.l, a.r & b.r});
-    template <class T> ARKXMM_API operator |(PAIR<T> a, PAIR<T> b) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{a.l | b.l, a.r | b.r});
-    template <class T> ARKXMM_API operator ^(PAIR<T> a, PAIR<T> b) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{a.l ^ b.l, a.r ^ b.r});
-    template <class T> ARKXMM_API operator +(PAIR<T> a, PAIR<T> b) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{a.l + b.l, a.r + b.r});
-    template <class T> ARKXMM_API operator -(PAIR<T> a, PAIR<T> b) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{a.l - b.l, a.r - b.r});
-    template <class T> ARKXMM_API operator *(PAIR<T> a, PAIR<T> b) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{a.l * b.l, a.r * b.r});
-    template <class T> ARKXMM_API operator <<(PAIR<T> a, PAIR<T> b) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{a.l << b.l, a.r << b.r});
-    template <class T> ARKXMM_API operator >>(PAIR<T> a, PAIR<T> b) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{a.l >> b.l, a.r >> b.r});
-    template <class T, class U> ARKXMM_API operator <<(PAIR<T> a, U b) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{a.l << b, a.r << b});
-    template <class T, class U> ARKXMM_API operator >>(PAIR<T> a, U b) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{a.l >> b, a.r >> b});
-    template <class T> ARKXMM_API operator ==(PAIR<T> a, PAIR<T> b) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{a.l == b.l, a.r == b.r});
-    template <class T> ARKXMM_API operator <(PAIR<T> a, PAIR<T> b) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{a.l < b.l, a.r < b.r});
-    template <class T> ARKXMM_API operator >(PAIR<T> a, PAIR<T> b) -> ARKXMM_DEFINE_EXTENSION(PAIR<T>{a.l > b.l, a.r > b.r});
-
-
 #if __has_include("./hex-int-literals.h")
     inline namespace literals
     {
@@ -792,47 +758,4 @@ namespace arkana::xmm
     ARKXMM_API byteswap(vu32x8 v) -> vu32x8 { return byte_shuffle_128(v, from_values<YMM<int8_t>>(3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12, 3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12)); }
     ARKXMM_API byteswap(vu64x2 v) -> vu64x2 { return byte_shuffle_128(v, from_values<XMM<int8_t>>(7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8)); }
     ARKXMM_API byteswap(vu64x4 v) -> vu64x4 { return byte_shuffle_128(v, from_values<YMM<int8_t>>(7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8)); }
-
-    // x00 x01 x02 x03 | x04 x05 x06 x07
-    // x10 x11 x12 x13 | x14 x15 x16 x17
-    // x20 x21 x22 x23 | x24 x25 x26 x27
-    // x30 x31 x32 x33 | x34 x35 x36 x37
-    // to 
-    // x00 x10 x20 x30 | x04 x14 x24 x34
-    // x01 x11 x21 x31 | x05 x15 x25 x35
-    // x02 x12 x22 x32 | x06 x16 x26 x36
-    // x03 x13 x23 x33 | x07 x17 x27 x37
-    template <template <class T> class NMM, class T>
-    ARKXMM_API transpose_32x4x4(PAIR<PAIR<NMM<T>>> reg) -> PAIR<PAIR<enable::if_32xN<NMM<T>>>>
-    {
-        auto i0 = reg.l.l;                                       // x00 x01 x02 x03 | x04 x05 x06 x07
-        auto i1 = reg.l.r;                                       // x10 x11 x12 x13 | x14 x15 x16 x17
-        auto i2 = reg.r.l;                                       // x20 x21 x22 x23 | x24 x25 x26 x27
-        auto i3 = reg.r.r;                                       // x30 x31 x32 x33 | x34 x35 x36 x37
-        auto t0 = reinterpret<NMM<uint64_t>>(unpack_lo(i0, i1)); // x00_x10 x01_x11 | x04_x14 x05_x15
-        auto t1 = reinterpret<NMM<uint64_t>>(unpack_hi(i0, i1)); // x02_x12 x03_x13 | x06_x16 x07_x17
-        auto t2 = reinterpret<NMM<uint64_t>>(unpack_lo(i2, i3)); // x20_x30 x21_x31 | x24_x34 x25_x35
-        auto t3 = reinterpret<NMM<uint64_t>>(unpack_hi(i2, i3)); // x22_x32 x23_x33 | x26_x36 x27_x37
-        auto o0 = reinterpret<NMM<T>>(unpack_lo(t0, t2));        // x00 x10 x20 x30 | x04 x14 x24 x34
-        auto o1 = reinterpret<NMM<T>>(unpack_hi(t0, t2));        // x01 x11 x21 x31 | x05 x15 x25 x35
-        auto o2 = reinterpret<NMM<T>>(unpack_lo(t1, t3));        // x02 x12 x22 x32 | x06 x16 x26 x36
-        auto o3 = reinterpret<NMM<T>>(unpack_hi(t1, t3));        // x03 x13 x23 x33 | x07 x17 x27 x37
-        return {{o0, o1}, {o2, o3}};
-    }
-
-    // x00 x01 x02 x03 | x04 x05 x06 x07
-    // to
-    // x00 x00 x00 x00 | x04 x04 x04 x04
-    // x01 x01 x01 x01 | x05 x05 x05 x05
-    // x02 x02 x02 x02 | x06 x06 x06 x06
-    // x03 x03 x03 x03 | x07 x07 x07 x07
-    template <class NMM>
-    ARKXMM_API transpose_broadcast_i32x4x4(NMM v) -> PAIR<PAIR<enable::if_32xN<NMM>>>
-    {
-        NMM a = shuffle<0b00000000>(v);
-        NMM b = shuffle<0b01010101>(v);
-        NMM c = shuffle<0b10101010>(v);
-        NMM d = shuffle<0b11111111>(v);
-        return PAIR<PAIR<NMM>>{PAIR<NMM>{a, b}, PAIR<NMM>{c, d}};
-    }
 }
