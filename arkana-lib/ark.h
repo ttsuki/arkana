@@ -15,7 +15,7 @@
 #include <arkana/ark/cpuid.h>
 #include <arkana/ark/hexilit.h>
 #include <arkana/ark/uint128.h>
-#include <arkana/ark/base64-decoder.h>
+#include <arkana/ark/base64.h>
 
 #ifdef __AVX2__
 #include <arkana/ark/xmm.h>

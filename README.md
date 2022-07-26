@@ -17,7 +17,7 @@ A header-only library collection
   - [xmm.h](arkana/ark/xmm.h): Typed SSE/AVX integer vector operation wraper library (vu32x4, vu16x16, etc)
   - [lutgen.h](arkana/ark/lutgen.h): Compile-time LUT generation helper
   - [hexilit.h](arkana/ark/hexilit.h): Compile-time hexadecimal-integer parser
-  - [base64-decoder.h](arkana/ark/base64-decoder.h): Compile-time base64 decoder  
+  - [base64.h](arkana/ark/base64.h): Compile-time base64 codec  
 
 ### arkana::camellia - Camellia Encryption Algorithm (ECB-mode: RFC 3713 / CTR-mode: RFC 5528)
   - [camellia.h](arkana/camellia/camellia.h): Reference implementation
