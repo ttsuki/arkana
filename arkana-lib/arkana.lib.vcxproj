@@ -19,13 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bits.h" />
+    <ClInclude Include="ark.h" />
     <ClInclude Include="camellia.h" />
     <ClInclude Include="crc32.h" />
     <ClInclude Include="sha2.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="bits\bits.cpp" />
+    <ClCompile Include="ark\ark.cpp" />
     <ClCompile Include="camellia\camellia-avx2.cpp">
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>

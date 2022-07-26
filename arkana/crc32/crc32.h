@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "../bits/types.h"
-#include "../bits/table.h"
+#include "../ark/types.h"
+#include "../ark/table.h"
 
 namespace arkana::crc32
 {

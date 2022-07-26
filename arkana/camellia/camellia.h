@@ -10,11 +10,11 @@
 
 #pragma once
 
-#include "../bits/types.h"
-#include "../bits/memory.h"
-#include "../bits/bit-manip.h"
-#include "../bits/table.h"
-#include "../bits/macros.h"
+#include "../ark/types.h"
+#include "../ark/memory.h"
+#include "../ark/bit-manip.h"
+#include "../ark/table.h"
+#include "../ark/macros.h"
 
 #include <stdexcept>
 

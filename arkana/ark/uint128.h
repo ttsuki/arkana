@@ -21,7 +21,7 @@
 #  include "./hex-int-literals.h"
 #endif
 
-namespace arkana::bits::intrinsics
+namespace arkana::intrinsics
 {
     static inline constexpr auto decompose64(uint64_t v) noexcept
     {
@@ -135,7 +135,7 @@ namespace arkana::bits::intrinsics
     }
 }
 
-namespace arkana::bits::uint128
+namespace arkana::uint128
 {
 #ifdef __SIZEOF_INT128__ // if compiler has __int128
 

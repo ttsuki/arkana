@@ -7,8 +7,7 @@
 /// https://opensource.org/licenses/MIT
 
 #include "../crc32.h"
-
-#include <arkana/bits/cpuid.h>
+#include <arkana/ark/cpuid.h>
 
 namespace arkana::crc32
 {

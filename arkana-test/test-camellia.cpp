@@ -1,5 +1,5 @@
 #include "./gtest.h"
-#include "../arkana-lib/bits.h"
+#include "../arkana-lib/ark.h"
 #include "../arkana-lib/camellia.h"
 #include "./helper.h"
 

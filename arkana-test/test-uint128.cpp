@@ -2,13 +2,13 @@
 // python3 test-uint128.gen.py
 
 #include "./gtest.h"
-#include "../arkana-lib/bits.h"
+#include "../arkana-lib/ark.h"
 
-using arkana::bits::uint128::uint128_t;
-using arkana::bits::uint128::rotl;
-using arkana::bits::uint128::rotr;
-using arkana::bits::uint128::byteswap;
-using namespace arkana::bits::uint128::literals;
+using arkana::uint128::uint128_t;
+using arkana::uint128::rotl;
+using arkana::uint128::rotr;
+using arkana::uint128::byteswap;
+using namespace arkana::uint128::literals;
 
 static inline uint128_t u128(uint64_t h, uint64_t l)
 {

@@ -13,9 +13,8 @@
 
 #pragma once
 
-#include "../bits/xmm.h"
-
 #include "sha2.h"
+#include "../ark/xmm.h"
 
 namespace arkana::sha2
 {

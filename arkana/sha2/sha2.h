@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "../bits/types.h"
-#include "../bits/bit-manip.h"
-#include "../bits/memory.h"
+#include "../ark/types.h"
+#include "../ark/bit-manip.h"
+#include "../ark/memory.h"
 
 namespace arkana::sha2
 {
