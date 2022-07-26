@@ -20,7 +20,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\hexilit.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\macros.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\memory.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\table.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\lutgen.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\types.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\uint128.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\xmm.h" />

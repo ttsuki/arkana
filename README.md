@@ -12,10 +12,10 @@ A header-only library collection
 ### arkana::ark - base library
   - [bit-manip.h](arkana/ark/bit-manip.h): Bit-manipulation helper (rotl, rotr, byteswap)
   - [memory.h](arkana/ark/memory.h): Type conversion helper (load_u, store_u, memcpy, memset, bit_cast)
-  - [table.h](arkana/ark/table.h): LUT generation helper
   - [cpuid.h](arkana/ark/cpuid.h): CPU feature flag loader
   - [uint128.h](arkana/ark/uint128.h): 128 bit unsigned integer operators (bitwise, arithmetic, comparing operations)
   - [xmm.h](arkana/ark/xmm.h): Typed SSE/AVX integer vector operation wraper library (vu32x4, vu16x16, etc)
+  - [lutgen.h](arkana/ark/lutgen.h): Compile-time LUT generation helper
   - [hexilit.h](arkana/ark/hexilit.h): Compile-time hexadecimal-integer parser
   - [base64-decoder.h](arkana/ark/base64-decoder.h): Compile-time base64 decoder  
 

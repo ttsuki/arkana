@@ -13,7 +13,7 @@
 #include "../ark/types.h"
 #include "../ark/memory.h"
 #include "../ark/bit-manip.h"
-#include "../ark/table.h"
+#include "../ark/lutgen.h"
 #include "../ark/macros.h"
 
 #include <stdexcept>
@@ -66,7 +66,7 @@ namespace arkana::camellia
 
         inline namespace sbox
         {
-            template <class T> using sbox_t = table<T, 256>;
+            template <class T> using sbox_t = lutgen::lookup_table<T, 256>;
 
             static inline constexpr sbox_t<uint8_t> sbox_0 = {
                 112, 130, 44, 236, 179, 39, 192, 229, 228, 133, 87, 53, 234, 12, 174, 65,
@@ -87,23 +87,23 @@ namespace arkana::camellia
                 64, 40, 211, 123, 187, 201, 67, 193, 21, 227, 173, 244, 119, 199, 128, 158,
             };
 
-            static inline constexpr sbox_t<uint8_t> sbox_1 = generate_table<uint8_t, 256>([](auto i) { return static_cast<uint8_t>(sbox_0[i] << 1 | sbox_0[i] >> 7); });
-            static inline constexpr sbox_t<uint8_t> sbox_2 = generate_table<uint8_t, 256>([](auto i) { return static_cast<uint8_t>(sbox_0[i] << 7 | sbox_0[i] >> 1); });
-            static inline constexpr sbox_t<uint8_t> sbox_3 = generate_table<uint8_t, 256>([](auto i) { return sbox_0[static_cast<uint8_t>(i << 1 | i >> 7)]; });
+            static inline constexpr sbox_t<uint8_t> sbox_1 = lutgen::generate_table<uint8_t, 256>([](auto i) { return static_cast<uint8_t>(sbox_0[i] << 1 | sbox_0[i] >> 7); });
+            static inline constexpr sbox_t<uint8_t> sbox_2 = lutgen::generate_table<uint8_t, 256>([](auto i) { return static_cast<uint8_t>(sbox_0[i] << 7 | sbox_0[i] >> 1); });
+            static inline constexpr sbox_t<uint8_t> sbox_3 = lutgen::generate_table<uint8_t, 256>([](auto i) { return sbox_0[static_cast<uint8_t>(i << 1 | i >> 7)]; });
 
-            static inline constexpr sbox_t<uint32_t> sbox_32_0 = generate_table<uint32_t, 256>([](auto i) { return 0x00010101u * sbox_0[i]; });
-            static inline constexpr sbox_t<uint32_t> sbox_32_1 = generate_table<uint32_t, 256>([](auto i) { return 0x01010100u * sbox_1[i]; });
-            static inline constexpr sbox_t<uint32_t> sbox_32_2 = generate_table<uint32_t, 256>([](auto i) { return 0x01010001u * sbox_2[i]; });
-            static inline constexpr sbox_t<uint32_t> sbox_32_3 = generate_table<uint32_t, 256>([](auto i) { return 0x01000101u * sbox_3[i]; });
+            static inline constexpr sbox_t<uint32_t> sbox_32_0 = lutgen::generate_table<uint32_t, 256>([](auto i) { return 0x00010101u * sbox_0[i]; });
+            static inline constexpr sbox_t<uint32_t> sbox_32_1 = lutgen::generate_table<uint32_t, 256>([](auto i) { return 0x01010100u * sbox_1[i]; });
+            static inline constexpr sbox_t<uint32_t> sbox_32_2 = lutgen::generate_table<uint32_t, 256>([](auto i) { return 0x01010001u * sbox_2[i]; });
+            static inline constexpr sbox_t<uint32_t> sbox_32_3 = lutgen::generate_table<uint32_t, 256>([](auto i) { return 0x01000101u * sbox_3[i]; });
 
-            static inline constexpr sbox_t<uint64_t> sbox_64_0 = generate_table<uint64_t, 256>([](auto i) { return 0x0100000100010101u * sbox_0[i]; });
-            static inline constexpr sbox_t<uint64_t> sbox_64_1 = generate_table<uint64_t, 256>([](auto i) { return 0x0000010101010100u * sbox_1[i]; });
-            static inline constexpr sbox_t<uint64_t> sbox_64_2 = generate_table<uint64_t, 256>([](auto i) { return 0x0001010001010001u * sbox_2[i]; });
-            static inline constexpr sbox_t<uint64_t> sbox_64_3 = generate_table<uint64_t, 256>([](auto i) { return 0x0101000001000101u * sbox_3[i]; });
-            static inline constexpr sbox_t<uint64_t> sbox_64_4 = generate_table<uint64_t, 256>([](auto i) { return 0x0101010001010100u * sbox_1[i]; });
-            static inline constexpr sbox_t<uint64_t> sbox_64_5 = generate_table<uint64_t, 256>([](auto i) { return 0x0101000101010001u * sbox_2[i]; });
-            static inline constexpr sbox_t<uint64_t> sbox_64_6 = generate_table<uint64_t, 256>([](auto i) { return 0x0100010101000101u * sbox_3[i]; });
-            static inline constexpr sbox_t<uint64_t> sbox_64_7 = generate_table<uint64_t, 256>([](auto i) { return 0x0001010100010101u * sbox_0[i]; });
+            static inline constexpr sbox_t<uint64_t> sbox_64_0 = lutgen::generate_table<uint64_t, 256>([](auto i) { return 0x0100000100010101u * sbox_0[i]; });
+            static inline constexpr sbox_t<uint64_t> sbox_64_1 = lutgen::generate_table<uint64_t, 256>([](auto i) { return 0x0000010101010100u * sbox_1[i]; });
+            static inline constexpr sbox_t<uint64_t> sbox_64_2 = lutgen::generate_table<uint64_t, 256>([](auto i) { return 0x0001010001010001u * sbox_2[i]; });
+            static inline constexpr sbox_t<uint64_t> sbox_64_3 = lutgen::generate_table<uint64_t, 256>([](auto i) { return 0x0101000001000101u * sbox_3[i]; });
+            static inline constexpr sbox_t<uint64_t> sbox_64_4 = lutgen::generate_table<uint64_t, 256>([](auto i) { return 0x0101010001010100u * sbox_1[i]; });
+            static inline constexpr sbox_t<uint64_t> sbox_64_5 = lutgen::generate_table<uint64_t, 256>([](auto i) { return 0x0101000101010001u * sbox_2[i]; });
+            static inline constexpr sbox_t<uint64_t> sbox_64_6 = lutgen::generate_table<uint64_t, 256>([](auto i) { return 0x0100010101000101u * sbox_3[i]; });
+            static inline constexpr sbox_t<uint64_t> sbox_64_7 = lutgen::generate_table<uint64_t, 256>([](auto i) { return 0x0001010100010101u * sbox_0[i]; });
 
             static ARKANA_FORCEINLINE constexpr uint32_t lookup_sbox32(const sbox_t<uint32_t>& sbox, uint32_t index, int shift) noexcept
             {

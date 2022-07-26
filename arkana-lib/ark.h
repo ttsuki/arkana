@@ -8,7 +8,7 @@
 #pragma once
 
 #include <arkana/ark/types.h>
-#include <arkana/ark/table.h>
+#include <arkana/ark/lutgen.h>
 #include <arkana/ark/macros.h>
 #include <arkana/ark/bit-manip.h>
 #include <arkana/ark/memory.h>
