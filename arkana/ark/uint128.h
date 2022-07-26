@@ -17,8 +17,8 @@
 #include <x86intrin.h>
 #endif
 
-#if __has_include("./hex-int-literals.h")
-#  include "./hex-int-literals.h"
+#if __has_include("hexilit.h")
+#  include "hexilit.h"
 #endif
 
 namespace arkana::intrinsics
@@ -158,13 +158,13 @@ namespace arkana::uint128
         return rotl(a, -i);
     }
 
-#if __has_include("./hex-int-literals.h")
+#if __has_include("hexilit.h")
     inline namespace literals
     {
         template <char...cs>
         static inline constexpr uint128_t operator "" _u128()
         {
-            using namespace hex_int_literals::parser;
+            using namespace hexilit::parser;
             constexpr auto arr = parse_hexint_array<uint64_t, cs...>(is_in_range<1, 32>, always, never);
             static_assert(arr.size() == 1 || arr.size() == 2);
             if constexpr (arr.size() == 1) { return static_cast<uint128_t>(arr[0]); }
@@ -264,13 +264,13 @@ namespace arkana::uint128
     static inline uint128_t& operator <<=(uint128_t& a, int b) noexcept { return a = a << b; }
     static inline uint128_t& operator >>=(uint128_t& a, int b) noexcept { return a = a << b; }
 
-#if __has_include("./hex-int-literals.h")
+#if __has_include("hexilit.h")
     inline namespace literals
     {
         template <char...cs>
         static inline constexpr uint128_t operator "" _u128()
         {
-            using namespace hex_int_literals::parser;
+            using namespace hexilit::parser;
             constexpr auto arr = parse_hexint_array<uint64_t, cs...>(is_in_range<1, 32>, always, never);
             static_assert(arr.size() == 1 || arr.size() == 2);
             if constexpr (arr.size() == 1) { return uint128_t{arr[0]}; }

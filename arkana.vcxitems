@@ -17,7 +17,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\base64-decoder.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\bit-manip.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\cpuid.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\hex-int-literals.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\hexilit.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\macros.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\memory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\table.h" />

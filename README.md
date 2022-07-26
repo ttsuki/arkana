@@ -16,7 +16,7 @@ A header-only library collection
   - [cpuid.h](arkana/ark/cpuid.h): CPU feature flag loader
   - [uint128.h](arkana/ark/uint128.h): 128 bit unsigned integer operators (bitwise, arithmetic, comparing operations)
   - [xmm.h](arkana/ark/xmm.h): Typed SSE/AVX integer vector operation wraper library (vu32x4, vu16x16, etc)
-  - [hex-int-literals.h](arkana/ark/hex-int-literals.h): Compile-time hexadecimal-integer parser
+  - [hexilit.h](arkana/ark/hexilit.h): Compile-time hexadecimal-integer parser
   - [base64-decoder.h](arkana/ark/base64-decoder.h): Compile-time base64 decoder  
 
 ### arkana::camellia - Camellia Encryption Algorithm (ECB-mode: RFC 3713 / CTR-mode: RFC 5528)

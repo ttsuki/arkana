@@ -3,7 +3,7 @@
 #include "../arkana-lib/camellia.h"
 #include "./helper.h"
 
-using namespace arkana::hex_int_literals;
+using namespace arkana::hexilit;
 using namespace arkana::camellia;
 using arkana::byte_array;
 

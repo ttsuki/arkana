@@ -18,8 +18,8 @@
 #include <x86intrin.h>
 #endif
 
-#if __has_include("./hex-int-literals.h")
-#  include "./hex-int-literals.h"
+#if __has_include("hexilit.h")
+#  include "hexilit.h"
 #endif
 
 #if defined(_MSC_VER)
@@ -674,7 +674,7 @@ namespace arkana::xmm
     template <class T, class U> ARKXMM_API operator <(T lhs, U rhs) -> ARKXMM_DEFINE_EXTENSION(andnot(lhs <= rhs, lhs == rhs));
     template <class T, class U> ARKXMM_API operator >(T lhs, U rhs) -> ARKXMM_DEFINE_EXTENSION(andnot(lhs >= rhs, lhs == rhs));
 
-#if __has_include("./hex-int-literals.h")
+#if __has_include("hexilit.h")
     inline namespace literals
     {
         namespace literal_parser
@@ -688,7 +688,7 @@ namespace arkana::xmm
             static inline constexpr auto parse_literal()
             {
                 using elem_t = typename VectorType::elem_t;
-                return hex_int_literals::parser::parse_hexint_array<elem_t, cs...>(
+                return hexilit::parser::parse_hexint_array<elem_t, cs...>(
                     acceptable_nibble_count<sizeof(VectorType)>,
                     acceptable_separator_pos<sizeof(elem_t)>,
                     separator_required_pos<sizeof(elem_t)>);

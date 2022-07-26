@@ -13,7 +13,7 @@
 #include <arkana/ark/bit-manip.h>
 #include <arkana/ark/memory.h>
 #include <arkana/ark/cpuid.h>
-#include <arkana/ark/hex-int-literals.h>
+#include <arkana/ark/hexilit.h>
 #include <arkana/ark/uint128.h>
 #include <arkana/ark/base64-decoder.h>
 
