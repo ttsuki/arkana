@@ -12,7 +12,7 @@
 
 #include "../ark/types.h"
 #include "../ark/memory.h"
-#include "../ark/bit-manip.h"
+#include "../ark/bitmanip.h"
 #include "../ark/lutgen.h"
 #include "../ark/macros.h"
 
@@ -293,7 +293,7 @@ namespace arkana::camellia
 
                     ARKANA_FORCEINLINE uint128_t operator ^(uint128_t rhs) const noexcept { return uint128_t{l ^ rhs.l, r ^ rhs.r}; }
                     ARKANA_FORCEINLINE uint128_t& operator ^=(uint128_t rhs) noexcept { return l ^= rhs.l, r ^= rhs.r, *this; }
-                    ARKANA_FORCEINLINE auto byteswap() const noexcept { return uint128_t{bits::byteswap(r), bits::byteswap(l)}; }
+                    ARKANA_FORCEINLINE auto byteswap() const noexcept { return uint128_t{bit::byteswap(r), bit::byteswap(l)}; }
 
                     ARKANA_FORCEINLINE auto rotl(int i) const noexcept
                     {
@@ -333,17 +333,17 @@ namespace arkana::camellia
                     uint128_t t = kl;
                     t.l ^= kr.l;
                     t.r ^= kr.r;
-                    t.r = camellia_f(t.r, t.l, bits::byteswap(0xA09E667F3BCC908Bu));
-                    t.l = camellia_f(t.l, t.r, bits::byteswap(0xB67AE8584CAA73B2u));
+                    t.r = camellia_f(t.r, t.l, bit::byteswap(0xA09E667F3BCC908Bu));
+                    t.l = camellia_f(t.l, t.r, bit::byteswap(0xB67AE8584CAA73B2u));
                     t.l ^= kl.l;
                     t.r ^= kl.r;
-                    t.r = camellia_f(t.r, t.l, bits::byteswap(0xC6EF372FE94F82BEu));
-                    t.l = camellia_f(t.l, t.r, bits::byteswap(0x54FF53A5F1D36F1Cu));
+                    t.r = camellia_f(t.r, t.l, bit::byteswap(0xC6EF372FE94F82BEu));
+                    t.l = camellia_f(t.l, t.r, bit::byteswap(0x54FF53A5F1D36F1Cu));
                     uint128_t ka = t;
                     t.l ^= kr.l;
                     t.r ^= kr.r;
-                    t.r = camellia_f(t.r, t.l, bits::byteswap(0x10E527FADE682D1Du));
-                    t.l = camellia_f(t.l, t.r, bits::byteswap(0xB05688C2B3E6C1FDu));
+                    t.r = camellia_f(t.r, t.l, bit::byteswap(0x10E527FADE682D1Du));
+                    t.l = camellia_f(t.l, t.r, bit::byteswap(0xB05688C2B3E6C1FDu));
                     uint128_t kb = t;
 
                     return std::make_tuple(kl.byteswap(), kr.byteswap(), ka.byteswap(), kb.byteswap());
@@ -660,7 +660,7 @@ namespace arkana::camellia
                 return [ctr0](size_t index) -> v128
                 {
                     auto v = ctr0;
-                    v.ctr = bits::byteswap(static_cast<uint32_t>(index + 1));
+                    v.ctr = bit::byteswap(static_cast<uint32_t>(index + 1));
                     return load_u<v128>(&v);
                 };
             }
@@ -730,7 +730,7 @@ namespace arkana::camellia
                     store_u<v128>>(dst, src, position, length, kv, [ctr0](size_t index) -> v128
                 {
                     auto v = ctr0;
-                    v.ctr ^= bits::byteswap(static_cast<uint32_t>(index + 1));
+                    v.ctr ^= bit::byteswap(static_cast<uint32_t>(index + 1));
                     return load_u<v128>(&v);
                 });
             }

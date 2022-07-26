@@ -69,7 +69,7 @@ namespace arkana::sha2
             static void process_chunk_sha1(vector_t<uint32_t>& vec, const chunk_t<uint32_t>& input) noexcept
             {
                 using namespace xmm;
-                using bits::byteswap;
+                using bit::byteswap;
 
                 vector_t<uint32_t> x = vec;
 

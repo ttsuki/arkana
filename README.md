@@ -10,7 +10,7 @@ C++17 x86/AVX2 accelerated fs-infra library.
 A header-only library collection
 
 ### arkana::ark - base library
-  - [bit-manip.h](arkana/ark/bit-manip.h): Bit-manipulation helper (rotl, rotr, byteswap)
+  - [bitmanip.h](arkana/ark/bitmanip.h): Bit-manipulation helper (rotl, rotr, byteswap)
   - [memory.h](arkana/ark/memory.h): Type conversion helper (load_u, store_u, memcpy, memset, bit_cast)
   - [cpuid.h](arkana/ark/cpuid.h): CPU feature flag loader
   - [uint128.h](arkana/ark/uint128.h): 128 bit unsigned integer operators (bitwise, arithmetic, comparing operations)

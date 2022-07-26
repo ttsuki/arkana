@@ -1,5 +1,5 @@
 /// @file
-/// @brief	arkana::bits - bit operation library
+/// @brief	arkana::bitmanip - bit manipulation library
 /// @author Copyright(c) 2021 ttsuki
 /// 
 /// This software is released under the MIT License.
@@ -16,7 +16,7 @@
 #include <x86intrin.h>
 #endif
 
-namespace arkana::bits
+namespace arkana::bit
 {
 	namespace naive
 	{

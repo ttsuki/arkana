@@ -10,7 +10,7 @@
 #include <arkana/ark/types.h>
 #include <arkana/ark/lutgen.h>
 #include <arkana/ark/macros.h>
-#include <arkana/ark/bit-manip.h>
+#include <arkana/ark/bitmanip.h>
 #include <arkana/ark/memory.h>
 #include <arkana/ark/cpuid.h>
 #include <arkana/ark/hexilit.h>

@@ -282,7 +282,7 @@ namespace arkana::uint128
 #endif
 }
 
-namespace arkana::bits
+namespace arkana::bit
 {
     using uint128::rotl;
     using uint128::rotr;
