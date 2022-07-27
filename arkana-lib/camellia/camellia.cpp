@@ -9,8 +9,7 @@
 /// - camellia https://info.isl.ntt.co.jp/crypt/camellia/ 
 
 #include "../camellia.h"
-
-#include <arkana/bits/cpuid.h>
+#include <arkana/ark/cpuid.h>
 
 namespace arkana::camellia
 {

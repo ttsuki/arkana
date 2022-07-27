@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "./camellia.h"
+#include "camellia.h"
 
 namespace arkana::camellia
 {

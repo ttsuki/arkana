@@ -1,5 +1,5 @@
 /// @file
-/// @brief	arkana::hex_int_literals
+/// @brief	arkana::hexilit
 ///         - a hexadecimal integer literal parser
 /// @author Copyright(c) 2021 ttsuki
 /// 
@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <array>
 
-namespace arkana::hex_int_literals
+namespace arkana::hexilit
 {
     namespace parser
     {

@@ -9,8 +9,7 @@
 #pragma once
 
 #include "crc32-ia32.h"
-
-#include "../bits/xmm.h"
+#include "../ark/xmm.h"
 
 namespace arkana::crc32
 {

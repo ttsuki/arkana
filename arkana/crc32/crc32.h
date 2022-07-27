@@ -8,17 +8,18 @@
 
 #pragma once
 
-#include "../bits/types.h"
-#include "../bits/table.h"
+#include "../ark/types.h"
+#include "../ark/lutgen.h"
 
 namespace arkana::crc32
 {
     using crc32_value_t = uint32_t;
+    using crc32_lookup_table_t = lutgen::lookup_table<uint32_t, 256>;
 
     namespace tables
     {
         template <uint32_t polynomial>
-        static inline constexpr table<uint32_t, 256> crc32_table0 = generate_table<uint32_t, 256>(
+        static inline constexpr crc32_lookup_table_t crc32_table0 = lutgen::generate_table<uint32_t, 256>(
             [](auto i)
             {
                 uint32_t v = static_cast<uint32_t>(i);
@@ -28,7 +29,7 @@ namespace arkana::crc32
             });
 
         template <uint32_t polynomial, size_t n>
-        static inline constexpr table<uint32_t, 256> crc32_table_n = generate_table<uint32_t, 256>(
+        static inline constexpr crc32_lookup_table_t crc32_table_n = lutgen::generate_table<uint32_t, 256>(
             [](auto i)
             {
                 auto& table = crc32_table0<polynomial>;
@@ -37,7 +38,7 @@ namespace arkana::crc32
             });
 
         template <uint32_t polynomial>
-        static inline constexpr table<uint32_t, 256> crc32_table_n<polynomial, 0> = crc32_table0<polynomial>;
+        static inline constexpr crc32_lookup_table_t crc32_table_n<polynomial, 0> = crc32_table0<polynomial>;
     }
 
     namespace ref

@@ -1,5 +1,5 @@
 /// @file
-/// @brief	arkana::base64_decoder
+/// @brief	arkana::base64 - compile-time base64
 /// @author Copyright(c) 2022 ttsuki
 /// 
 /// This software is released under the MIT License.
@@ -11,10 +11,10 @@
 #include <cstdint>
 #include <array>
 
-namespace arkana::base64_decoder
+namespace arkana::base64::compile_time
 {
     template <std::size_t N, std::size_t L = N - (N + 6) / 4>
-    static constexpr std::array<std::byte, L> decode_base64_constexpr(const char(&input)[N])
+    static constexpr std::array<std::byte, L> decode_base64(const char(&input)[N])
     {
         static_assert(N % 4 != 2, "decode_base64_constexpr: Invalid input length.");
         static_assert(L == N - (N + 6) / 4, "decode_base64_constexpr: Invalid output length.");

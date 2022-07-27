@@ -1,9 +1,9 @@
 #include "./gtest.h"
-#include "../arkana-lib/bits.h"
+#include "../arkana-lib/ark.h"
 #include "../arkana-lib/sha2.h"
 #include "./helper.h"
 
-using namespace arkana::hex_int_literals;
+using namespace arkana::hexilit;
 using namespace arkana::sha2;
 
 

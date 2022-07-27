@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "../bits/types.h"
-#include "../bits/bit-manip.h"
-#include "../bits/memory.h"
+#include "../ark/types.h"
+#include "../ark/bitmanip.h"
+#include "../ark/memory.h"
 
 namespace arkana::sha2
 {
@@ -71,7 +71,7 @@ namespace arkana::sha2
         template <size_t i>
         static constexpr inline void round_md5(std::array<uint32_t, 4>& x, const std::array<uint32_t, 16>& ck) noexcept
         {
-            using bits::rotl;
+            using bit::rotl;
 
             uint32_t a = x[(0 - i) & 3];
             uint32_t b = x[(1 - i) & 3];
@@ -177,7 +177,7 @@ namespace arkana::sha2
         template <size_t i, class T>
         static inline constexpr void round_sha1(vector_t<T>& vec, T kwi) noexcept
         {
-            using bits::rotl;
+            using bit::rotl;
             static_assert(i < 80);
 
             T a = vec[(80 - i) % 5];
@@ -199,7 +199,7 @@ namespace arkana::sha2
         template <size_t i, class T>
         static inline constexpr uint32_t rotate_sha1(std::array<T, 20>& ck) noexcept
         {
-            using bits::rotl;
+            using bit::rotl;
             static_assert(i < 20);
             T w16 = ck[(20 + i - 16) % 20];
             T w14 = ck[(20 + i - 14) % 20];
@@ -210,7 +210,7 @@ namespace arkana::sha2
 
         static constexpr void process_chunk_sha1(vector_t<uint32_t>& vec, const chunk_t<uint32_t>& input) noexcept
         {
-            using bits::byteswap;
+            using bit::byteswap;
 
             vector_t<uint32_t> x = vec;
             std::array<uint32_t, 20> ck{};
@@ -351,7 +351,7 @@ namespace arkana::sha2
         template <int S00, int S01, int S02, int S10, int S11, int S12, size_t i, class T>
         static inline constexpr void round_sha2(vector_t<T>& vec, T kwi) noexcept
         {
-            using bits::rotr;
+            using bit::rotr;
 
             T a = vec[(0 - i) & 7];
             T b = vec[(1 - i) & 7];
@@ -378,7 +378,7 @@ namespace arkana::sha2
         template <int s00, int s01, int s02, int s10, int s11, int s12, size_t i, class T>
         static inline constexpr T rotate_sha2(chunk_t<T>& ck) noexcept
         {
-            using bits::rotr;
+            using bit::rotr;
 
             T w15 = ck[(i - 15) & 15];
             T w7 = ck[(i - 7) & 15];
@@ -393,7 +393,7 @@ namespace arkana::sha2
                   int S00, int S01, int S02, int S10, int S11, int S12>
         static constexpr void process_chunk_sha2(vector_t<T>& vec, const chunk_t<T>& input) noexcept
         {
-            using bits::byteswap;
+            using bit::byteswap;
 
             vector_t<T> x = vec;
             chunk_t<T> ck{};
@@ -520,7 +520,7 @@ namespace arkana::sha2
             {
                 using T = typename sha2_state_t::unit_t;
                 using digest_t = typename sha2_state_t::digest_t;
-                using bits::byteswap;
+                using bit::byteswap;
 
                 byte_t* const buf = reinterpret_cast<byte_t*>(stt.input.data());
                 size_t constexpr buf_sz = sizeof(stt.input);

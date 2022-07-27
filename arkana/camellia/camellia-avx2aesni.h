@@ -16,8 +16,7 @@
 #pragma once
 
 #include "camellia.h"
-
-#include "../bits/xmm.h"
+#include "../ark/xmm.h"
 
 namespace arkana::camellia
 {

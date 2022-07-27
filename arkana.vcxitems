@@ -14,16 +14,16 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\base64-decoder.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\bit-manip.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\cpuid.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\hex-int-literals.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\macros.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\memory.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\table.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\types.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\uint128.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\bits\xmm.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\base64.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\bitmanip.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\cpuid.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\hexilit.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\macros.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\memory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\lutgen.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\types.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\uint128.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)arkana\ark\xmm.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\camellia\camellia-avx2.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\camellia\camellia-avx2aesni.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)arkana\camellia\camellia-ia32.h" />
