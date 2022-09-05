@@ -11,6 +11,7 @@
 #pragma once
 
 #include <cstddef>
+#include <climits>
 #include <array>
 #include <memory>
 

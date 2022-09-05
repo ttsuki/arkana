@@ -208,7 +208,7 @@ namespace arkana::sha2
             return ck[i % 20] = rotl(w3 ^ w8 ^ w14 ^ w16, 1);
         }
 
-        static constexpr void process_chunk_sha1(vector_t<uint32_t>& vec, const chunk_t<uint32_t>& input) noexcept
+        static void process_chunk_sha1(vector_t<uint32_t>& vec, const chunk_t<uint32_t>& input) noexcept
         {
             using bit::byteswap;
 
@@ -391,7 +391,7 @@ namespace arkana::sha2
         template <class T, class round_constants,
                   int s00, int s01, int s02, int s10, int s11, int s12,
                   int S00, int S01, int S02, int S10, int S11, int S12>
-        static constexpr void process_chunk_sha2(vector_t<T>& vec, const chunk_t<T>& input) noexcept
+        static void process_chunk_sha2(vector_t<T>& vec, const chunk_t<T>& input) noexcept
         {
             using bit::byteswap;
 
@@ -449,12 +449,12 @@ namespace arkana::sha2
             vec[7] += x[7];
         }
 
-        static inline constexpr void process_chunk_sha256(vector_t<uint32_t>& v, const chunk_t<uint32_t>& input)
+        static inline void process_chunk_sha256(vector_t<uint32_t>& v, const chunk_t<uint32_t>& input)
         {
             return process_chunk_sha2<uint32_t, round_constants_sha256, 7, 18, 3, 17, 19, 10, 2, 13, 22, 6, 11, 25>(v, input);
         }
 
-        static inline constexpr void process_chunk_sha512(vector_t<uint64_t>& v, const chunk_t<uint64_t>& input)
+        static inline void process_chunk_sha512(vector_t<uint64_t>& v, const chunk_t<uint64_t>& input)
         {
             return process_chunk_sha2<uint64_t, round_constants_sha512, 1, 8, 7, 19, 61, 6, 28, 34, 39, 14, 18, 41>(v, input);
         }
