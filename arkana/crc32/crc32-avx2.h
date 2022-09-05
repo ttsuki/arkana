@@ -154,10 +154,10 @@ namespace arkana::crc32
 
                 while (block_count > 1)
                 {
-                    vu32x8 s0 = load_s(reinterpret_cast<const vu32x8*>(p) + 0);
-                    vu32x8 s1 = load_s(reinterpret_cast<const vu32x8*>(p) + 1);
-                    vu32x8 s2 = load_s(reinterpret_cast<const vu32x8*>(p) + 2);
-                    vu32x8 s3 = load_s(reinterpret_cast<const vu32x8*>(p) + 3);
+                    vu32x8 s0 = load_s<vu32x8>(reinterpret_cast<const vu32x8*>(p) + 0);
+                    vu32x8 s1 = load_s<vu32x8>(reinterpret_cast<const vu32x8*>(p) + 1);
+                    vu32x8 s2 = load_s<vu32x8>(reinterpret_cast<const vu32x8*>(p) + 2);
+                    vu32x8 s3 = load_s<vu32x8>(reinterpret_cast<const vu32x8*>(p) + 3);
                     p += block_size;
                     prefetch_nta(p); // prefetch next next block
 

@@ -394,30 +394,30 @@ namespace arkana::camellia
                 return v128{
                     {
                         {
-                            xmm::load_u(&src->l.l.x0),
-                            xmm::load_u(&src->l.l.x1),
-                            xmm::load_u(&src->l.l.x2),
-                            xmm::load_u(&src->l.l.x3)
+                            xmm::load_u<vu8x32>(&src->l.l.x0),
+                            xmm::load_u<vu8x32>(&src->l.l.x1),
+                            xmm::load_u<vu8x32>(&src->l.l.x2),
+                            xmm::load_u<vu8x32>(&src->l.l.x3)
                         },
                         {
-                            xmm::load_u(&src->l.r.x0),
-                            xmm::load_u(&src->l.r.x1),
-                            xmm::load_u(&src->l.r.x2),
-                            xmm::load_u(&src->l.r.x3)
+                            xmm::load_u<vu8x32>(&src->l.r.x0),
+                            xmm::load_u<vu8x32>(&src->l.r.x1),
+                            xmm::load_u<vu8x32>(&src->l.r.x2),
+                            xmm::load_u<vu8x32>(&src->l.r.x3)
                         },
                     },
                     {
                         {
-                            xmm::load_u(&src->r.l.x0),
-                            xmm::load_u(&src->r.l.x1),
-                            xmm::load_u(&src->r.l.x2),
-                            xmm::load_u(&src->r.l.x3)
+                            xmm::load_u<vu8x32>(&src->r.l.x0),
+                            xmm::load_u<vu8x32>(&src->r.l.x1),
+                            xmm::load_u<vu8x32>(&src->r.l.x2),
+                            xmm::load_u<vu8x32>(&src->r.l.x3)
                         },
                         {
-                            xmm::load_u(&src->r.r.x0),
-                            xmm::load_u(&src->r.r.x1),
-                            xmm::load_u(&src->r.r.x2),
-                            xmm::load_u(&src->r.r.x3)
+                            xmm::load_u<vu8x32>(&src->r.r.x0),
+                            xmm::load_u<vu8x32>(&src->r.r.x1),
+                            xmm::load_u<vu8x32>(&src->r.r.x2),
+                            xmm::load_u<vu8x32>(&src->r.r.x3)
                         },
                     }
                 };
@@ -425,22 +425,22 @@ namespace arkana::camellia
 
             ARKXMM_API store_v128(v128* dst, const v128& reg)
             {
-                xmm::store_u(&dst->l.l.x0, reg.l.l.x0);
-                xmm::store_u(&dst->l.l.x1, reg.l.l.x1);
-                xmm::store_u(&dst->l.l.x2, reg.l.l.x2);
-                xmm::store_u(&dst->l.l.x3, reg.l.l.x3);
-                xmm::store_u(&dst->l.r.x0, reg.l.r.x0);
-                xmm::store_u(&dst->l.r.x1, reg.l.r.x1);
-                xmm::store_u(&dst->l.r.x2, reg.l.r.x2);
-                xmm::store_u(&dst->l.r.x3, reg.l.r.x3);
-                xmm::store_u(&dst->r.l.x0, reg.r.l.x0);
-                xmm::store_u(&dst->r.l.x1, reg.r.l.x1);
-                xmm::store_u(&dst->r.l.x2, reg.r.l.x2);
-                xmm::store_u(&dst->r.l.x3, reg.r.l.x3);
-                xmm::store_u(&dst->r.r.x0, reg.r.r.x0);
-                xmm::store_u(&dst->r.r.x1, reg.r.r.x1);
-                xmm::store_u(&dst->r.r.x2, reg.r.r.x2);
-                xmm::store_u(&dst->r.r.x3, reg.r.r.x3);
+                xmm::store_u<vu8x32>(&dst->l.l.x0, reg.l.l.x0);
+                xmm::store_u<vu8x32>(&dst->l.l.x1, reg.l.l.x1);
+                xmm::store_u<vu8x32>(&dst->l.l.x2, reg.l.l.x2);
+                xmm::store_u<vu8x32>(&dst->l.l.x3, reg.l.l.x3);
+                xmm::store_u<vu8x32>(&dst->l.r.x0, reg.l.r.x0);
+                xmm::store_u<vu8x32>(&dst->l.r.x1, reg.l.r.x1);
+                xmm::store_u<vu8x32>(&dst->l.r.x2, reg.l.r.x2);
+                xmm::store_u<vu8x32>(&dst->l.r.x3, reg.l.r.x3);
+                xmm::store_u<vu8x32>(&dst->r.l.x0, reg.r.l.x0);
+                xmm::store_u<vu8x32>(&dst->r.l.x1, reg.r.l.x1);
+                xmm::store_u<vu8x32>(&dst->r.l.x2, reg.r.l.x2);
+                xmm::store_u<vu8x32>(&dst->r.l.x3, reg.r.l.x3);
+                xmm::store_u<vu8x32>(&dst->r.r.x0, reg.r.r.x0);
+                xmm::store_u<vu8x32>(&dst->r.r.x1, reg.r.r.x1);
+                xmm::store_u<vu8x32>(&dst->r.r.x2, reg.r.r.x2);
+                xmm::store_u<vu8x32>(&dst->r.r.x3, reg.r.r.x3);
             }
 
             ARKXMM_API swap_xor128(v128& v, const v128& k) -> v128&
@@ -454,22 +454,22 @@ namespace arkana::camellia
 
             ARKXMM_API swap_store_v128(v128* dst, const v128& reg)
             {
-                xmm::store_u(&dst->l.l.x0, reg.r.l.x0);
-                xmm::store_u(&dst->l.l.x1, reg.r.l.x1);
-                xmm::store_u(&dst->l.l.x2, reg.r.l.x2);
-                xmm::store_u(&dst->l.l.x3, reg.r.l.x3);
-                xmm::store_u(&dst->l.r.x0, reg.r.r.x0);
-                xmm::store_u(&dst->l.r.x1, reg.r.r.x1);
-                xmm::store_u(&dst->l.r.x2, reg.r.r.x2);
-                xmm::store_u(&dst->l.r.x3, reg.r.r.x3);
-                xmm::store_u(&dst->r.l.x0, reg.l.l.x0);
-                xmm::store_u(&dst->r.l.x1, reg.l.l.x1);
-                xmm::store_u(&dst->r.l.x2, reg.l.l.x2);
-                xmm::store_u(&dst->r.l.x3, reg.l.l.x3);
-                xmm::store_u(&dst->r.r.x0, reg.l.r.x0);
-                xmm::store_u(&dst->r.r.x1, reg.l.r.x1);
-                xmm::store_u(&dst->r.r.x2, reg.l.r.x2);
-                xmm::store_u(&dst->r.r.x3, reg.l.r.x3);
+                xmm::store_u<vu8x32>(&dst->l.l.x0, reg.r.l.x0);
+                xmm::store_u<vu8x32>(&dst->l.l.x1, reg.r.l.x1);
+                xmm::store_u<vu8x32>(&dst->l.l.x2, reg.r.l.x2);
+                xmm::store_u<vu8x32>(&dst->l.l.x3, reg.r.l.x3);
+                xmm::store_u<vu8x32>(&dst->l.r.x0, reg.r.r.x0);
+                xmm::store_u<vu8x32>(&dst->l.r.x1, reg.r.r.x1);
+                xmm::store_u<vu8x32>(&dst->l.r.x2, reg.r.r.x2);
+                xmm::store_u<vu8x32>(&dst->l.r.x3, reg.r.r.x3);
+                xmm::store_u<vu8x32>(&dst->r.l.x0, reg.l.l.x0);
+                xmm::store_u<vu8x32>(&dst->r.l.x1, reg.l.l.x1);
+                xmm::store_u<vu8x32>(&dst->r.l.x2, reg.l.l.x2);
+                xmm::store_u<vu8x32>(&dst->r.l.x3, reg.l.l.x3);
+                xmm::store_u<vu8x32>(&dst->r.r.x0, reg.l.r.x0);
+                xmm::store_u<vu8x32>(&dst->r.r.x1, reg.l.r.x1);
+                xmm::store_u<vu8x32>(&dst->r.r.x2, reg.l.r.x2);
+                xmm::store_u<vu8x32>(&dst->r.r.x3, reg.l.r.x3);
             }
         }
 

@@ -42,7 +42,7 @@ namespace arkana
 
     /// Stores T to unaligned memory pointer
     template <class T>
-    static inline constexpr auto store_u(void* d, const T& s) noexcept
+    static inline constexpr auto store_u(void* d, const std::decay_t<T>& s) noexcept
     -> std::enable_if_t<std::is_trivially_copyable_v<T>, void>
     {
         memcpy(d, &s, sizeof(T));

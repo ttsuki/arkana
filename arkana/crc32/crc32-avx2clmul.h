@@ -67,7 +67,7 @@ namespace arkana::crc32
 
                     ARKXMM_API read_128(const byte_t*& p, size_t& length) -> state128_t
                     {
-                        state128_t t = load_s(reinterpret_cast<const state128_t*>(p));
+                        state128_t t = load_s<state128_t>(p);
                         p += sizeof(state128_t);
                         length -= sizeof(state128_t);
                         return t;

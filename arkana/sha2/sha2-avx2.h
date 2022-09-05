@@ -73,10 +73,10 @@ namespace arkana::sha2
 
                 vector_t<uint32_t> x = vec;
 
-                vu32x4 x0 = byteswap(xmm::load_u(reinterpret_cast<const vu32x4*>(input.data() + 0)));
-                vu32x4 x1 = byteswap(xmm::load_u(reinterpret_cast<const vu32x4*>(input.data() + 4)));
-                vu32x4 x2 = byteswap(xmm::load_u(reinterpret_cast<const vu32x4*>(input.data() + 8)));
-                vu32x4 x3 = byteswap(xmm::load_u(reinterpret_cast<const vu32x4*>(input.data() + 12)));
+                vu32x4 x0 = byteswap(xmm::load_u<vu32x4>(input.data() + 0));
+                vu32x4 x1 = byteswap(xmm::load_u<vu32x4>(input.data() + 4));
+                vu32x4 x2 = byteswap(xmm::load_u<vu32x4>(input.data() + 8));
+                vu32x4 x3 = byteswap(xmm::load_u<vu32x4>(input.data() + 12));
                 vu32x4 x4 = rotate_sha1_x4(x0, x1, x2, x3);
                 {
                     auto k0 = u32x4(functions::round_constants_sha1::k[0]);
@@ -210,9 +210,9 @@ namespace arkana::sha2
                 }
 
                 {
-                    auto vv = xmm::load_u(reinterpret_cast<vu32x8*>(vec.data()));
-                    auto xx = xmm::load_u(reinterpret_cast<vu32x8*>(x.data()));
-                    xmm::store_u(reinterpret_cast<vu32x8*>(vec.data()), vv + xx);
+                    auto vv = xmm::load_u<vu32x8>(vec.data());
+                    auto xx = xmm::load_u<vu32x8>(x.data());
+                    xmm::store_u<vu32x8>(vec.data(), vv + xx);
                 }
             }
 
@@ -286,18 +286,18 @@ namespace arkana::sha2
                 vector_t<T> x = vec;
                 chunk_t<T> ck = input;
 
-                V x0 = byteswap(xmm::load_u(reinterpret_cast<const V*>(ck.data() + 0)));
-                V x1 = byteswap(xmm::load_u(reinterpret_cast<const V*>(ck.data() + 4)));
-                V x2 = byteswap(xmm::load_u(reinterpret_cast<const V*>(ck.data() + 8)));
-                V x3 = byteswap(xmm::load_u(reinterpret_cast<const V*>(ck.data() + 12)));
+                V x0 = byteswap(xmm::load_u<V>(ck.data() + 0));
+                V x1 = byteswap(xmm::load_u<V>(ck.data() + 4));
+                V x2 = byteswap(xmm::load_u<V>(ck.data() + 8));
+                V x3 = byteswap(xmm::load_u<V>(ck.data() + 12));
 
                 for (size_t i = 0; i < (round_constants::rounds / 16); i++)
                 {
                     auto k = round_constants::constants + i * 0x10;
-                    xmm::store_u(reinterpret_cast<V*>(ck.data() + 0x0), x0 + xmm::load_u(reinterpret_cast<const V*>(k + 0x0)));
-                    xmm::store_u(reinterpret_cast<V*>(ck.data() + 0x4), x1 + xmm::load_u(reinterpret_cast<const V*>(k + 0x4)));
-                    xmm::store_u(reinterpret_cast<V*>(ck.data() + 0x8), x2 + xmm::load_u(reinterpret_cast<const V*>(k + 0x8)));
-                    xmm::store_u(reinterpret_cast<V*>(ck.data() + 0xC), x3 + xmm::load_u(reinterpret_cast<const V*>(k + 0xC)));
+                    xmm::store_u<V>(ck.data() + 0x0, x0 + xmm::load_u<V>(k + 0x0));
+                    xmm::store_u<V>(ck.data() + 0x4, x1 + xmm::load_u<V>(k + 0x4));
+                    xmm::store_u<V>(ck.data() + 0x8, x2 + xmm::load_u<V>(k + 0x8));
+                    xmm::store_u<V>(ck.data() + 0xC, x3 + xmm::load_u<V>(k + 0xC));
                     round_sha2<S00, S01, S02, S10, S11, S12, 0>(vec, ck[0]);
                     round_sha2<S00, S01, S02, S10, S11, S12, 1>(vec, ck[1]);
                     round_sha2<S00, S01, S02, S10, S11, S12, 2>(vec, ck[2]);
@@ -320,8 +320,8 @@ namespace arkana::sha2
                     rotate_sha2_x4<s00, s01, s02, s10, s11, s12>(x3, x0, x1, x2);
                 }
 
-                xmm::store_u(reinterpret_cast<V*>(vec.data() + 0), xmm::load_u(reinterpret_cast<V*>(vec.data() + 0)) + xmm::load_u(reinterpret_cast<const V*>(x.data() + 0)));
-                xmm::store_u(reinterpret_cast<V*>(vec.data() + 4), xmm::load_u(reinterpret_cast<V*>(vec.data() + 4)) + xmm::load_u(reinterpret_cast<const V*>(x.data() + 4)));
+                xmm::store_u<V>(vec.data() + 0, xmm::load_u<V>(vec.data() + 0) + xmm::load_u<V>(x.data() + 0));
+                xmm::store_u<V>(vec.data() + 4, xmm::load_u<V>(vec.data() + 4) + xmm::load_u<V>(x.data() + 4));
             }
 
             static inline void process_chunk_sha256(vector_t<uint32_t>& v, const chunk_t<uint32_t>& input)
