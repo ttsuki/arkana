@@ -33,7 +33,7 @@ endif ()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 ## LIB PROJECT
-add_subdirectory(arkana-lib)
+add_subdirectory(arkana)
 
 ## TEST PROJECT
 add_subdirectory(arkana-test)
