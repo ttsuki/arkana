@@ -7,7 +7,7 @@
 /// https://opensource.org/licenses/MIT
 
 #include "../sha2.h"
-#include <arkana/ark/cpuid.h>
+#include "../ark/cpuid.h"
 
 namespace arkana::sha2
 {
@@ -68,7 +68,7 @@ namespace arkana::sha2
     }
 }
 
-#include <arkana/sha2/sha2.h>
+#include "./sha2.h"
 
 namespace arkana::sha2
 {

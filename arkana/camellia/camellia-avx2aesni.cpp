@@ -14,7 +14,7 @@
 ///   http://jultika.oulu.fi/Record/nbnfioulu-201305311409
 
 #include "../camellia.h"
-#include <arkana/camellia/camellia-avx2aesni.h>
+#include "./camellia-avx2aesni.h"
 
 namespace arkana::camellia
 {

@@ -7,7 +7,7 @@
 /// https://opensource.org/licenses/MIT
 
 #include "../crc32.h"
-#include <arkana/ark/cpuid.h>
+#include "../ark/cpuid.h"
 
 namespace arkana::crc32
 {
@@ -34,7 +34,7 @@ namespace arkana::crc32
     }
 }
 
-#include <arkana/crc32/crc32.h>
+#include "./crc32.h"
 
 namespace arkana::crc32
 {

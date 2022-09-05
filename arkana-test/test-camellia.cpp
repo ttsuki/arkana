@@ -1,6 +1,6 @@
 #include "./gtest.h"
-#include "../arkana-lib/ark.h"
-#include "../arkana-lib/camellia.h"
+#include "../arkana/ark.h"
+#include "../arkana/camellia.h"
 #include "./helper.h"
 
 using namespace arkana::hexilit;

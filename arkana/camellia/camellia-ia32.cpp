@@ -9,7 +9,7 @@
 /// - camellia https://info.isl.ntt.co.jp/crypt/camellia/ 
 
 #include "../camellia.h"
-#include <arkana/camellia/camellia-ia32.h>
+#include "./camellia-ia32.h"
 
 namespace arkana::camellia
 {

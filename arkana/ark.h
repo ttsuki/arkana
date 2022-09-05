@@ -7,16 +7,16 @@
 
 #pragma once
 
-#include <arkana/ark/types.h>
-#include <arkana/ark/lutgen.h>
-#include <arkana/ark/macros.h>
-#include <arkana/ark/bitmanip.h>
-#include <arkana/ark/memory.h>
-#include <arkana/ark/cpuid.h>
-#include <arkana/ark/hexilit.h>
-#include <arkana/ark/uint128.h>
-#include <arkana/ark/base64.h>
+#include "./ark/types.h"
+#include "./ark/lutgen.h"
+#include "./ark/macros.h"
+#include "./ark/bitmanip.h"
+#include "./ark/memory.h"
+#include "./ark/cpuid.h"
+#include "./ark/hexilit.h"
+#include "./ark/uint128.h"
+#include "./ark/base64.h"
 
 #ifdef __AVX2__
-#include <arkana/ark/xmm.h>
+#include "./ark/xmm.h"
 #endif

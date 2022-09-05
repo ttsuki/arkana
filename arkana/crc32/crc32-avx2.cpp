@@ -7,7 +7,7 @@
 /// https://opensource.org/licenses/MIT
 
 #include "../crc32.h"
-#include <arkana/crc32/crc32-avx2.h>
+#include "./crc32-avx2.h"
 
 namespace arkana::crc32
 {

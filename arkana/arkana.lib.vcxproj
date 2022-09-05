@@ -20,9 +20,29 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ark.h" />
+    <ClInclude Include="ark\base64.h" />
+    <ClInclude Include="ark\bitmanip.h" />
+    <ClInclude Include="ark\cpuid.h" />
+    <ClInclude Include="ark\hexilit.h" />
+    <ClInclude Include="ark\lutgen.h" />
+    <ClInclude Include="ark\macros.h" />
+    <ClInclude Include="ark\memory.h" />
+    <ClInclude Include="ark\types.h" />
+    <ClInclude Include="ark\uint128.h" />
+    <ClInclude Include="ark\xmm.h" />
     <ClInclude Include="camellia.h" />
+    <ClInclude Include="camellia\camellia-avx2.h" />
+    <ClInclude Include="camellia\camellia-avx2aesni.h" />
+    <ClInclude Include="camellia\camellia-ia32.h" />
+    <ClInclude Include="camellia\camellia.h" />
     <ClInclude Include="crc32.h" />
+    <ClInclude Include="crc32\crc32-avx2.h" />
+    <ClInclude Include="crc32\crc32-avx2clmul.h" />
+    <ClInclude Include="crc32\crc32-ia32.h" />
+    <ClInclude Include="crc32\crc32.h" />
     <ClInclude Include="sha2.h" />
+    <ClInclude Include="sha2\sha2-avx2.h" />
+    <ClInclude Include="sha2\sha2.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ark\ark.cpp" />
@@ -94,9 +114,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
-  <ImportGroup Label="Shared">
-    <Import Project="..\arkana.vcxitems" Label="Shared" />
-  </ImportGroup>
+  <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="arkana.lib.props" />
