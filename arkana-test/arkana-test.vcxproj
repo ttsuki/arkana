@@ -66,7 +66,7 @@
     <None Include="test-uint128.gen.py" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\arkana-lib\arkana.lib.vcxproj">
+    <ProjectReference Include="..\arkana\arkana.lib.vcxproj">
       <Project>{285518cf-e16e-478a-a070-9943856cda72}</Project>
     </ProjectReference>
   </ItemGroup>
