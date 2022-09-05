@@ -14,19 +14,19 @@
 
 namespace arkana::sha2
 {
-    template <class sha2_digest_t>
-    class sha2_context_t
+    template <class digest_type>
+    class digest_context_t
     {
     public:
-        sha2_context_t() = default;
-        sha2_context_t(const sha2_context_t& other) = delete;
-        sha2_context_t(sha2_context_t&& other) noexcept = default;
-        sha2_context_t& operator=(const sha2_context_t& other) = delete;
-        sha2_context_t& operator=(sha2_context_t&& other) noexcept = default;
-        virtual ~sha2_context_t() = default;
+        digest_context_t() = default;
+        digest_context_t(const digest_context_t& other) = delete;
+        digest_context_t(digest_context_t&& other) noexcept = default;
+        digest_context_t& operator=(const digest_context_t& other) = delete;
+        digest_context_t& operator=(digest_context_t&& other) noexcept = default;
+        virtual ~digest_context_t() = default;
 
     public:
-        using digest_t = sha2_digest_t;
+        using digest_t = digest_type;
 
         // Calculates digest
         //   data: input data
@@ -48,14 +48,14 @@ namespace arkana::sha2
     using sha512_224_digest_t = std::array<std::byte, 224 / CHAR_BIT>;
     using sha512_256_digest_t = std::array<std::byte, 256 / CHAR_BIT>;
 
-    using md5_context_t = sha2_context_t<md5_digest_t>;
-    using sha1_context_t = sha2_context_t<sha1_digest_t>;
-    using sha224_context_t = sha2_context_t<sha224_digest_t>;
-    using sha256_context_t = sha2_context_t<sha256_digest_t>;
-    using sha384_context_t = sha2_context_t<sha384_digest_t>;
-    using sha512_context_t = sha2_context_t<sha512_digest_t>;
-    using sha512_224_context_t = sha2_context_t<sha512_224_digest_t>;
-    using sha512_256_context_t = sha2_context_t<sha512_256_digest_t>;
+    using md5_context_t = digest_context_t<md5_digest_t>;
+    using sha1_context_t = digest_context_t<sha1_digest_t>;
+    using sha224_context_t = digest_context_t<sha224_digest_t>;
+    using sha256_context_t = digest_context_t<sha256_digest_t>;
+    using sha384_context_t = digest_context_t<sha384_digest_t>;
+    using sha512_context_t = digest_context_t<sha512_digest_t>;
+    using sha512_224_context_t = digest_context_t<sha512_224_digest_t>;
+    using sha512_256_context_t = digest_context_t<sha512_256_digest_t>;
 
     std::unique_ptr<md5_context_t> create_md5_context();
     std::unique_ptr<sha1_context_t> create_sha1_context();

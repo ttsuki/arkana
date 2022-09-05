@@ -20,7 +20,7 @@ namespace arkana::sha2
     static inline auto make_sha2_context_avx2(sha2_state_t state)
     {
         class sha2_context_impl_t
-            : public virtual sha2_context_t<typename sha2_state_t::digest_t>
+            : public virtual digest_context_t<typename sha2_state_t::digest_t>
         {
         public:
             sha2_state_t state;
