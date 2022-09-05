@@ -26,9 +26,7 @@ namespace arkana::sha2
             sha2_state_t state;
 
             explicit sha2_context_impl_t(sha2_state_t state)
-                : state(std::move(state))
-            {
-            }
+                : state(std::move(state)) { }
 
             void process_bytes(const void* data, size_t len) noexcept override
             {

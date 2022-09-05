@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "crc32.h"
+#include "crc32-ref.h"
 #include "../ark/memory.h"
 
 namespace arkana::crc32
