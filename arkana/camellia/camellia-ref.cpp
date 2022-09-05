@@ -8,14 +8,5 @@
 ///
 /// - camellia https://info.isl.ntt.co.jp/crypt/camellia/ 
 
-#pragma once
-
-#include "camellia-ref.h"
-
-namespace arkana::camellia
-{
-    namespace ia32
-    {
-        using namespace ref;
-    }
-}
+#include "./camellia.h"
+#include "./camellia-ref.h"

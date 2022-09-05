@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include "sha2.h"
+#include "sha2-ref.h"
 #include "../ark/xmm.h"
 
 namespace arkana::sha2

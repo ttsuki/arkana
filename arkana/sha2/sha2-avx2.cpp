@@ -11,8 +11,8 @@
 ///   -- J. Guilford, K. Yap, V. Gopal, 2012,
 /// https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/sha-256-implementations-paper.pdf
 
-#include "../sha2.h"
-#include <arkana/sha2/sha2-avx2.h>
+#include "./sha2.h"
+#include "./sha2-avx2.h"
 
 namespace arkana::sha2
 {
@@ -20,15 +20,13 @@ namespace arkana::sha2
     static inline auto make_sha2_context_avx2(sha2_state_t state)
     {
         class sha2_context_impl_t
-            : public virtual sha2_context_t<typename sha2_state_t::digest_t>
+            : public virtual digest_context_t<typename sha2_state_t::digest_t>
         {
         public:
             sha2_state_t state;
 
             explicit sha2_context_impl_t(sha2_state_t state)
-                : state(std::move(state))
-            {
-            }
+                : state(std::move(state)) { }
 
             void process_bytes(const void* data, size_t len) noexcept override
             {

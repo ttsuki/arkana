@@ -4,14 +4,15 @@
 #include <vector>
 #include <random>
 
-static inline std::vector<std::byte> random_bytes(size_t len)
+static inline std::vector<std::byte> random_bytes(size_t length)
 {
-    std::vector<std::byte> plain(len);
-    std::independent_bits_engine<std::default_random_engine, 8, uint32_t> e{};
-    std::generate(begin(plain), end(plain), [gen = std::ref(e)]
-    {
-        return static_cast<std::byte>(gen());
-    });
+    std::vector<std::byte> plain(length + 7 & ~7);
+    std::independent_bits_engine<std::default_random_engine, 64, uint64_t> generator{};
+    std::generate(
+        reinterpret_cast<uint64_t*>(plain.data()),
+        reinterpret_cast<uint64_t*>(plain.data() + plain.size() / sizeof(uint64_t)),
+        [&generator]() -> uint64_t { return generator(); });
+    plain.resize(length);
     return plain;
 }
 

@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include "crc32.h"
+#include "crc32-ref.h"
 #include "../ark/xmm.h"
 
 namespace arkana::crc32
