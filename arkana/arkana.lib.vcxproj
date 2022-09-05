@@ -35,14 +35,17 @@
     <ClInclude Include="camellia\camellia-avx2aesni.h" />
     <ClInclude Include="camellia\camellia-ia32.h" />
     <ClInclude Include="camellia\camellia-ref.h" />
+    <ClInclude Include="camellia\camellia.h" />
     <ClInclude Include="crc32.h" />
     <ClInclude Include="crc32\crc32-avx2.h" />
     <ClInclude Include="crc32\crc32-avx2clmul.h" />
     <ClInclude Include="crc32\crc32-ia32.h" />
     <ClInclude Include="crc32\crc32-ref.h" />
+    <ClInclude Include="crc32\crc32.h" />
     <ClInclude Include="sha2.h" />
     <ClInclude Include="sha2\sha2-avx2.h" />
     <ClInclude Include="sha2\sha2-ref.h" />
+    <ClInclude Include="sha2\sha2.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ark\ark.cpp" />
