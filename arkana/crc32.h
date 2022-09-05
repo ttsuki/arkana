@@ -15,11 +15,12 @@
 namespace arkana::crc32
 {
     using crc32_value_t = std::uint32_t;
+
+    // Calculates crc32
+    //   data: data
+    //   length: length in bytes
+    //   current: current value (for partial calculation)
     crc32_value_t calculate_crc32(const void* data, size_t length, crc32_value_t current = 0);
-    crc32_value_t calculate_crc32_ref(const void* data, size_t length, crc32_value_t current = 0);
-    crc32_value_t calculate_crc32_ia32(const void* data, size_t length, crc32_value_t current = 0);
-    crc32_value_t calculate_crc32_avx2(const void* data, size_t length, crc32_value_t current = 0);
-    crc32_value_t calculate_crc32_avx2clmul(const void* data, size_t length, crc32_value_t current = 0);
 
     class crc32_context_t
     {
@@ -32,13 +33,14 @@ namespace arkana::crc32
         virtual ~crc32_context_t() = default;
 
     public:
+        // Gets current value.
         virtual crc32_value_t current() const = 0;
+
+        // Calculates crc32
+        //   data: data
+        //   length: length in bytes
         virtual void update(const void* data, size_t length) = 0;
     };
 
     std::unique_ptr<crc32_context_t> create_crc32_context(crc32_value_t initial = 0);
-    std::unique_ptr<crc32_context_t> create_crc32_context_ref(crc32_value_t initial = 0);
-    std::unique_ptr<crc32_context_t> create_crc32_context_ia32(crc32_value_t initial = 0);
-    std::unique_ptr<crc32_context_t> create_crc32_context_avx2(crc32_value_t initial = 0);
-    std::unique_ptr<crc32_context_t> create_crc32_context_avx2clmul(crc32_value_t initial = 0);
 }

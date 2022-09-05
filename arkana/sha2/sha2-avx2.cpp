@@ -11,7 +11,7 @@
 ///   -- J. Guilford, K. Yap, V. Gopal, 2012,
 /// https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/sha-256-implementations-paper.pdf
 
-#include "../sha2.h"
+#include "./sha2.h"
 #include "./sha2-avx2.h"
 
 namespace arkana::sha2

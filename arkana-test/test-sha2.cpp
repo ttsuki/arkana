@@ -1,7 +1,6 @@
 #include "./gtest.h"
 #include "../arkana/ark.h"
-#include "../arkana/sha2.h"
-#include "./helper.h"
+#include "../arkana/sha2/sha2.h"
 
 using namespace arkana::hexilit;
 using namespace arkana::sha2;

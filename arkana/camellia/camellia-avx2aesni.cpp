@@ -13,7 +13,7 @@
 ///   -- Oulu : J. Kivilinna, 2013,
 ///   http://jultika.oulu.fi/Record/nbnfioulu-201305311409
 
-#include "../camellia.h"
+#include "./camellia.h"
 #include "./camellia-avx2aesni.h"
 
 namespace arkana::camellia

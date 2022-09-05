@@ -11,7 +11,7 @@
 /// -- V. Gopal, E. Ozturk, J. Guilford, et al., 2009,
 /// https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf
 
-#include "../crc32.h"
+#include "./crc32.h"
 #include "./crc32-avx2clmul.h"
 
 namespace arkana::crc32

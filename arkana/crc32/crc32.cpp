@@ -6,7 +6,7 @@
 /// This software is released under the MIT License.
 /// https://opensource.org/licenses/MIT
 
-#include "../crc32.h"
+#include "./crc32.h"
 #include "../ark/cpuid.h"
 
 namespace arkana::crc32

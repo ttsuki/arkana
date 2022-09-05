@@ -6,7 +6,7 @@
 /// This software is released under the MIT License.
 /// https://opensource.org/licenses/MIT
 
-#include "../sha2.h"
+#include "./sha2.h"
 #include "./sha2-ref.h"
 
 namespace arkana::sha2

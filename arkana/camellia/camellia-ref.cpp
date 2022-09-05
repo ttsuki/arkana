@@ -8,5 +8,5 @@
 ///
 /// - camellia https://info.isl.ntt.co.jp/crypt/camellia/ 
 
-#include "../camellia.h"
+#include "./camellia.h"
 #include "./camellia-ref.h"
