@@ -1,7 +1,7 @@
 𝒂𝒓𝒌a𝒏𝒂
 ======
 
-Somthing of an fs infra library (Intel AVX2 accelerated) for C++17
+Something of an fs infra library (Intel AVX2 accelerated) for C++17
 
 ---
 

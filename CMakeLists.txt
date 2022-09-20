@@ -26,7 +26,7 @@ if ( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC"
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
   endif()
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-long-long -fstrict-aliasing")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-long-long -Wno-ignored-attributes -fstrict-aliasing")
 endif ()
 
 ## REFERENCE TO MAIN PROJECT
