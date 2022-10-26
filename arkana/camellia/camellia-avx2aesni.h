@@ -482,11 +482,12 @@ namespace arkana::camellia
             using ref::impl::key_vector_large_t;
             using ref::impl::generate_key_vector;
 
-            template <class key_vector_t>
-            static inline auto process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_t& kv)
-            -> std::enable_if_t<is_any_of<key_vector_t, key_vector_small_t, key_vector_large_t>::value, void>
+            // rfc3713 ecb-mode
+            template <
+                class key_vector_t, std::enable_if_t<is_any_of_v<key_vector_t, key_vector_small_t, key_vector_large_t>>* = nullptr
+            >
+            static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_t& kv)
             {
-                // rfc3713 ecb-mode
                 using namespace functions;
                 ecb_mode::process_blocks_ecb<
                     v128,
@@ -501,21 +502,20 @@ namespace arkana::camellia
 
             using ref::impl::ctr_iv_t;
             using ref::impl::ctr_nonce_t;
+            using ref::impl::ctr_vector_t;
+            using ref::impl::generate_rfc5528_ctr_vector;
+            using functions::is_ctr_generator_v;
 
-            template <class key_vector_t>
-            static inline auto process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, const ctr_iv_t& ctr_iv, const ctr_nonce_t& ctr_nonce)
-            -> std::enable_if_t<is_any_of<key_vector_t, key_vector_small_t, key_vector_large_t>::value, void>
+            // rfc5528 ctr-mode
+            template <
+                class key_vector_t, std::enable_if_t<is_any_of_v<key_vector_t, key_vector_small_t, key_vector_large_t>>* = nullptr
+            >
+            static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, const ctr_vector_t& cv)
             {
-                // rfc5528 ctr-mode
-                struct ctr_t
-                {
-                    uint32_t n, ivl, ivr, ctr;
-                };
-
-                ctr_t ctr0 = arkana::load_u<ctr_t>(&kv);
-                ctr0.n ^= arkana::load_u<uint32_t>(ctr_nonce.data() + 0);
-                ctr0.ivl ^= arkana::load_u<uint32_t>(ctr_iv.data() + 0);
-                ctr0.ivr ^= arkana::load_u<uint32_t>(ctr_iv.data() + 4);
+                ctr_vector_t ctr0 = arkana::load_u<ctr_vector_t>(&kv);
+                ctr0.n ^= cv.n;
+                ctr0.ivl ^= cv.ivl;
+                ctr0.ivr ^= cv.ivr;
 
                 using namespace functions;
                 ctr_mode::process_bytes_ctr<
@@ -563,17 +563,19 @@ namespace arkana::camellia
                     v.r.l.x1 = u8x32(static_cast<uint8_t>(ctr0.ivr >> 1 * 8));
                     v.r.l.x2 = u8x32(static_cast<uint8_t>(ctr0.ivr >> 2 * 8));
                     v.r.l.x3 = u8x32(static_cast<uint8_t>(ctr0.ivr >> 3 * 8));
-                    v.r.r.x0 = u8x32(static_cast<uint8_t>(ctr0.ctr >> 0 * 8)) ^ ctr.x0;
-                    v.r.r.x1 = u8x32(static_cast<uint8_t>(ctr0.ctr >> 1 * 8)) ^ ctr.x1;
-                    v.r.r.x2 = u8x32(static_cast<uint8_t>(ctr0.ctr >> 2 * 8)) ^ ctr.x2;
-                    v.r.r.x3 = u8x32(static_cast<uint8_t>(ctr0.ctr >> 3 * 8)) ^ ctr.x3;
+                    v.r.r.x0 = u8x32(static_cast<uint8_t>(ctr0.ctr >> 0 * 8)) ^ ctr.x0; // prewhitening
+                    v.r.r.x1 = u8x32(static_cast<uint8_t>(ctr0.ctr >> 1 * 8)) ^ ctr.x1; // prewhitening
+                    v.r.r.x2 = u8x32(static_cast<uint8_t>(ctr0.ctr >> 2 * 8)) ^ ctr.x2; // prewhitening
+                    v.r.r.x3 = u8x32(static_cast<uint8_t>(ctr0.ctr >> 3 * 8)) ^ ctr.x3; // prewhitening
                     return v;
                 });
             }
 
-            template <class key_vector_t, class ctr_generator_t>
-            static inline auto process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, ctr_generator_t&& ctr)
-            -> std::enable_if_t<is_any_of<key_vector_t, key_vector_small_t, key_vector_large_t>::value, void>
+            // custom ctr-mode
+            template <
+                class key_vector_t, std::enable_if_t<is_any_of_v<key_vector_t, key_vector_small_t, key_vector_large_t>>* = nullptr,
+                class ctr_generator_t, std::enable_if_t<functions::is_ctr_generator_v<ctr_generator_t, block_t>>* = nullptr>
+            static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, ctr_generator_t&& ctr)
             {
                 // custom ctr-mode
                 using ctr_t = std::invoke_result_t<ctr_generator_t, size_t>;
@@ -634,19 +636,24 @@ namespace arkana::camellia
 
         using impl::key_vector_small_t;
         using impl::key_vector_large_t;
+
         static inline key_vector_small_t generate_key_vector_encrypt(const key_128bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
         static inline key_vector_large_t generate_key_vector_encrypt(const key_192bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
         static inline key_vector_large_t generate_key_vector_encrypt(const key_256bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
         static inline key_vector_small_t generate_key_vector_decrypt(const key_128bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
         static inline key_vector_large_t generate_key_vector_decrypt(const key_192bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
         static inline key_vector_large_t generate_key_vector_decrypt(const key_256bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
-
         static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_small_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
         static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_large_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
 
         using impl::ctr_iv_t;
         using impl::ctr_nonce_t;
-        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_small_t& kv, const ctr_iv_t& ctr_iv, const ctr_nonce_t& ctr_nonce) { return impl::process_bytes_ctr(dst, src, position, length, kv, ctr_iv, ctr_nonce); }
-        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_large_t& kv, const ctr_iv_t& ctr_iv, const ctr_nonce_t& ctr_nonce) { return impl::process_bytes_ctr(dst, src, position, length, kv, ctr_iv, ctr_nonce); }
+        using impl::ctr_vector_t;
+
+        static inline ctr_vector_t generate_ctr_vector(const ctr_iv_t& ctr_iv, const ctr_nonce_t& ctr_nonce) { return impl::generate_rfc5528_ctr_vector(ctr_iv, ctr_nonce); }
+        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_small_t& kv, const ctr_vector_t& ctr) { return impl::process_bytes_ctr(dst, src, position, length, kv, ctr); }
+        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_large_t& kv, const ctr_vector_t& ctr) { return impl::process_bytes_ctr(dst, src, position, length, kv, ctr); }
+        template <class custom_ctr_generator_t, std::enable_if_t<functions::is_ctr_generator_v<custom_ctr_generator_t>>* = nullptr> static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_small_t& kv, custom_ctr_generator_t&& ctr) { return impl::process_bytes_ctr(dst, src, position, length, kv, std::forward<custom_ctr_generator_t>(ctr)); }
+        template <class custom_ctr_generator_t, std::enable_if_t<functions::is_ctr_generator_v<custom_ctr_generator_t>>* = nullptr> static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_large_t& kv, custom_ctr_generator_t&& ctr) { return impl::process_bytes_ctr(dst, src, position, length, kv, std::forward<custom_ctr_generator_t>(ctr)); }
     }
 }
