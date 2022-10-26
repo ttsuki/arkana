@@ -11,7 +11,12 @@
 
 namespace arkana::crc32
 {
-    crc32_value_t calculate_crc32_ia32(const void* data, size_t length, crc32_value_t current)
+    inline bool cpu_supports_ia32() noexcept
+    {
+        return true;
+    }
+
+    inline crc32_value_t calculate_crc32_ia32(const void* data, size_t length, crc32_value_t current)
     {
         return ia32::calculate_crc32<0xEDB88320>(data, length, current);
     }
