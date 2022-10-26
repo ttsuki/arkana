@@ -51,11 +51,11 @@ namespace arkana::xmm
     using float32_t = float;
     using float64_t = double;
 
-    /// wraps 128bit int (to suppress gcc's warning `ignoring attributes on template argument...')
-    struct xm128
-    {
-        __m128i i;
-    };
+#ifdef __SIZEOF_INT128__ // if compiler has __int128
+    using xint128_t = unsigned __int128;
+#else
+    using xint128_t = __m128i;
+#endif
 
     /// SSE __m128i
     template <class T>
@@ -103,7 +103,7 @@ namespace arkana::xmm
     using vi64x2 = XMM<int64_t>;
     using vu64x2 = XMM<uint64_t>;
     using vf64x2 = XMM<float64_t>;
-    using vx128x1 = XMM<xm128>;
+    using vx128x1 = XMM<xint128_t>;
 
     /// AVX __m256i
     template <class T>
@@ -151,7 +151,7 @@ namespace arkana::xmm
     using vi64x4 = YMM<int64_t>;
     using vu64x4 = YMM<uint64_t>;
     using vf64x4 = YMM<float64_t>;
-    using vx128x2 = YMM<xm128>;
+    using vx128x2 = YMM<xint128_t>;
 
     struct SHIFT
     {
@@ -167,35 +167,31 @@ namespace arkana::xmm
 
     namespace enable
     {
-        template <class XMM> using is_xmm = std::is_same<typename XMM::vector_t, __m128i>;
-        template <class YMM> using is_ymm = std::is_same<typename YMM::vector_t, __m128i>;
-        template <class NMM> using is_nmm = std::disjunction<std::is_same<typename NMM::vector_t, __m128i>, std::is_same<typename NMM::vector_t, __m256i>>;
-
         template <class TMM, class UMM, class VMM = TMM> using if_ = std::enable_if_t<std::is_same_v<TMM, UMM>, VMM>;
 
-        template <class XMM, class T = XMM> using if_iXMM = std::enable_if_t<std::is_same_v<typename XMM::vector_t, __m128i>, T>;
-        template <class XMM, class T = XMM> using if_8x16 = std::enable_if_t<std::is_same_v<typename XMM::vector_t, __m128i> && XMM::element_bits == 8, T>;
-        template <class XMM, class T = XMM> using if_16x8 = std::enable_if_t<std::is_same_v<typename XMM::vector_t, __m128i> && XMM::element_bits == 16, T>;
-        template <class XMM, class T = XMM> using if_32x4 = std::enable_if_t<std::is_same_v<typename XMM::vector_t, __m128i> && XMM::element_bits == 32, T>;
-        template <class XMM, class T = XMM> using if_64x2 = std::enable_if_t<std::is_same_v<typename XMM::vector_t, __m128i> && XMM::element_bits == 64, T>;
-        template <class XMM, class T = XMM> using if_f32x4 = std::enable_if_t<std::is_same_v<typename XMM::vector_t, __m128> && XMM::element_bits == 32, T>;
-        template <class XMM, class T = XMM> using if_f64x2 = std::enable_if_t<std::is_same_v<typename XMM::vector_t, __m128d> && XMM::element_bits == 64, T>;
+        template <class XMM, class T = XMM> using if_iXMM = std::enable_if_t<!std::is_floating_point_v<typename XMM::element_t> && XMM::element_bits * XMM::size == 128, T>;
+        template <class XMM, class T = XMM> using if_8x16 = std::enable_if_t<!std::is_floating_point_v<typename XMM::element_t> && XMM::element_bits * XMM::size == 128 && XMM::element_bits == 8, T>;
+        template <class XMM, class T = XMM> using if_16x8 = std::enable_if_t<!std::is_floating_point_v<typename XMM::element_t> && XMM::element_bits * XMM::size == 128 && XMM::element_bits == 16, T>;
+        template <class XMM, class T = XMM> using if_32x4 = std::enable_if_t<!std::is_floating_point_v<typename XMM::element_t> && XMM::element_bits * XMM::size == 128 && XMM::element_bits == 32, T>;
+        template <class XMM, class T = XMM> using if_64x2 = std::enable_if_t<!std::is_floating_point_v<typename XMM::element_t> && XMM::element_bits * XMM::size == 128 && XMM::element_bits == 64, T>;
+        template <class XMM, class T = XMM> using if_f32x4 = std::enable_if_t<std::is_floating_point_v<typename XMM::element_t> && XMM::element_bits * XMM::size == 128 && XMM::element_bits == 32, T>;
+        template <class XMM, class T = XMM> using if_f64x2 = std::enable_if_t<std::is_floating_point_v<typename XMM::element_t> && XMM::element_bits * XMM::size == 128 && XMM::element_bits == 64, T>;
 
-        template <class YMM, class T = YMM> using if_iYMM = std::enable_if_t<std::is_same_v<typename YMM::vector_t, __m256i>, T>;
-        template <class YMM, class T = YMM> using if_8x32 = std::enable_if_t<std::is_same_v<typename YMM::vector_t, __m256i> && YMM::element_bits == 8, T>;
-        template <class YMM, class T = YMM> using if_16x16 = std::enable_if_t<std::is_same_v<typename YMM::vector_t, __m256i> && YMM::element_bits == 16, T>;
-        template <class YMM, class T = YMM> using if_32x8 = std::enable_if_t<std::is_same_v<typename YMM::vector_t, __m256i> && YMM::element_bits == 32, T>;
-        template <class YMM, class T = YMM> using if_64x4 = std::enable_if_t<std::is_same_v<typename YMM::vector_t, __m256i> && YMM::element_bits == 64, T>;
-        template <class YMM, class T = YMM> using if_f32x8 = std::enable_if_t<std::is_same_v<typename YMM::vector_t, __m256> && YMM::element_bits == 32, T>;
-        template <class YMM, class T = YMM> using if_f64x4 = std::enable_if_t<std::is_same_v<typename YMM::vector_t, __m256d> && YMM::element_bits == 64, T>;
+        template <class YMM, class T = YMM> using if_iYMM = std::enable_if_t<!std::is_floating_point_v<typename YMM::element_t> && YMM::element_bits * YMM::size == 256, T>;
+        template <class YMM, class T = YMM> using if_8x32 = std::enable_if_t<!std::is_floating_point_v<typename YMM::element_t> && YMM::element_bits * YMM::size == 256 && YMM::element_bits == 8, T>;
+        template <class YMM, class T = YMM> using if_16x16 = std::enable_if_t<!std::is_floating_point_v<typename YMM::element_t> && YMM::element_bits * YMM::size == 256 && YMM::element_bits == 16, T>;
+        template <class YMM, class T = YMM> using if_32x8 = std::enable_if_t<!std::is_floating_point_v<typename YMM::element_t> && YMM::element_bits * YMM::size == 256 && YMM::element_bits == 32, T>;
+        template <class YMM, class T = YMM> using if_64x4 = std::enable_if_t<!std::is_floating_point_v<typename YMM::element_t> && YMM::element_bits * YMM::size == 256 && YMM::element_bits == 64, T>;
+        template <class YMM, class T = YMM> using if_f32x8 = std::enable_if_t<std::is_floating_point_v<typename YMM::element_t> && YMM::element_bits * YMM::size == 256 && YMM::element_bits == 32, T>;
+        template <class YMM, class T = YMM> using if_f64x4 = std::enable_if_t<std::is_floating_point_v<typename YMM::element_t> && YMM::element_bits * YMM::size == 256 && YMM::element_bits == 64, T>;
 
-        template <class NMM, class T = NMM> using if_iNMM = std::enable_if_t<std::disjunction_v<std::is_same<typename NMM::vector_t, __m128i>, std::is_same<typename NMM::vector_t, __m256i>>, T>;
-        template <class NMM, class T = NMM> using if_8xN = std::enable_if_t<std::disjunction_v<std::is_same<typename NMM::vector_t, __m128i>, std::is_same<typename NMM::vector_t, __m256i>> && NMM::element_bits == 8, T>;
-        template <class NMM, class T = NMM> using if_16xN = std::enable_if_t<std::disjunction_v<std::is_same<typename NMM::vector_t, __m128i>, std::is_same<typename NMM::vector_t, __m256i>> && NMM::element_bits == 16, T>;
-        template <class NMM, class T = NMM> using if_32xN = std::enable_if_t<std::disjunction_v<std::is_same<typename NMM::vector_t, __m128i>, std::is_same<typename NMM::vector_t, __m256i>> && NMM::element_bits == 32, T>;
-        template <class NMM, class T = NMM> using if_64xN = std::enable_if_t<std::disjunction_v<std::is_same<typename NMM::vector_t, __m128i>, std::is_same<typename NMM::vector_t, __m256i>> && NMM::element_bits == 64, T>;
-        template <class NMM, class T = NMM> using if_f32xN = std::enable_if_t<std::disjunction_v<std::is_same<typename NMM::vector_t, __m128>, std::is_same<typename NMM::vector_t, __m256>> && NMM::element_bits == 32, T>;
-        template <class NMM, class T = NMM> using if_f64xN = std::enable_if_t<std::disjunction_v<std::is_same<typename NMM::vector_t, __m128d>, std::is_same<typename NMM::vector_t, __m256d>> && NMM::element_bits == 64, T>;
+        template <class NMM, class T = NMM> using if_iNMM = std::enable_if_t<!std::is_floating_point_v<typename NMM::element_t> && (NMM::element_bits * NMM::size == 128 || NMM::element_bits * NMM::size == 256), T>;
+        template <class NMM, class T = NMM> using if_8xN = std::enable_if_t<!std::is_floating_point_v<typename NMM::element_t> && (NMM::element_bits * NMM::size == 128 || NMM::element_bits * NMM::size == 256) && NMM::element_bits == 8, T>;
+        template <class NMM, class T = NMM> using if_16xN = std::enable_if_t<!std::is_floating_point_v<typename NMM::element_t> && (NMM::element_bits * NMM::size == 128 || NMM::element_bits * NMM::size == 256) && NMM::element_bits == 16, T>;
+        template <class NMM, class T = NMM> using if_32xN = std::enable_if_t<!std::is_floating_point_v<typename NMM::element_t> && (NMM::element_bits * NMM::size == 128 || NMM::element_bits * NMM::size == 256) && NMM::element_bits == 32, T>;
+        template <class NMM, class T = NMM> using if_64xN = std::enable_if_t<!std::is_floating_point_v<typename NMM::element_t> && (NMM::element_bits * NMM::size == 128 || NMM::element_bits * NMM::size == 256) && NMM::element_bits == 64, T>;
+        template <class NMM, class T = NMM> using if_f32xN = std::enable_if_t<std::is_floating_point_v<typename NMM::element_t> && (NMM::element_bits * NMM::size == 128 || NMM::element_bits * NMM::size == 256) && NMM::element_bits == 32, T>;
+        template <class NMM, class T = NMM> using if_f64xN = std::enable_if_t<std::is_floating_point_v<typename NMM::element_t> && (NMM::element_bits * NMM::size == 128 || NMM::element_bits * NMM::size == 256) && NMM::element_bits == 64, T>;
     }
 
     template <class XMM> ARKXMM_API load_u(const void* src) -> enable::if_iXMM<XMM> { return XMM{_mm_lddqu_si128(&static_cast<const XMM*>(src)->v)}; }                         // SSE3
