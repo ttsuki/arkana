@@ -8,7 +8,7 @@ enable_testing()
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/refs/tags/release-1.8.1.zip
+  URL https://github.com/google/googletest/archive/refs/tags/release-1.12.1.zip
 )
 set(gtest_force_shared_crt OFF CACHE BOOL "" FORCE)
 set(BUILD_GMOCK OFF CACHE INTERNAL "" FORCE)
