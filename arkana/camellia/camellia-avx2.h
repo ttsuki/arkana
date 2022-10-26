@@ -217,7 +217,7 @@ namespace arkana::camellia
                     swap_xor128,
                     store_v128>(dst, src, position, length, kv, [ctr = std::forward<decltype(ctr)>(ctr)](size_t index) -> v128
                 {
-                    array<ctr_t, 8> v = {
+                    std::array<ctr_t, 8> v = {
                         ctr(index * 8 + 0),
                         ctr(index * 8 + 1),
                         ctr(index * 8 + 2),

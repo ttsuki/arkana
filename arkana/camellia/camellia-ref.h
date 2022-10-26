@@ -43,7 +43,7 @@ namespace arkana::camellia
             return v;
         }
 
-        static ARKANA_FORCEINLINE constexpr auto decompose(uint64_t x) noexcept -> tuple<uint32_t, uint32_t>
+        static ARKANA_FORCEINLINE constexpr auto decompose(uint64_t x) noexcept -> value_pair_t<uint32_t>
         {
             return {static_cast<uint32_t>(x), static_cast<uint32_t>(x >> 32)};
         }
