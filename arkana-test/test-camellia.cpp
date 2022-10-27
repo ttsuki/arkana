@@ -11,9 +11,9 @@ template <typename T>
 struct CamelliaTest : testing::Test
 {
 #ifndef NDEBUG
-    static const auto& source_for_benchmark() { return static_random_bytes_1m; }
+    static const auto& source_for_benchmark() { return static_random_bytes_1m(); }
 #else
-    static const auto& source_for_benchmark() { return static_random_bytes_256m; }
+    static const auto& source_for_benchmark() { return static_random_bytes_256m(); }
 #endif
 };
 

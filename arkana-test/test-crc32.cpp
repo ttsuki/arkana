@@ -15,9 +15,9 @@ crc32_value_t calculate_crc32(context_t ctx, const void* data, size_t length)
 struct Crc32TestBase : testing::Test
 {
 #ifndef NDEBUG
-    static inline const auto& data = static_random_bytes_1m;
+    static inline const auto& data = static_random_bytes_1m();
 #else
-    static inline const auto& data = static_random_bytes_256m;
+    static inline const auto& data = static_random_bytes_256m();
 #endif
 
     static inline const crc32_value_t expected_a = calculate_crc32(create_crc32_context_ref(), data.data() + 0, data.size() - 0);
