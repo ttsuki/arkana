@@ -8,7 +8,7 @@ enable_testing()
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/refs/tags/release-1.8.1.zip
+  URL https://github.com/google/googletest/archive/refs/tags/release-1.12.1.zip
 )
 set(gtest_force_shared_crt OFF CACHE BOOL "" FORCE)
 set(BUILD_GMOCK OFF CACHE INTERNAL "" FORCE)
@@ -26,14 +26,14 @@ file(
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PRIVATE arkana gtest_main)
+target_link_libraries(${PROJECT_NAME} PRIVATE arkana gtest)
 target_precompile_headers(${PROJECT_NAME} PRIVATE pch.h)
 gtest_discover_tests(${PROJECT_NAME})
 
 ## source_group by directory path
 foreach (SOURCE_FILE IN ITEMS ${SOURCE_FILES})
     message(STATUS "${SOURCE_FILE}")
-    get_filename_component(SOURCE_PATH "${SOURCE_FILE}" DIRECTORY )
+    get_filename_component(SOURCE_PATH "${SOURCE_FILE}" DIRECTORY)
     string(REPLACE "/" "\\" GROUP_PATH "${SOURCE_PATH}")
     source_group("${GROUP_PATH}" FILES "${SOURCE_FILE}")
 endforeach ()
@@ -42,6 +42,5 @@ endforeach ()
 if (BUILD_WITH_STATIC_MSVC_CRT)
     set_property(TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     set_property(TARGET gtest PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    set_property(TARGET gtest_main PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 

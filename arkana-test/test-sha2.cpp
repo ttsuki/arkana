@@ -11,7 +11,7 @@ struct Sha2Test : testing::Test
 {
 };
 
-TYPED_TEST_CASE_P(Sha2Test);
+TYPED_TEST_SUITE_P(Sha2Test);
 
 namespace
 {
@@ -142,7 +142,7 @@ TYPED_TEST_P(Sha2Test, Sha512_TestVectors)
     EXPECT_EQ(TypeParam::sha512_256_context().finalize(), 0xC672B8D1'EF56ED28'AB87C362'2C511406'9BDD3AD7'B8F97374'98D0C01E'CEF0967A_byte_array);
 }
 
-REGISTER_TYPED_TEST_CASE_P(
+REGISTER_TYPED_TEST_SUITE_P(
     Sha2Test,
     Md5_TestVectors,
     Sha1_TestVectors,
@@ -163,7 +163,7 @@ struct ref_impl
     static auto sha512_256_context() { return sha2_context(create_sha512_256_context_ref()); }
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(ref, Sha2Test, ref_impl);
+INSTANTIATE_TYPED_TEST_SUITE_P(ref, Sha2Test, ref_impl);
 
 struct avx2_impl
 {
@@ -177,4 +177,4 @@ struct avx2_impl
     static auto sha512_256_context() { return sha2_context(create_sha512_256_context_avx2()); }
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(avx2, Sha2Test, avx2_impl);
+INSTANTIATE_TYPED_TEST_SUITE_P(avx2, Sha2Test, avx2_impl);

@@ -17,7 +17,7 @@ struct CamelliaTest : testing::Test
 #endif
 };
 
-TYPED_TEST_CASE_P(CamelliaTest);
+TYPED_TEST_SUITE_P(CamelliaTest);
 
 
 TYPED_TEST_P(CamelliaTest, rfc3713_test_vectors)
@@ -289,7 +289,7 @@ TYPED_TEST_P(CamelliaTest, ctr_benchmark256)
     EXPECT_EQ(source, buffer);
 }
 
-REGISTER_TYPED_TEST_CASE_P(
+REGISTER_TYPED_TEST_SUITE_P(
     CamelliaTest,
     rfc3713_test_vectors,
     t_camellia_txt_test_vectors,
@@ -314,7 +314,7 @@ struct ia32_impl
     static auto camellia256_ctr_context_t(const key_256bit_t& key, const ctr_iv_t& iv, const ctr_nonce_t& nonce) { return create_ctr_context_ia32(&key, &iv, &nonce); }
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(ia32, CamelliaTest, ia32_impl);
+INSTANTIATE_TYPED_TEST_SUITE_P(ia32, CamelliaTest, ia32_impl);
 
 struct avx2_impl
 {
@@ -329,7 +329,7 @@ struct avx2_impl
     static auto camellia256_ctr_context_t(const key_256bit_t& key, const ctr_iv_t& iv, const ctr_nonce_t& nonce) { return create_ctr_context_avx2(&key, &iv, &nonce); }
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(avx2, CamelliaTest, avx2_impl);
+INSTANTIATE_TYPED_TEST_SUITE_P(avx2, CamelliaTest, avx2_impl);
 
 struct avx2aesni_impl
 {
@@ -344,4 +344,4 @@ struct avx2aesni_impl
     static auto camellia256_ctr_context_t(const key_256bit_t& key, const ctr_iv_t& iv, const ctr_nonce_t& nonce) { return create_ctr_context_avx2aesni(&key, &iv, &nonce); }
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(avx2aesni, CamelliaTest, avx2aesni_impl);
+INSTANTIATE_TYPED_TEST_SUITE_P(avx2aesni, CamelliaTest, avx2aesni_impl);
