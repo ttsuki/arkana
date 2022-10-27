@@ -30,7 +30,7 @@ struct Crc32Test : Crc32TestBase
 {
 };
 
-TYPED_TEST_CASE_P(Crc32Test);
+TYPED_TEST_SUITE_P(Crc32Test);
 
 TYPED_TEST_P(Crc32Test, ZeroVector)
 {
@@ -90,32 +90,32 @@ TYPED_TEST_P(Crc32Test, MatchWithRefImpl)
     EXPECT_EQ(calculate_crc32(TypeParam::create_context(), TestFixture::data.data() + 1, TestFixture::data.size() - 2), TestFixture::expected_u);
 }
 
-REGISTER_TYPED_TEST_CASE_P(Crc32Test, ZeroVector, MatchWithRefImpl);
+REGISTER_TYPED_TEST_SUITE_P(Crc32Test, ZeroVector, MatchWithRefImpl);
 
 struct ref_impl
 {
     static auto create_context() { return create_crc32_context_ref(); }
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(ref, Crc32Test, ref_impl);
+INSTANTIATE_TYPED_TEST_SUITE_P(ref, Crc32Test, ref_impl);
 
 struct ia32_impl
 {
     static auto create_context() { return create_crc32_context_ia32(); }
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(ia32, Crc32Test, ia32_impl);
+INSTANTIATE_TYPED_TEST_SUITE_P(ia32, Crc32Test, ia32_impl);
 
 struct avx2_impl
 {
     static auto create_context() { return create_crc32_context_avx2(); }
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(avx2, Crc32Test, avx2_impl);
+INSTANTIATE_TYPED_TEST_SUITE_P(avx2, Crc32Test, avx2_impl);
 
 struct avx2clmul_impl
 {
     static auto create_context() { return create_crc32_context_avx2clmul(); }
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(avx2clmul, Crc32Test, avx2clmul_impl);
+INSTANTIATE_TYPED_TEST_SUITE_P(avx2clmul, Crc32Test, avx2clmul_impl);
