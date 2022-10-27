@@ -4,7 +4,7 @@
         {
             "name": "generator-ninja",
             "hidden": true,
-            "generator": "Ninja",
+            "generator": "Ninja"
         },
         {
             "name": "generator-vs2017",
@@ -22,9 +22,25 @@
             "generator": "Visual Studio 17 2022"
         },
         {
+            "name": "build-release",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_CONFIGURATION_TYPES": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "build-debug",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CONFIGURATION_TYPES": "Debug"
+            }
+        },
+        {
             "name": "windows-default",
-            "displayName": "windows-default-vs2022",
-            "inherits": "generator-vs2022",
+            "hidden": true,
+            "inherits": ["generator-vs2022", "build-release"],
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "installDir": "${sourceDir}/out/install/${presetName}",
             "condition": {
@@ -32,92 +48,125 @@
                 "lhs": "${hostSystemName}",
                 "rhs": "Windows"
             },
-            "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" },
-            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "hostOS": ["Windows"] } }
-        },
-        {
-            "name": "arch-x64",
-            "hidden": true,
-            "architecture": "x64"
-        },
-        {
-            "name": "arch-x86",
-            "hidden": true,
-            "architecture": "Win32"
-        },
-        {
-            "name": "toolset-clang",
-            "hidden": true,
-            "toolset": "CLangCL"
-        },
-        {
-            "name": "toolset-icx",
-            "hidden": true,
-            "toolset": "Intel C++ Compiler 2022"
+            "environment": {
+                "VcpkgAutoLink": "false"
+            }
         },
         {
             "name": "windows-default-x64",
-            "inherits": ["windows-default", "arch-x64"],
+            "inherits": ["windows-default"],
+            "architecture": "x64",
             "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-msvc-x64" } }
         },
         {
-            "name": "windows-default-x64 debug",
-            "inherits": ["windows-default-x64"],
-            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
-        },
-        {
             "name": "windows-default-x86",
-            "inherits": ["windows-default", "arch-x86"],
+            "inherits": ["windows-default"],
+            "architecture": "x86",
             "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-msvc-x86" } }
         },
         {
-            "name": "windows-default-x86 debug",
+            "name": "windows-clangcl-x64",
+            "inherits": ["windows-default-x64"],
+            "toolset": "CLangCL",
+            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-clang-x64" } }
+        },
+        {
+            "name": "windows-clangcl-x86",
             "inherits": ["windows-default-x86"],
-            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
-        },
-        {
-            "name": "windows-vs-clang-x64",
-            "inherits": ["windows-default", "arch-x64", "toolset-clang"],
-            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-clang-x64" } }
-        },
-        {
-            "name": "windows-vs-clang-x64 debug",
-            "inherits": ["windows-vs-clang-x64"],
-            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
-        },
-        {
-            "name": "windows-vs-clang-x86",
-            "inherits": ["windows-default", "arch-x86", "toolset-clang"],
+            "toolset": "CLangCL",
             "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-clang-x86" } }
         },
         {
-            "name": "windows-vs-clang-x86 debug",
-            "inherits": ["windows-vs-clang-x86"],
-            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+            "name": "windows-v141-x64",
+            "inherits": ["windows-default-x64"],
+            "toolset": "v141"
         },
         {
-            "name": "windows-vs-icx-x64",
-            "inherits": ["windows-default", "arch-x64", "toolset-icx"],
-            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-clang-x64" } }
+            "name": "windows-v141-x86",
+            "inherits": ["windows-default-x86"],
+            "toolset": "v141"
         },
         {
-            "name": "windows-vs-icx-x64 debug",
-            "inherits": ["windows-vs-icx-x64"],
-            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+            "name": "windows-v142-x64",
+            "inherits": ["windows-default-x64"],
+            "toolset": "v142"
         },
         {
-            "name": "windows-vs-icx-x86",
-            "inherits": ["windows-default", "arch-x86", "toolset-icx"],
-            "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "intelliSenseMode": "windows-clang-x86" } }
+            "name": "windows-v142-x86",
+            "inherits": ["windows-default-x86"],
+            "toolset": "v142"
         },
         {
-            "name": "windows-vs-icx-x86 debug",
-            "inherits": ["windows-vs-icx-x86"],
-            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+            "name": "windows-v143-x64",
+            "inherits": ["windows-default-x64"],
+            "toolset": "v143"
+        },
+        {
+            "name": "windows-v143-x86",
+            "inherits": ["windows-default-x86"],
+            "toolset": "v143"
+        },
+        {
+            "name": "windows-icx-x64",
+            "inherits": ["windows-default-x64"],
+            "toolset": "Intel C++ Compiler 2022"
+        },
+        {
+            "name": "windows-icx-x86",
+            "inherits": ["windows-default-x86"],
+            "toolset": "Intel C++ Compiler 2022"
+        },
+        {
+            "name": "windows-default-x64-debug",
+            "inherits": ["build-debug", "windows-default-x64"]
+        },
+        {
+            "name": "windows-default-x86-debug",
+            "inherits": ["build-debug", "windows-default-x86"]
+        },
+        {
+            "name": "windows-clangcl-x64-debug",
+            "inherits": ["build-debug", "windows-clangcl-x64"]
+        },
+        {
+            "name": "windows-clangcl-x86-debug",
+            "inherits": ["build-debug", "windows-clangcl-x86"]
+        },
+        {
+            "name": "windows-v141-x64-debug",
+            "inherits": ["build-debug", "windows-v141-x64"]
+        },
+        {
+            "name": "windows-v141-x86-debug",
+            "inherits": ["build-debug", "windows-v141-x86"]
+        },
+        {
+            "name": "windows-v142-x64-debug",
+            "inherits": ["build-debug", "windows-v142-x64"]
+        },
+        {
+            "name": "windows-v142-x86-debug",
+            "inherits": ["build-debug", "windows-v142-x86"]
+        },
+        {
+            "name": "windows-v143-x64-debug",
+            "inherits": ["build-debug", "windows-v143-x64"]
+        },
+        {
+            "name": "windows-v143-x86-debug",
+            "inherits": ["build-debug", "windows-v143-x86"]
+        },
+        {
+            "name": "windows-icx-x64-debug",
+            "inherits": ["build-debug", "windows-icx-x64"]
+        },
+        {
+            "name": "windows-icx-x86-debug",
+            "inherits": ["build-debug", "windows-icx-x86"]
         },
         {
             "name": "linux-default",
-            "inherits": ["generator-ninja"],
+            "inherits": ["generator-ninja", "build-release"],
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "installDir": "${sourceDir}/out/install/${presetName}",
             "condition": {
@@ -125,43 +174,36 @@
                 "lhs": "${hostSystemName}",
                 "rhs": "Linux"
             },
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
-            },
             "vendor": {
                 "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
-                    "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+                    "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}",
+                    "intelliSenseMode": "linux-gcc-x64"
                 }
             }
         },
         {
-            "name": "linux-default debug",
+            "name": "linux-default-gcc",
             "inherits": ["linux-default"],
-            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
-        },
-        {
-            "name": "macos-default",
-            "inherits": ["generator-ninja"],
-            "binaryDir": "${sourceDir}/out/build/${presetName}",
-            "installDir": "${sourceDir}/out/install/${presetName}",
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Darwin"
-            },
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
-            },
-            "vendor": {
-                "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
-                    "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
-                }
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++"
             }
         },
         {
-            "name": "macos-default debug",
-            "inherits": ["macos-default"],
-            "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+            "name": "linux-default-clang",
+            "inherits": ["linux-default"],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++"
+            }
+        },
+        {
+            "name": "linux-default-gcc-debug",
+            "inherits": ["build-debug", "linux-default-gcc"]
+        },
+        {
+            "name": "linux-default-clang-debug",
+            "inherits": ["build-debug", "linux-default-clang"]
         }
     ]
 }
