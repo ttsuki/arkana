@@ -15,7 +15,28 @@
 
 namespace arkana::sha2
 {
-    template <class digest_type>
+    struct md5_digest_algorithm;
+    struct sha1_digest_algorithm;
+    struct sha224_digest_algorithm;
+    struct sha256_digest_algorithm;
+    struct sha384_digest_algorithm;
+    struct sha512_digest_algorithm;
+    struct sha512_224_digest_algorithm;
+    struct sha512_256_digest_algorithm;
+
+    template <size_t bytes>
+    using digest_value_t = std::array<std::byte, bytes>;
+
+    using md5_digest_t = digest_value_t<128 / CHAR_BIT>;
+    using sha1_digest_t = digest_value_t<160 / CHAR_BIT>;
+    using sha224_digest_t = digest_value_t<224 / CHAR_BIT>;
+    using sha256_digest_t = digest_value_t<256 / CHAR_BIT>;
+    using sha384_digest_t = digest_value_t<384 / CHAR_BIT>;
+    using sha512_digest_t = digest_value_t<512 / CHAR_BIT>;
+    using sha512_224_digest_t = digest_value_t<224 / CHAR_BIT>;
+    using sha512_256_digest_t = digest_value_t<256 / CHAR_BIT>;
+
+    template <class algorithm_tag, class digest_type>
     class digest_context_t
     {
     public:
@@ -27,6 +48,7 @@ namespace arkana::sha2
         virtual ~digest_context_t() = default;
 
     public:
+        using algorithm_t = algorithm_tag;
         using digest_t = digest_type;
 
         // Calculates digest
@@ -38,25 +60,14 @@ namespace arkana::sha2
         virtual digest_t finalize() noexcept = 0;
     };
 
-    template <size_t bits> using sha2_digest_t = std::array<std::byte, bits / CHAR_BIT>;
-
-    using md5_digest_t = std::array<std::byte, 128 / CHAR_BIT>;
-    using sha1_digest_t = std::array<std::byte, 160 / CHAR_BIT>;
-    using sha224_digest_t = std::array<std::byte, 224 / CHAR_BIT>;
-    using sha256_digest_t = std::array<std::byte, 256 / CHAR_BIT>;
-    using sha384_digest_t = std::array<std::byte, 384 / CHAR_BIT>;
-    using sha512_digest_t = std::array<std::byte, 512 / CHAR_BIT>;
-    using sha512_224_digest_t = std::array<std::byte, 224 / CHAR_BIT>;
-    using sha512_256_digest_t = std::array<std::byte, 256 / CHAR_BIT>;
-
-    using md5_context_t = digest_context_t<md5_digest_t>;
-    using sha1_context_t = digest_context_t<sha1_digest_t>;
-    using sha224_context_t = digest_context_t<sha224_digest_t>;
-    using sha256_context_t = digest_context_t<sha256_digest_t>;
-    using sha384_context_t = digest_context_t<sha384_digest_t>;
-    using sha512_context_t = digest_context_t<sha512_digest_t>;
-    using sha512_224_context_t = digest_context_t<sha512_224_digest_t>;
-    using sha512_256_context_t = digest_context_t<sha512_256_digest_t>;
+    using md5_context_t = digest_context_t<md5_digest_algorithm, md5_digest_t>;
+    using sha1_context_t = digest_context_t<sha1_digest_algorithm, sha1_digest_t>;
+    using sha224_context_t = digest_context_t<sha224_digest_algorithm, sha224_digest_t>;
+    using sha256_context_t = digest_context_t<sha256_digest_algorithm, sha256_digest_t>;
+    using sha384_context_t = digest_context_t<sha384_digest_algorithm, sha384_digest_t>;
+    using sha512_context_t = digest_context_t<sha512_digest_algorithm, sha512_digest_t>;
+    using sha512_224_context_t = digest_context_t<sha512_224_digest_algorithm, sha512_224_digest_t>;
+    using sha512_256_context_t = digest_context_t<sha512_256_digest_algorithm, sha512_256_digest_t>;
 
     std::unique_ptr<md5_context_t> create_md5_context();
     std::unique_ptr<sha1_context_t> create_sha1_context();

@@ -8,10 +8,16 @@
 
 #include "./crc32.h"
 #include "./crc32-avx2.h"
+#include "../ark/cpuid.h"
 
 namespace arkana::crc32
 {
-    crc32_value_t calculate_crc32_avx2(const void* data, size_t length, crc32_value_t current)
+    bool cpu_supports_avx2() noexcept
+    {
+        return cpuid::cpu_supports::AVX2;
+    }
+
+    inline crc32_value_t calculate_crc32_avx2(const void* data, size_t length, crc32_value_t current)
     {
         return avx2::calculate_crc32<0xEDB88320>(data, length, current);
     }
@@ -25,7 +31,7 @@ namespace arkana::crc32
             crc32_value_t current() const override { return value; }
             void update(const void* data, size_t length) override { value = calculate_crc32_avx2(data, length, value); }
         };
+
         return std::make_unique<crc32_context_impl_t>(initial);
     }
 }
-

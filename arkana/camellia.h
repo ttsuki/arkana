@@ -11,18 +11,18 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <climits>
 #include <array>
 #include <memory>
 
 namespace arkana::camellia
 {
+    using block_t = std::array<std::byte, 16>;
+
     using key_128bit_t = std::array<std::byte, 128 / CHAR_BIT>;
     using key_192bit_t = std::array<std::byte, 192 / CHAR_BIT>;
     using key_256bit_t = std::array<std::byte, 256 / CHAR_BIT>;
-
-    using block_t = std::array<std::byte, 16>;
-    static_assert(std::is_trivial_v<block_t> && sizeof(block_t) == 16);
 
     using ctr_iv_t = std::array<std::byte, 8>;
     using ctr_nonce_t = std::array<std::byte, 4>;
@@ -42,7 +42,7 @@ namespace arkana::camellia
         // Process blocks.
         //   dst: destination buffer.
         //   src: source buffer.
-        //   length: length in bytes to process must be multiple sizeof block (=16).
+        //   length: length in bytes to process (must be a multiple of 16).
         virtual void process_blocks(void* dst, const void* src, size_t length) = 0;
     };
 
@@ -62,7 +62,7 @@ namespace arkana::camellia
         //   dst: destination buffer.
         //   src: source buffer.
         //   position: current position in stream in bytes.
-        //   length: length in bytes to process must be multiple sizeof block (=16).
+        //   length: length in bytes to process.
         virtual void process_bytes(void* dst, const void* src, size_t position, size_t length) = 0;
     };
 

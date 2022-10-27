@@ -20,6 +20,13 @@
 
 namespace arkana::camellia
 {
+    using block_t = byte_array<16>;
+
+    template <size_t key_length> using key_t = byte_array<key_length>;
+    using key_128bit_t = key_t<16>;
+    using key_192bit_t = key_t<24>;
+    using key_256bit_t = key_t<32>;
+
     namespace functions
     {
         template <class T>
@@ -43,7 +50,7 @@ namespace arkana::camellia
             return v;
         }
 
-        static ARKANA_FORCEINLINE constexpr auto decompose(uint64_t x) noexcept -> tuple<uint32_t, uint32_t>
+        static ARKANA_FORCEINLINE constexpr auto decompose(uint64_t x) noexcept -> value_pair_t<uint32_t>
         {
             return {static_cast<uint32_t>(x), static_cast<uint32_t>(x >> 32)};
         }
@@ -173,7 +180,7 @@ namespace arkana::camellia
         }
 
         template <class v64 = v64, auto rotl_be1 = rotl_be1, class key64 = key64>
-        static ARKANA_FORCEINLINE constexpr auto camellia_fl(v64& l, const key64& k) noexcept -> v64&
+        static ARKANA_FORCEINLINE constexpr auto camellia_fl(v64 l, const key64& k) noexcept -> v64
         {
             auto&& [ll, lr] = decompose(l);
             auto&& [kl, kr] = decompose(k);
@@ -230,14 +237,8 @@ namespace arkana::camellia
             return recompose(v, vl, vr);
         }
 
-
         inline namespace key_scheduling
         {
-            template <size_t key_length> using key_t = byte_array<key_length>;
-            using key_128bit_t = key_t<16>;
-            using key_192bit_t = key_t<24>;
-            using key_256bit_t = key_t<32>;
-
             template <class key64>
             struct key_vector_small_t
             {
@@ -293,13 +294,17 @@ namespace arkana::camellia
 
                     ARKANA_FORCEINLINE uint128_t operator ^(uint128_t rhs) const noexcept { return uint128_t{l ^ rhs.l, r ^ rhs.r}; }
                     ARKANA_FORCEINLINE uint128_t& operator ^=(uint128_t rhs) noexcept { return l ^= rhs.l, r ^= rhs.r, *this; }
-                    ARKANA_FORCEINLINE auto byteswap() const noexcept { return uint128_t{bit::byteswap(r), bit::byteswap(l)}; }
 
                     ARKANA_FORCEINLINE auto rotl(int i) const noexcept
                     {
                         auto xl = (i & 63) ? l << (i & 63) | r >> (-i & 63) : l;
                         auto xr = (i & 63) ? r << (i & 63) | l >> (-i & 63) : r;
                         return i & 64 ? uint128_t{xr, xl} : uint128_t{xl, xr};
+                    }
+
+                    ARKANA_FORCEINLINE auto byteswap() const noexcept
+                    {
+                        return uint128_t{ bit::byteswap(r), bit::byteswap(l) };
                     }
                 };
 
@@ -509,6 +514,7 @@ namespace arkana::camellia
 
         inline namespace ecb_mode
         {
+            // process_blocks_ecb
             template <
                 class block_t = v128,
                 auto load_block = load_u<v128>,
@@ -554,6 +560,20 @@ namespace arkana::camellia
 
         inline namespace ctr_mode
         {
+            // type_traits
+
+            template <class ctr_generator_t, class block_t = block_t, class = void> struct is_ctr_generator : std::false_type { };
+
+            template <class ctr_generator_t, class block_t>
+            struct is_ctr_generator<ctr_generator_t, block_t, std::enable_if_t<
+                                        std::is_invocable_v<std::decay_t<ctr_generator_t>, size_t> &&
+                                        std::is_trivial_v<std::invoke_result_t<std::decay_t<ctr_generator_t>, size_t>> &&
+                                        sizeof(std::invoke_result_t<std::decay_t<ctr_generator_t>, size_t>) == sizeof(block_t)>> : std::true_type { };
+
+            template <class ctr_generator_t, class block_t = block_t>
+            static constexpr bool is_ctr_generator_v = is_ctr_generator<ctr_generator_t, block_t>::value;
+
+            // process_bytes_ctr
             template <
                 class block_t = v128,
                 auto camellia_prewhite = camellia_prewhite<v128&, key64>,
@@ -565,7 +585,7 @@ namespace arkana::camellia
                 auto xor_block = xor_block<v128>,
                 auto store_block = store_u<v128>,
                 class key_vector_t,
-                class ctr_generator_t>
+                class ctr_generator_t, std::enable_if_t<is_ctr_generator_v<ctr_generator_t, block_t>>* = nullptr>
             static void process_bytes_ctr(
                 void* dst,
                 const void* src,
@@ -583,7 +603,6 @@ namespace arkana::camellia
                     {
                         block_t b = load_ctr(start + i);
                         b = process_block_inlined<block_t&, camellia_prewhite, camellia_f, camellia_fl, camellia_fl_inv, camellia_postwhite>(b, kv);
-
                         block_t d = load_block(src + i);
                         d = xor_block(d, b);
                         store_block(dst + i, d);
@@ -640,24 +659,29 @@ namespace arkana::camellia
                 }
             }
 
+            // rfc5528 ctr-mode
+
             using ctr_iv_t = byte_array<8>;
             using ctr_nonce_t = byte_array<4>;
 
-            static inline auto make_rfc5528_ctr_provider(const ctr_iv_t& iv, const ctr_nonce_t& nonce)
+            struct ctr_vector_t
             {
-                struct ctr0_t
-                {
-                    uint32_t n, ivl, ivr, ctr;
-                };
+                uint32_t n, ivl, ivr, ctr;
+            };
 
-                ctr0_t ctr0 = {
+            static inline ctr_vector_t generate_rfc5528_ctr_vector(const ctr_iv_t& iv, const ctr_nonce_t& nonce)
+            {
+                return {
                     load_u<uint32_t>(nonce.data() + 0),
                     load_u<uint32_t>(iv.data() + 0),
                     load_u<uint32_t>(iv.data() + 4),
                     0,
                 };
+            }
 
-                return [ctr0](size_t index) -> v128
+            static inline auto make_rfc5528_ctr_provider(const ctr_iv_t& iv, const ctr_nonce_t& nonce)
+            {
+                return [ctr0 = generate_rfc5528_ctr_vector(iv, nonce)](size_t index) -> v128
                 {
                     auto v = ctr0;
                     v.ctr = bit::byteswap(static_cast<uint32_t>(index + 1));
@@ -667,13 +691,6 @@ namespace arkana::camellia
         }
     }
 
-    template <size_t key_length> using key_t = byte_array<key_length>;
-    using key_128bit_t = key_t<16>;
-    using key_192bit_t = key_t<24>;
-    using key_256bit_t = key_t<32>;
-
-    using block_t = byte_array<16>;
-
     namespace ref
     {
         namespace impl
@@ -682,12 +699,13 @@ namespace arkana::camellia
             using key_vector_large_t = functions::key_vector_large_t<functions::key64>;
             using functions::generate_key_vector;
 
-            template <class key_vector_t>
+            // rfc3713 ecb-mode
+            template <
+                class key_vector_t, std::enable_if_t<is_any_of_v<key_vector_t, key_vector_small_t, key_vector_large_t>>* = nullptr
+            >
             static inline auto process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_t& kv)
-            -> std::enable_if_t<is_any_of<key_vector_t, key_vector_small_t, key_vector_large_t>::value, void>
             {
                 using namespace functions;
-
                 ecb_mode::process_blocks_ecb<
                     v128,
                     load_u<v128>,
@@ -701,21 +719,21 @@ namespace arkana::camellia
 
             using functions::ctr_iv_t;
             using functions::ctr_nonce_t;
+            using functions::ctr_vector_t;
+            using functions::generate_rfc5528_ctr_vector;
+            using functions::is_ctr_generator_v;
 
-            template <class key_vector_t>
-            static inline auto process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, const ctr_iv_t& ctr_iv, const ctr_nonce_t& ctr_nonce)
-            -> std::enable_if_t<is_any_of<key_vector_t, key_vector_small_t, key_vector_large_t>::value, void>
+            // rfc5528 ctr-mode
+            template <
+                class key_vector_t, std::enable_if_t<is_any_of_v<key_vector_t, key_vector_small_t, key_vector_large_t>>* = nullptr
+            >
+            static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, const ctr_vector_t& cv)
             {
-                // rfc5528 ctr-mode
-                struct ctr_t
-                {
-                    uint32_t n, ivl, ivr, ctr;
-                };
-
-                ctr_t ctr0 = arkana::load_u<ctr_t>(&kv);
-                ctr0.n ^= arkana::load_u<uint32_t>(ctr_nonce.data() + 0);
-                ctr0.ivl ^= arkana::load_u<uint32_t>(ctr_iv.data() + 0);
-                ctr0.ivr ^= arkana::load_u<uint32_t>(ctr_iv.data() + 4);
+                // pre-prewhitening
+                ctr_vector_t ctr0 = arkana::load_u<ctr_vector_t>(&kv);
+                ctr0.n ^= cv.n;
+                ctr0.ivl ^= cv.ivl;
+                ctr0.ivr ^= cv.ivr;
 
                 using namespace functions;
                 ctr_mode::process_bytes_ctr<
@@ -727,23 +745,23 @@ namespace arkana::camellia
                     camellia_postwhite<v128&, key64>,
                     load_u<v128>,
                     xor_block<v128>,
-                    store_u<v128>>(dst, src, position, length, kv, [ctr0](size_t index) -> v128
-                {
-                    auto v = ctr0;
-                    v.ctr ^= bit::byteswap(static_cast<uint32_t>(index + 1));
-                    return load_u<v128>(&v);
-                });
+                    store_u<v128>>
+                (
+                    dst, src, position, length, kv,
+                    [ctr0](size_t index) -> v128
+                    {
+                        auto v = ctr0;
+                        v.ctr ^= bit::byteswap(static_cast<uint32_t>(index + 1)); // prewhitening
+                        return load_u<v128>(&v);
+                    });
             }
 
-            template <class key_vector_t, class ctr_generator_t>
-            static inline auto process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, ctr_generator_t&& ctr)
-            -> std::enable_if_t<is_any_of_v<key_vector_t, key_vector_small_t, key_vector_large_t>, void>
+            // custom ctr-mode
+            template <
+                class key_vector_t, std::enable_if_t<is_any_of_v<key_vector_t, key_vector_small_t, key_vector_large_t>>* = nullptr,
+                class ctr_generator_t, std::enable_if_t<is_ctr_generator_v<ctr_generator_t>>* = nullptr>
+            static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, ctr_generator_t&& ctr)
             {
-                // custom ctr-mode
-                using ctr_t = std::invoke_result_t<ctr_generator_t, size_t>;
-                static_assert(sizeof(ctr_t) == 16);
-                static_assert(std::is_trivially_copyable_v<ctr_t>);
-
                 using namespace functions;
                 ctr_mode::process_bytes_ctr<
                     v128,
@@ -754,25 +772,38 @@ namespace arkana::camellia
                     camellia_postwhite<v128&, key64>,
                     load_u<v128>,
                     xor_block<v128>,
-                    store_u<v128>>(dst, src, position, length, kv, [ctr = std::forward<decltype(ctr)>(ctr)](size_t index) { return bit_cast<v128>(ctr(index)); });
+                    store_u<v128>>
+                (
+                    dst, src, position, length, kv,
+                    [ctr = std::forward<decltype(ctr)>(ctr)](size_t index)
+                    {
+                        return bit_cast<v128>(ctr(index));
+                    });
             }
         }
 
+        // public API
+
         using impl::key_vector_small_t;
         using impl::key_vector_large_t;
+
         static inline key_vector_small_t generate_key_vector_encrypt(const key_128bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
         static inline key_vector_large_t generate_key_vector_encrypt(const key_192bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
         static inline key_vector_large_t generate_key_vector_encrypt(const key_256bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
         static inline key_vector_small_t generate_key_vector_decrypt(const key_128bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
         static inline key_vector_large_t generate_key_vector_decrypt(const key_192bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
         static inline key_vector_large_t generate_key_vector_decrypt(const key_256bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
-
         static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_small_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
         static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_large_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
 
         using impl::ctr_iv_t;
         using impl::ctr_nonce_t;
-        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_small_t& kv, const ctr_iv_t& ctr_iv, const ctr_nonce_t& ctr_nonce) { return impl::process_bytes_ctr(dst, src, position, length, kv, ctr_iv, ctr_nonce); }
-        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_large_t& kv, const ctr_iv_t& ctr_iv, const ctr_nonce_t& ctr_nonce) { return impl::process_bytes_ctr(dst, src, position, length, kv, ctr_iv, ctr_nonce); }
+        using impl::ctr_vector_t;
+
+        static inline ctr_vector_t generate_ctr_vector(const ctr_iv_t& ctr_iv, const ctr_nonce_t& ctr_nonce) { return impl::generate_rfc5528_ctr_vector(ctr_iv, ctr_nonce); }
+        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_small_t& kv, const ctr_vector_t& ctr) { return impl::process_bytes_ctr(dst, src, position, length, kv, ctr); }
+        static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_large_t& kv, const ctr_vector_t& ctr) { return impl::process_bytes_ctr(dst, src, position, length, kv, ctr); }
+        template <class custom_ctr_generator_t, std::enable_if_t<impl::is_ctr_generator_v<custom_ctr_generator_t>> * = nullptr> static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_small_t& kv, custom_ctr_generator_t&& ctr) { return impl::process_bytes_ctr(dst, src, position, length, kv, std::forward<custom_ctr_generator_t>(ctr)); }
+        template <class custom_ctr_generator_t, std::enable_if_t<impl::is_ctr_generator_v<custom_ctr_generator_t>>* = nullptr> static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_large_t& kv, custom_ctr_generator_t&& ctr) { return impl::process_bytes_ctr(dst, src, position, length, kv, std::forward<custom_ctr_generator_t>(ctr)); }
     }
 }

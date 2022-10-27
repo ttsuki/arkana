@@ -19,6 +19,7 @@ namespace arkana
 {
     using std::memcpy;
     using std::memset;
+
     static inline void memzero(void* p, size_t size) noexcept { memset(p, 0, size); }
 
     static inline void secure_memzero(void* p, size_t size) noexcept
@@ -31,9 +32,8 @@ namespace arkana
     }
 
     /// Loads T from unaligned memory pointer
-    template <class T>
-    static inline constexpr auto load_u(const void* src) noexcept
-    -> std::enable_if_t<std::is_trivially_copyable_v<T>, T>
+    template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>>* = nullptr>
+    static inline constexpr T load_u(const void* src) noexcept
     {
         T t;
         memcpy(&t, src, sizeof(T));
@@ -41,34 +41,43 @@ namespace arkana
     }
 
     /// Stores T to unaligned memory pointer
-    template <class T>
+    template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>> * = nullptr>
     static inline constexpr auto store_u(void* d, const std::decay_t<T>& s) noexcept
-    -> std::enable_if_t<std::is_trivially_copyable_v<T>, void>
     {
         memcpy(d, &s, sizeof(T));
     }
 
     /// bit_cast
-    template <class To, class From>
-    static inline constexpr auto bit_cast(const From& f) noexcept
-    -> std::enable_if_t<
-        sizeof(To) == sizeof(From) &&
-        std::is_trivially_copyable_v<To> &&
-        std::is_trivially_copyable_v<From>, To>
+    template <class To, class From,
+              std::enable_if_t<
+                  sizeof(To) == sizeof(From) &&
+                  std::is_trivially_copyable_v<To> &&
+                  std::is_trivially_copyable_v<From>>* = nullptr>
+    static inline constexpr To bit_cast(const From& f) noexcept
     {
         return load_u<To>(&f);
     }
 
-    template <class T>
-    static inline constexpr auto be_zero(T& d) noexcept
-    -> std::enable_if_t<std::is_trivially_copyable_v<T>, void>
+    /// type_punning_cast
+    template <class To, class From,
+              std::enable_if_t<
+                  std::is_lvalue_reference_v<To> &&
+                  sizeof(std::remove_reference_t<To>) == sizeof(From) &&
+                  std::is_trivially_copyable_v<std::remove_reference_t<To>> &&
+                  std::is_trivially_copyable_v<From>> * = nullptr>
+    static inline constexpr To& type_punning_cast(From& f) noexcept
+    {
+        return reinterpret_cast<To&>(f); // UB
+    }
+
+    template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>> * = nullptr>
+    static inline constexpr void be_zero(T& d) noexcept
     {
         memzero(&d, sizeof(d));
     }
 
-    template <class T>
-    static inline constexpr auto secure_be_zero(T& d) noexcept
-        -> std::enable_if_t<std::is_trivially_copyable_v<T>, void>
+    template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>>* = nullptr>
+    static inline constexpr void secure_be_zero(T& d) noexcept
     {
         secure_memzero(&d, sizeof(d));
     }
