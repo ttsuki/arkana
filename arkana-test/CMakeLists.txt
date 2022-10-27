@@ -2,6 +2,10 @@ set(PROJECT_NAME "arkana-test")
 message(STATUS "PROJECT_NAME: ${PROJECT_NAME}")
 cmake_minimum_required(VERSION 3.15)
 
+if (POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
+
 enable_testing()
 
 ## googletest
