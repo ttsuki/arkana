@@ -17,31 +17,31 @@
 
 namespace arkana::sha2
 {
-    inline bool cpu_supports_avx2() noexcept
+    bool cpu_supports_avx2() noexcept
     {
         return cpuid::cpu_supports::AVX2;
     }
 
-    inline void process_bytes_avx2(md5_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::md5_state_t&>(*s), data, length); }
-    inline void process_bytes_avx2(sha1_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha1_state_t&>(*s), data, length); }
-    inline void process_bytes_avx2(sha224_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha224_state_t&>(*s), data, length); }
-    inline void process_bytes_avx2(sha256_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha256_state_t&>(*s), data, length); }
-    inline void process_bytes_avx2(sha384_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha384_state_t&>(*s), data, length); }
-    inline void process_bytes_avx2(sha512_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha512_state_t&>(*s), data, length); }
-    inline void process_bytes_avx2(sha512_224_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha512_224_state_t&>(*s), data, length); }
-    inline void process_bytes_avx2(sha512_256_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha512_256_state_t&>(*s), data, length); }
+    void process_bytes_avx2(md5_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::md5_state_t&>(*s), data, length); }
+    void process_bytes_avx2(sha1_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha1_state_t&>(*s), data, length); }
+    void process_bytes_avx2(sha224_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha224_state_t&>(*s), data, length); }
+    void process_bytes_avx2(sha256_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha256_state_t&>(*s), data, length); }
+    void process_bytes_avx2(sha384_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha384_state_t&>(*s), data, length); }
+    void process_bytes_avx2(sha512_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha512_state_t&>(*s), data, length); }
+    void process_bytes_avx2(sha512_224_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha512_224_state_t&>(*s), data, length); }
+    void process_bytes_avx2(sha512_256_state_t* s, const void* data, size_t length) { avx2::process_bytes(type_punning_cast<avx2::sha512_256_state_t&>(*s), data, length); }
 
-    inline void finalize_and_get_digest_avx2(md5_state_t* s, md5_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::md5_state_t&>(*s), out); }
-    inline void finalize_and_get_digest_avx2(sha1_state_t* s, sha1_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha1_state_t&>(*s), out); }
-    inline void finalize_and_get_digest_avx2(sha224_state_t* s, sha224_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha224_state_t&>(*s), out); }
-    inline void finalize_and_get_digest_avx2(sha256_state_t* s, sha256_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha256_state_t&>(*s), out); }
-    inline void finalize_and_get_digest_avx2(sha384_state_t* s, sha384_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha384_state_t&>(*s), out); }
-    inline void finalize_and_get_digest_avx2(sha512_state_t* s, sha512_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha512_state_t&>(*s), out); }
-    inline void finalize_and_get_digest_avx2(sha512_224_state_t* s, sha512_224_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha512_224_state_t&>(*s), out); }
-    inline void finalize_and_get_digest_avx2(sha512_256_state_t* s, sha512_256_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha512_256_state_t&>(*s), out); }
+    void finalize_and_get_digest_avx2(md5_state_t* s, md5_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::md5_state_t&>(*s), out); }
+    void finalize_and_get_digest_avx2(sha1_state_t* s, sha1_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha1_state_t&>(*s), out); }
+    void finalize_and_get_digest_avx2(sha224_state_t* s, sha224_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha224_state_t&>(*s), out); }
+    void finalize_and_get_digest_avx2(sha256_state_t* s, sha256_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha256_state_t&>(*s), out); }
+    void finalize_and_get_digest_avx2(sha384_state_t* s, sha384_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha384_state_t&>(*s), out); }
+    void finalize_and_get_digest_avx2(sha512_state_t* s, sha512_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha512_state_t&>(*s), out); }
+    void finalize_and_get_digest_avx2(sha512_224_state_t* s, sha512_224_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha512_224_state_t&>(*s), out); }
+    void finalize_and_get_digest_avx2(sha512_256_state_t* s, sha512_256_digest_t* out) { avx2::finalize_and_get_digest(type_punning_cast<avx2::sha512_256_state_t&>(*s), out); }
 
     template <class state_t>
-    static inline auto make_context_avx2(state_t state)
+    static auto make_context_avx2(state_t state)
     {
         struct context_impl_t : public virtual digest_context_t<typename state_t::tag_t, typename state_t::digest_t>
         {

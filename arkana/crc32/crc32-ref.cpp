@@ -11,12 +11,12 @@
 
 namespace arkana::crc32
 {
-    inline bool cpu_supports_ref() noexcept
+    bool cpu_supports_ref() noexcept
     {
         return true;
     }
 
-    inline crc32_value_t calculate_crc32_ref(const void* data, size_t length, crc32_value_t current)
+    crc32_value_t calculate_crc32_ref(const void* data, size_t length, crc32_value_t current)
     {
         return ref::calculate_crc32<0xEDB88320>(data, length, current);
     }

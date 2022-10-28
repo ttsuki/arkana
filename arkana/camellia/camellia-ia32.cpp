@@ -13,33 +13,33 @@
 
 namespace arkana::camellia
 {
-    inline bool cpu_supports_ia32() noexcept
+    bool cpu_supports_ia32() noexcept
     {
         return true;
     }
 
-    inline void process_blocks_ecb_ia32(void* dst, const void* src, size_t length, const key_vector_small_t& kv)
+    void process_blocks_ecb_ia32(void* dst, const void* src, size_t length, const key_vector_small_t& kv)
     {
         return ia32::process_blocks_ecb(dst, src, length, type_punning_cast<const ia32::key_vector_small_t&>(kv));
     }
 
-    inline void process_blocks_ecb_ia32(void* dst, const void* src, size_t length, const key_vector_large_t& kv)
+    void process_blocks_ecb_ia32(void* dst, const void* src, size_t length, const key_vector_large_t& kv)
     {
         return ia32::process_blocks_ecb(dst, src, length, type_punning_cast<const ia32::key_vector_large_t&>(kv));
     }
 
-    inline void process_bytes_ctr_ia32(void* dst, const void* src, size_t position, size_t length, const key_vector_small_t& kv, const ctr_vector_t& cv)
+    void process_bytes_ctr_ia32(void* dst, const void* src, size_t position, size_t length, const key_vector_small_t& kv, const ctr_vector_t& cv)
     {
         return ia32::process_bytes_ctr(dst, src, position, length, type_punning_cast<const ia32::key_vector_small_t&>(kv), type_punning_cast<const ia32::ctr_vector_t&>(cv));
     }
 
-    inline void process_bytes_ctr_ia32(void* dst, const void* src, size_t position, size_t length, const key_vector_large_t& kv, const ctr_vector_t& cv)
+    void process_bytes_ctr_ia32(void* dst, const void* src, size_t position, size_t length, const key_vector_large_t& kv, const ctr_vector_t& cv)
     {
         return ia32::process_bytes_ctr(dst, src, position, length, type_punning_cast<const ia32::key_vector_large_t&>(kv), type_punning_cast<const ia32::ctr_vector_t&>(cv));
     }
 
     template <class key_vector_t>
-    static inline std::unique_ptr<ecb_context_t> make_ia32_ecb_context(key_vector_t kv)
+    static std::unique_ptr<ecb_context_t> make_ia32_ecb_context(key_vector_t kv)
     {
         struct ecb_context_impl_t final : public virtual ecb_context_t
         {
@@ -53,7 +53,7 @@ namespace arkana::camellia
     }
 
     template <class key_vector_t, class ctr_vector_t>
-    static inline std::unique_ptr<ctr_context_t> make_ia32_ctr_context(key_vector_t kv, ctr_vector_t cv)
+    static std::unique_ptr<ctr_context_t> make_ia32_ctr_context(key_vector_t kv, ctr_vector_t cv)
     {
         struct ctr_context_impl_t final : public virtual ctr_context_t
         {

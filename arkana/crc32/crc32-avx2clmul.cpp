@@ -22,7 +22,7 @@ namespace arkana::crc32
         return cpuid::cpu_supports::AVX2 && cpuid::cpu_supports::PCLMULQDQ;
     }
 
-    inline crc32_value_t calculate_crc32_avx2clmul(const void* data, size_t length, crc32_value_t current)
+    crc32_value_t calculate_crc32_avx2clmul(const void* data, size_t length, crc32_value_t current)
     {
         return avx2clmul::calculate_crc32<0xEDB88320>(data, length, current);
     }
