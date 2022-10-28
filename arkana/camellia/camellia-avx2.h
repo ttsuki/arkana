@@ -239,7 +239,6 @@ namespace arkana::camellia
 
         using impl::key_vector_small_t;
         using impl::key_vector_large_t;
-        using impl::ctr_vector_t;
 
         static inline key_vector_small_t generate_key_vector_encrypt(const key_128bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
         static inline key_vector_large_t generate_key_vector_encrypt(const key_192bit_t& key) { return impl::generate_key_vector(key, true_t{}); }
@@ -249,6 +248,10 @@ namespace arkana::camellia
         static inline key_vector_large_t generate_key_vector_decrypt(const key_256bit_t& key) { return impl::generate_key_vector(key, false_t{}); }
         static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_small_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
         static inline void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_large_t& kv) { return impl::process_blocks_ecb(dst, src, length, kv); }
+
+        using impl::ctr_iv_t;
+        using impl::ctr_nonce_t;
+        using impl::ctr_vector_t;
 
         static inline ctr_vector_t generate_ctr_vector(const ctr_iv_t& ctr_iv, const ctr_nonce_t& ctr_nonce) { return impl::generate_rfc5528_ctr_vector(ctr_iv, ctr_nonce); }
         static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_small_t& kv, const ctr_vector_t& ctr) { return impl::process_bytes_ctr(dst, src, position, length, kv, ctr); }

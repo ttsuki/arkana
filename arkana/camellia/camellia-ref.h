@@ -567,7 +567,7 @@ namespace arkana::camellia
             template <class ctr_generator_t, class block_t>
             struct is_ctr_generator<ctr_generator_t, block_t, std::enable_if_t<
                                         std::is_invocable_v<std::decay_t<ctr_generator_t>, size_t> &&
-                                        std::is_trivial_v<std::invoke_result_t<std::decay_t<ctr_generator_t>, size_t>> &&
+                                        std::is_trivially_copyable_v<std::invoke_result_t<std::decay_t<ctr_generator_t>, size_t>> &&
                                         sizeof(std::invoke_result_t<std::decay_t<ctr_generator_t>, size_t>) == sizeof(block_t)>> : std::true_type { };
 
             template <class ctr_generator_t, class block_t = block_t>
