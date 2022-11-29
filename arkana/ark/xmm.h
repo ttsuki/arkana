@@ -637,6 +637,9 @@ namespace arkana::xmm
     ARKXMM_API mul32x32to64(vi32x8 a, vi32x8 b) -> vi64x4 { return {_mm256_mul_epi32(a.v, b.v)}; }  // AVX2 -> [a0*b0, a2*b2, a4*b4, a6*b6]
     ARKXMM_API mul32x32to64(vu32x8 a, vu32x8 b) -> vu64x4 { return {_mm256_mul_epu32(a.v, b.v)}; }  // AVX2 -> [a0*b0, a2*b2, a4*b4, a6*b6]
 
+    ARKXMM_API mul_hadd(vi16x8 a, vi16x8 b) -> vi32x4 { return {_mm_madd_epi16(a.v, b.v)}; }      // SSE2 -> { i32(a0*b0)+i32(a1*b1), i32(a2*b2)+i32(a3*b3), ..., i32(a6*b6)+i32(a7*b7) }
+    ARKXMM_API mul_hadd(vi16x16 a, vi16x16 b) -> vi32x8 { return {_mm256_madd_epi16(a.v, b.v)}; } // AVX2 -> { i32(a0*b0)+i32(a1*b1), i32(a2*b2)+i32(a3*b3), ..., i32(a14*b14)+i32(a15*b15) }
+
     ARKXMM_API operator /(vf32x4 a, vf32x4 b) -> vf32x4 { return {_mm_div_ps(a.v, b.v)}; }    // SSE
     ARKXMM_API operator /(vf32x8 a, vf32x8 b) -> vf32x8 { return {_mm256_div_ps(a.v, b.v)}; } // AVX
     ARKXMM_API operator /(vf64x2 a, vf64x2 b) -> vf64x2 { return {_mm_div_pd(a.v, b.v)}; }    // SSE2
