@@ -490,6 +490,14 @@ namespace arkana::xmm
     template <int selector_1bit_x8> ARKXMM_API blend(vf32x8 a, vf32x8 b) -> vf32x8 { return {_mm256_blend_ps(a.v, b.v, selector_1bit_x8)}; }       // AVX
     template <int selector_1bit_x2> ARKXMM_API blend(vf64x2 a, vf64x2 b) -> vf64x2 { return {_mm_blend_pd(a.v, b.v, selector_1bit_x2)}; }          // SSE 4.1
     template <int selector_1bit_x4> ARKXMM_API blend(vf64x4 a, vf64x4 b) -> vf64x4 { return {_mm256_blend_pd(a.v, b.v, selector_1bit_x4)}; }       // AVX
+    template <int selector_2bit_x4> ARKXMM_API shuffle_lo(vi16x8 v) -> vi16x8 { return {_mm_shufflelo_epi16(v.v, selector_2bit_x4)}; }             // SSE2
+    template <int selector_2bit_x4> ARKXMM_API shuffle_lo(vu16x8 v) -> vu16x8 { return {_mm_shufflelo_epi16(v.v, selector_2bit_x4)}; }             // SSE2
+    template <int selector_2bit_x4> ARKXMM_API shuffle_hi(vi16x8 v) -> vi16x8 { return {_mm_shufflehi_epi16(v.v, selector_2bit_x4)}; }             // SSE2
+    template <int selector_2bit_x4> ARKXMM_API shuffle_hi(vu16x8 v) -> vu16x8 { return {_mm_shufflehi_epi16(v.v, selector_2bit_x4)}; }             // SSE2
+    template <int selector_2bit_x4> ARKXMM_API shuffle_lo(vi16x16 v) -> vi16x16 { return {_mm256_shufflelo_epi16(v.v, selector_2bit_x4)}; }        // AVX2
+    template <int selector_2bit_x4> ARKXMM_API shuffle_lo(vu16x16 v) -> vu16x16 { return {_mm256_shufflelo_epi16(v.v, selector_2bit_x4)}; }        // AVX2
+    template <int selector_2bit_x4> ARKXMM_API shuffle_hi(vi16x16 v) -> vi16x16 { return {_mm256_shufflehi_epi16(v.v, selector_2bit_x4)}; }        // AVX2
+    template <int selector_2bit_x4> ARKXMM_API shuffle_hi(vu16x16 v) -> vu16x16 { return {_mm256_shufflehi_epi16(v.v, selector_2bit_x4)}; }        // AVX2
     template <int selector_2bit_x4> ARKXMM_API shuffle(vi32x4 v) -> vi32x4 { return {_mm_shuffle_epi32(v.v, selector_2bit_x4)}; }                  // SSE2
     template <int selector_2bit_x4> ARKXMM_API shuffle(vu32x4 v) -> vu32x4 { return {_mm_shuffle_epi32(v.v, selector_2bit_x4)}; }                  // SSE2
     template <int selector_2bit_x4> ARKXMM_API shuffle(vf32x4 v) -> vf32x4 { return {_mm_shuffle_ps(v.v, v.v, selector_2bit_x4)}; }                // AVX
