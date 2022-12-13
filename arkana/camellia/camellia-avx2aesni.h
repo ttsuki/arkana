@@ -26,32 +26,32 @@ namespace arkana::camellia
         {
             using namespace arkana::xmm;
 
-            template <template <class T> class YMM, class T>
-            ARKXMM_API transpose_32x4x4(YMM<T>& x0, YMM<T>& x1, YMM<T>& x2, YMM<T>& x3)
+            template <class YMM>
+            ARKXMM_API transpose_32x4x4(YMM& x0, YMM& x1, YMM& x2, YMM& x3)
             {
-                auto i0 = reinterpret<YMM<uint32_t>>(x0);                // i0 = | 00010203|04050607|08090A0B|0C0D0E0F |
-                auto i1 = reinterpret<YMM<uint32_t>>(x1);                // i1 = | 10111213|14151617|18191A1B|1C1D1E1F |
-                auto i2 = reinterpret<YMM<uint32_t>>(x2);                // i2 = | 20212223|24252627|28292A2B|2C2D2E2F |
-                auto i3 = reinterpret<YMM<uint32_t>>(x3);                // i3 = | 30313233|34353637|38393A3B|3C3D3E3F |
-                auto t0 = reinterpret<YMM<uint64_t>>(unpack_lo(i0, i1)); // t0 = | 00010203 10111213|04050607 14151617 |
-                auto t1 = reinterpret<YMM<uint64_t>>(unpack_hi(i0, i1)); // t1 = | 08090A0B 18191A1B|0C0D0E0F 1C1D1E1F |
-                auto t2 = reinterpret<YMM<uint64_t>>(unpack_lo(i2, i3)); // t2 = | 20210223 30313233|24252627 34353637 |
-                auto t3 = reinterpret<YMM<uint64_t>>(unpack_hi(i2, i3)); // t3 = | 28290A2B 38393A3B|2C2D2E2F 3C3D3E3F |
-                x0 = reinterpret<YMM<T>>(unpack_lo(t0, t2));             // x0 = | 00010203 10111213 20212223 30313233 |
-                x1 = reinterpret<YMM<T>>(unpack_hi(t0, t2));             // x1 = | 04050607 14151617 24252627 34353637 |
-                x2 = reinterpret<YMM<T>>(unpack_lo(t1, t3));             // x2 = | 08090A0B 18191A1B 28292A2B 38393A3B |
-                x3 = reinterpret<YMM<T>>(unpack_hi(t1, t3));             // x3 = | 0C0D0E0F 1C1D1E1F 2C2D2E2F 3C3D3E3F |
+                auto i0 = x0;                  // i0 = | 00010203|04050607|08090A0B|0C0D0E0F |
+                auto i1 = x1;                  // i1 = | 10111213|14151617|18191A1B|1C1D1E1F |
+                auto i2 = x2;                  // i2 = | 20212223|24252627|28292A2B|2C2D2E2F |
+                auto i3 = x3;                  // i3 = | 30313233|34353637|38393A3B|3C3D3E3F |
+                auto t0 = unpack32_lo(i0, i1); // t0 = | 00010203 10111213|04050607 14151617 |
+                auto t1 = unpack32_hi(i0, i1); // t1 = | 08090A0B 18191A1B|0C0D0E0F 1C1D1E1F |
+                auto t2 = unpack32_lo(i2, i3); // t2 = | 20210223 30313233|24252627 34353637 |
+                auto t3 = unpack32_hi(i2, i3); // t3 = | 28290A2B 38393A3B|2C2D2E2F 3C3D3E3F |
+                x0 = unpack64_lo(t0, t2);      // x0 = | 00010203 10111213 20212223 30313233 |
+                x1 = unpack64_hi(t0, t2);      // x1 = | 04050607 14151617 24252627 34353637 |
+                x2 = unpack64_lo(t1, t3);      // x2 = | 08090A0B 18191A1B 28292A2B 38393A3B |
+                x3 = unpack64_hi(t1, t3);      // x3 = | 0C0D0E0F 1C1D1E1F 2C2D2E2F 3C3D3E3F |
             }
 
             template <class T> ARKXMM_API transpose_8x4x4(XMM<T>& r) { r = byte_shuffle_128(r, i8x16(0x00, 0x04, 0x08, 0x0C, 0x01, 0x05, 0x09, 0x0D, 0x02, 0x06, 0x0A, 0x0E, 0x03, 0x07, 0x0B, 0x0F)); }
             template <class T> ARKXMM_API transpose_8x4x4(YMM<T>& r) { r = byte_shuffle_128(r, i8x32(0x00, 0x04, 0x08, 0x0C, 0x01, 0x05, 0x09, 0x0D, 0x02, 0x06, 0x0A, 0x0E, 0x03, 0x07, 0x0B, 0x0F)); }
 
-            template <template <class T> class YMM, class T>
+            template <class YMM>
             ARKXMM_API byte_slice_16x16(
-                YMM<T>& x0, YMM<T>& x1, YMM<T>& x2, YMM<T>& x3,
-                YMM<T>& x4, YMM<T>& x5, YMM<T>& x6, YMM<T>& x7,
-                YMM<T>& x8, YMM<T>& x9, YMM<T>& xA, YMM<T>& xB,
-                YMM<T>& xC, YMM<T>& xD, YMM<T>& xE, YMM<T>& xF)
+                YMM& x0, YMM& x1, YMM& x2, YMM& x3,
+                YMM& x4, YMM& x5, YMM& x6, YMM& x7,
+                YMM& x8, YMM& x9, YMM& xA, YMM& xB,
+                YMM& xC, YMM& xD, YMM& xE, YMM& xF)
             {
                 // input:
                 // x0 = | 00 01 02 03  04 05 06 07  08 09 0A 0B  0C 0D 0E 0F |
