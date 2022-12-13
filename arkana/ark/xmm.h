@@ -899,16 +899,16 @@ namespace arkana::xmm
     template <class YMM> ARKXMM_API unpack_hi(YMM l, YMM h) -> enable::if_64x4<YMM> { return unpack64_hi(l, h); }  // AVX2 {l0... l1| l2... l3}, {h0... h1| h2... h3} -> {l1,h1 | l3,h3}
 
     // avx2 permute
-    template <class YMM> ARKXMM_API permute32(YMM v, vi32x8 idx) -> enable::if_32x8<YMM> { return {_mm256_permutevar8x32_epi32(v.v, idx.v)}; }                                                                                                 // AVX2  idx = 0..7
+    template <class YMM> ARKXMM_API permute32(YMM v, vi32x8 idx) -> enable::if_iYMM<YMM> { return {_mm256_permutevar8x32_epi32(v.v, idx.v)}; }                                                                                                 // AVX2  idx = 0..7
     template <class YMM> ARKXMM_API permute32(YMM v, vi32x8 idx) -> enable::if_f32x8<YMM> { return {_mm256_permutevar8x32_ps(v.v, idx.v)}; }                                                                                                   // AVX2  idx = 0..7
-    template <uint8_t i0, uint8_t i1, uint8_t i2, uint8_t i3, uint8_t i4, uint8_t i5, uint8_t i6, uint8_t i7, class YMM> ARKXMM_API permute32(YMM v) -> enable::if_32x8<YMM> { return permute32(v, i32x8(i0, i1, i2, i3, i4, i5, i6, i7)); }   // AVX2  idx = 0..7
+    template <uint8_t i0, uint8_t i1, uint8_t i2, uint8_t i3, uint8_t i4, uint8_t i5, uint8_t i6, uint8_t i7, class YMM> ARKXMM_API permute32(YMM v) -> enable::if_iYMM<YMM> { return permute32(v, i32x8(i0, i1, i2, i3, i4, i5, i6, i7)); }   // AVX2  idx = 0..7
     template <uint8_t i0, uint8_t i1, uint8_t i2, uint8_t i3, uint8_t i4, uint8_t i5, uint8_t i6, uint8_t i7, class YMM> ARKXMM_API permute32(YMM v) -> enable::if_f32x8<YMM> { return permute32(v, i32x8(i0, i1, i2, i3, i4, i5, i6, i7)); }  // AVX2  idx = 0..7
-    template <uint8_t i0, uint8_t i1, uint8_t i2, uint8_t i3, class YMM> ARKXMM_API permute64(YMM v) -> enable::if_64x4<YMM> { return {_mm256_permute4x64_epi64(v.v, (i0 & 0b11) | (i1 & 0b11) << 2 | (i2 & 0b11) << 4 | (i3 & 0b11) << 6)}; } // AVX2  idx = 0..3
+    template <uint8_t i0, uint8_t i1, uint8_t i2, uint8_t i3, class YMM> ARKXMM_API permute64(YMM v) -> enable::if_iYMM<YMM> { return {_mm256_permute4x64_epi64(v.v, (i0 & 0b11) | (i1 & 0b11) << 2 | (i2 & 0b11) << 4 | (i3 & 0b11) << 6)}; } // AVX2  idx = 0..3
     template <uint8_t i0, uint8_t i1, uint8_t i2, uint8_t i3, class YMM> ARKXMM_API permute64(YMM v) -> enable::if_f64x4<YMM> { return {_mm256_permute4x64_pd(v.v, (i0 & 0b11) | (i1 & 0b11) << 2 | (i2 & 0b11) << 4 | (i3 & 0b11) << 6)}; }   // AVX2  idx = 0..3
 
-    template <int8_t i0, int8_t i1, class YMM> ARKXMM_API permute128(YMM v) -> enable::if_iYMM<YMM> { return {_mm256_permute4x64_epi64(v.v, (i0 * 0b1010 | 0b0100) | (i1 * 0b1010 | 0b0100) << 4)}; }                                   // AVX2  idx = 0..1
-    template <int8_t i0, int8_t i1, class YMM> ARKXMM_API permute128(YMM v) -> enable::if_f32x8<YMM> { return {_mm256_castpd_ps(_mm256_permute4x64_pd(_mm256_castps_pd(v.v), (i0 * 0b1010 | 0b0100) | (i1 * 0b1010 | 0b0100) << 4))}; } // AVX2  idx = 0..1
-    template <int8_t i0, int8_t i1, class YMM> ARKXMM_API permute128(YMM v) -> enable::if_f64x4<YMM> { return {_mm256_permute4x64_pd(v.v, (i0 * 0b1010 | 0b0100) | (i1 * 0b1010 | 0b0100) << 4)}; }                                     // AVX2  idx = 0..1
+    template <uint8_t i0, uint8_t i1, class YMM> ARKXMM_API permute128(YMM v) -> enable::if_iYMM<YMM> { return {_mm256_permute4x64_epi64(v.v, ((i0 & 1) * 0b1010 | 0b0100) | ((i1 & 1) * 0b1010 | 0b0100) << 4)}; }                                   // AVX2  idx = 0..1
+    template <uint8_t i0, uint8_t i1, class YMM> ARKXMM_API permute128(YMM v) -> enable::if_f32x8<YMM> { return {_mm256_castpd_ps(_mm256_permute4x64_pd(_mm256_castps_pd(v.v), ((i0 & 1) * 0b1010 | 0b0100) | ((i1 & 1) * 0b1010 | 0b0100) << 4))}; } // AVX2  idx = 0..1
+    template <uint8_t i0, uint8_t i1, class YMM> ARKXMM_API permute128(YMM v) -> enable::if_f64x4<YMM> { return {_mm256_permute4x64_pd(v.v, ((i0 & 1) * 0b1010 | 0b0100) | ((i1 & 1) * 0b1010 | 0b0100) << 4)}; }                                     // AVX2  idx = 0..1
 
     template <int8_t i0, int8_t i1, class YMM> ARKXMM_API permute128(YMM a, YMM b) -> enable::if_iYMM<YMM> { return {_mm256_permute2x128_si256(a.v, b.v, (i0 & 0b1111) | (i1 & 0b1111) << 4)}; } // AVX2  idx = 0..3 or -1
     template <int8_t i0, int8_t i1, class YMM> ARKXMM_API permute128(YMM a, YMM b) -> enable::if_f32x8<YMM> { return {_mm256_permute2f128_ps(a.v, b.v, (i0 & 0b1111) | (i1 & 0b1111) << 4)}; }   // AVX2  idx = 0..3
