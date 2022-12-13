@@ -18,10 +18,6 @@
 #include <x86intrin.h>
 #endif
 
-#if __has_include("hexilit.h")
-#  include "hexilit.h"
-#endif
-
 #if defined(_MSC_VER)
 #ifdef NDEBUG
 #define ARKXMM_INLINE inline __forceinline
@@ -1010,66 +1006,6 @@ namespace arkana::xmm
     template <class T, class U> ARKXMM_API operator >=(T lhs, U rhs) -> ARKXMM_DEFINE_EXTENSION(max(lhs, rhs) == lhs);
     template <class T, class U> ARKXMM_API operator <(T lhs, U rhs) -> ARKXMM_DEFINE_EXTENSION(andnot(lhs <= rhs, lhs == rhs));
     template <class T, class U> ARKXMM_API operator >(T lhs, U rhs) -> ARKXMM_DEFINE_EXTENSION(andnot(lhs >= rhs, lhs == rhs));
-
-#if __has_include("hexilit.h")
-    inline namespace literals
-    {
-        namespace literal_parser
-        {
-            template <size_t VectorSize> static inline constexpr bool acceptable_nibble_count(std::size_t i) { return i == VectorSize * 2 || i == VectorSize; }
-            template <size_t ElemSize> static inline constexpr bool acceptable_separator_pos(std::size_t i) { return i % (ElemSize * 2) == 0; }
-            template <size_t ElemSize> static inline constexpr bool separator_required_pos(std::size_t i) { return i % (ElemSize * 2) == 0; }
-            template <> inline constexpr bool separator_required_pos<1>(std::size_t) { return false; }
-
-            template <class VectorType, char...cs>
-            static inline constexpr auto parse_literal()
-            {
-                using element_t = typename VectorType::element_t;
-                return hexilit::parser::parse_hexint_array<element_t, cs...>(
-                    acceptable_nibble_count<sizeof(VectorType)>,
-                    acceptable_separator_pos<sizeof(element_t)>,
-                    separator_required_pos<sizeof(element_t)>);
-            }
-
-            template <class VectorType, typename VectorType::element_t ...elems>
-            static ARKXMM_INLINE constexpr auto vector_from_values_t()
-            {
-                return from_values<VectorType>(elems...);
-            }
-
-            template <class VectorType, char...cs>
-            static ARKXMM_INLINE constexpr VectorType parse()
-            {
-                constexpr auto values = parse_literal<VectorType, cs...>();
-                if constexpr (values.size() == 1) return vector_from_values_t<VectorType, values[0]>();
-                if constexpr (values.size() == 2) return vector_from_values_t<VectorType, values[0], values[1]>();
-                if constexpr (values.size() == 4) return vector_from_values_t<VectorType, values[0], values[1], values[2], values[3]>();
-                if constexpr (values.size() == 8) return vector_from_values_t<VectorType, values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7]>();
-                if constexpr (values.size() == 16) return vector_from_values_t<VectorType, values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15]>();
-                if constexpr (values.size() == 32) return vector_from_values_t<VectorType, values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15], values[16], values[17], values[18], values[19], values[20], values[21], values[22], values[23], values[24], values[25], values[26], values[27], values[28], values[29], values[30], values[31]>();
-                throw "not reachable here";
-            }
-        }
-
-        template <char...cs> ARKXMM_API operator ""_vi8x16() { return literal_parser::parse<vi8x16, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vu8x16() { return literal_parser::parse<vu8x16, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vi16x8() { return literal_parser::parse<vi16x8, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vu16x8() { return literal_parser::parse<vu16x8, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vi32x4() { return literal_parser::parse<vi32x4, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vu32x4() { return literal_parser::parse<vu32x4, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vi64x2() { return literal_parser::parse<vi64x2, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vu64x2() { return literal_parser::parse<vu64x2, cs...>(); }
-
-        template <char...cs> ARKXMM_API operator ""_vi8x32() { return literal_parser::parse<vi8x32, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vu8x32() { return literal_parser::parse<vu8x32, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vi16x16() { return literal_parser::parse<vi16x16, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vu16x16() { return literal_parser::parse<vu16x16, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vi32x8() { return literal_parser::parse<vi32x8, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vu32x8() { return literal_parser::parse<vu32x8, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vi64x4() { return literal_parser::parse<vi64x4, cs...>(); }
-        template <char...cs> ARKXMM_API operator ""_vu64x4() { return literal_parser::parse<vu64x4, cs...>(); }
-    }
-#endif
 
     // Extract single byte from each element
     template <uint8_t index> ARKXMM_API extract_byte(vu32x4 v) -> std::enable_if_t<index < 4, vu32x4> { return reinterpret<vu32x4>(byte_shuffle_128(v, reinterpret<vi8x16>(from_values<vu32x4>(0xFFFFFF00 | index, 0xFFFFFF04 | index, 0xFFFFFF08 | index, 0xFFFFFF0C | index)))); }
