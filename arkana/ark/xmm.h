@@ -883,7 +883,7 @@ namespace arkana::xmm
     template <int8_t i0, int8_t i1, class YMM> ARKXMM_API permute128(YMM v) -> enable::if_f64x4<YMM> { return {_mm256_permute4x64_pd(v.v, (i0 * 0b1010 | 0b0100) | (i1 * 0b1010 | 0b0100) << 4)}; }                                     // AVX2  idx = 0..1
 
     template <int8_t i0, int8_t i1, class YMM> ARKXMM_API permute128(YMM a, YMM b) -> enable::if_iYMM<YMM> { return {_mm256_permute2x128_si256(a.v, b.v, (i0 & 0b1111) | (i1 & 0b1111) << 4)}; } // AVX2  idx = 0..3 or -1
-    template <int8_t i0, int8_t i1, class YMM> ARKXMM_API permute128(YMM a, YMM b) -> enable::if_f32x8<YMM> { return {_mm256_permute2f128_pd(a.v, b.v, (i0 & 0b1111) | (i1 & 0b1111) << 4)}; }   // AVX2  idx = 0..3
+    template <int8_t i0, int8_t i1, class YMM> ARKXMM_API permute128(YMM a, YMM b) -> enable::if_f32x8<YMM> { return {_mm256_permute2f128_ps(a.v, b.v, (i0 & 0b1111) | (i1 & 0b1111) << 4)}; }   // AVX2  idx = 0..3
     template <int8_t i0, int8_t i1, class YMM> ARKXMM_API permute128(YMM a, YMM b) -> enable::if_f64x4<YMM> { return {_mm256_permute2f128_pd(a.v, b.v, (i0 & 0b1111) | (i1 & 0b1111) << 4)}; }   // AVX2  idx = 0..3
 
     template <class YMM> ARKXMM_API lower128(YMM a) -> enable::if_iYMM<YMM, XMM<typename YMM::element_t>> { return {_mm256_castsi256_si128(a.v)}; }       // AVX
