@@ -1064,3 +1064,8 @@ namespace arkana::xmm
     ARKXMM_API byteswap(vu64x2 v) -> vu64x2 { return byte_shuffle_128(v, from_values<XMM<int8_t>>(7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8)); }
     ARKXMM_API byteswap(vu64x4 v) -> vu64x4 { return byte_shuffle_128(v, from_values<YMM<int8_t>>(7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8)); }
 }
+
+namespace arkxmm
+{
+    using namespace arkana::xmm;
+}
