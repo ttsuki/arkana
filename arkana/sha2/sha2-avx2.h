@@ -233,15 +233,15 @@ namespace arkana::sha2
                 vu32x4 t = x0 + w7 + s0;
 
                 // rotr32(u32 v,i) = u64(v<<32|v) >> i
-                vu32x4 w2_aabb = shuffle<0b11'11'10'10>(x3); // w[-2,-2,-1,-1]
-                vu32x4 s1_abab = shuffle<0b10'00'10'00>(
+                vu32x4 w2_aabb = shuffle<2, 2, 3, 3>(x3); // w[-2,-2,-1,-1]
+                vu32x4 s1_abab = shuffle<0, 2, 0, 2>(
                     reinterpret<vu32x4>(reinterpret<vu64x2>(w2_aabb) >> s10) ^
                     reinterpret<vu32x4>(reinterpret<vu64x2>(w2_aabb) >> s11) ^
                     w2_aabb >> s12);
 
                 // rotr32(u32 v,i) = u64(v<<32|v) >> i
-                vu32x4 w2_ccdd = shuffle<0b01'01'00'00>(t + s1_abab); // w[0,0,1,1]
-                vu32x4 s1_cbcd = shuffle<0b10'00'10'00>(
+                vu32x4 w2_ccdd = shuffle<0, 0, 1, 1>(t + s1_abab); // w[0,0,1,1]
+                vu32x4 s1_cbcd = shuffle<0, 2, 0, 2>(
                     reinterpret<vu32x4>(reinterpret<vu64x2>(w2_ccdd) >> s10) ^
                     reinterpret<vu32x4>(reinterpret<vu64x2>(w2_ccdd) >> s11) ^
                     w2_ccdd >> s12);
