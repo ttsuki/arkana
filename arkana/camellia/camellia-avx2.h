@@ -38,22 +38,6 @@ namespace arkana::camellia
                 return a | b;                                                                  //a|b = pqrstuv0 hijklmno 9abcdefg 12345678
             }
 
-            ARKXMM_API transpose_32x4x4(vu32x8& x0, vu32x8& x1, vu32x8& x2, vu32x8& x3)
-            {
-                auto i0 = x0;                  // i0 = | 00010203|04050607|08090A0B|0C0D0E0F |
-                auto i1 = x1;                  // i1 = | 10111213|14151617|18191A1B|1C1D1E1F |
-                auto i2 = x2;                  // i2 = | 20212223|24252627|28292A2B|2C2D2E2F |
-                auto i3 = x3;                  // i3 = | 30313233|34353637|38393A3B|3C3D3E3F |
-                auto t0 = unpack32_lo(i0, i1); // t0 = | 00010203 10111213|04050607 14151617 |
-                auto t1 = unpack32_hi(i0, i1); // t1 = | 08090A0B 18191A1B|0C0D0E0F 1C1D1E1F |
-                auto t2 = unpack32_lo(i2, i3); // t2 = | 20210223 30313233|24252627 34353637 |
-                auto t3 = unpack32_hi(i2, i3); // t3 = | 28290A2B 38393A3B|2C2D2E2F 3C3D3E3F |
-                x0 = unpack64_lo(t0, t2);      // x0 = | 00010203 10111213 20212223 30313233 |
-                x1 = unpack64_hi(t0, t2);      // x1 = | 04050607 14151617 24252627 34353637 |
-                x2 = unpack64_lo(t1, t3);      // x2 = | 08090A0B 18191A1B 28292A2B 38393A3B |
-                x3 = unpack64_hi(t1, t3);      // x3 = | 0C0D0E0F 1C1D1E1F 2C2D2E2F 3C3D3E3F |
-            }
-
             using v32 = vu32x8;
 
             struct v64

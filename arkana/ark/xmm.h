@@ -297,31 +297,66 @@ namespace arkana::xmm
     template <class YMM> ARKXMM_API from_values(XMM<typename YMM::element_t> x0) -> enable::if_f64x4<YMM> { return broadcast<YMM>(x0); } // AVX
 
     // bitwise operators
-    template <class T> ARKXMM_API operator ~(XMM<T> a) -> XMM<T> { return {_mm_xor_si128(a.v, _mm_cmpeq_epi32(a.v, a.v))}; }       // SSE2
-    template <class T> ARKXMM_API operator ~(YMM<T> a) -> YMM<T> { return {_mm256_xor_si256(a.v, _mm256_cmpeq_epi32(a.v, a.v))}; } // AVX2
-    template <class T> ARKXMM_API operator &(XMM<T> a, XMM<T> b) -> XMM<T> { return {_mm_and_si128(a.v, b.v)}; }                   // SSE2
-    template <class T> ARKXMM_API operator &(YMM<T> a, YMM<T> b) -> YMM<T> { return {_mm256_and_si256(a.v, b.v)}; }                // AVX2
-    template <class T> ARKXMM_API operator |(XMM<T> a, XMM<T> b) -> XMM<T> { return {_mm_or_si128(a.v, b.v)}; }                    // SSE2
-    template <class T> ARKXMM_API operator |(YMM<T> a, YMM<T> b) -> YMM<T> { return {_mm256_or_si256(a.v, b.v)}; }                 // AVX2
-    template <class T> ARKXMM_API operator ^(XMM<T> a, XMM<T> b) -> XMM<T> { return {_mm_xor_si128(a.v, b.v)}; }                   // SSE2
-    template <class T> ARKXMM_API operator ^(YMM<T> a, YMM<T> b) -> YMM<T> { return {_mm256_xor_si256(a.v, b.v)}; }                // AVX2
-    template <class T> ARKXMM_API andnot(XMM<T> a, XMM<T> mask) -> XMM<T> { return {_mm_andnot_si128(mask.v, a.v)}; }              // SSE2 a & ~mask
-    template <class T> ARKXMM_API andnot(YMM<T> a, YMM<T> mask) -> YMM<T> { return {_mm256_andnot_si256(mask.v, a.v)}; }           // AVX2 a & ~mask
+    template <class XMM> ARKXMM_API operator ~(XMM a) -> enable::if_iXMM<XMM> { return {_mm_xor_si128(a.v, _mm_cmpeq_epi32(a.v, a.v))}; }                 // SSE2
+    template <class XMM> ARKXMM_API operator ~(XMM a) -> enable::if_f32x4<XMM> { return {_mm_xor_ps(a.v, _mm_castsi128_ps((~zero<vi32x4>()).v))}; }       // SSE
+    template <class XMM> ARKXMM_API operator ~(XMM a) -> enable::if_f64x2<XMM> { return {_mm_xor_pd(a.v, _mm_castsi128_pd((~zero<vi64x2>()).v))}; }       // SSE2
+    template <class YMM> ARKXMM_API operator ~(YMM a) -> enable::if_iYMM<YMM> { return {_mm256_xor_si256(a.v, _mm256_cmpeq_epi32(a.v, a.v))}; }           // AVX2
+    template <class YMM> ARKXMM_API operator ~(YMM a) -> enable::if_f32x8<YMM> { return {_mm256_xor_ps(a.v, _mm256_castsi256_ps((~zero<vi32x8>()).v))}; } // AVX
+    template <class YMM> ARKXMM_API operator ~(YMM a) -> enable::if_f64x4<YMM> { return {_mm256_xor_pd(a.v, _mm256_castsi256_pd((~zero<vi64x4>()).v))}; } // AVX
+    template <class XMM> ARKXMM_API operator &(XMM a, XMM b) -> enable::if_iXMM<XMM> { return {_mm_and_si128(a.v, b.v)}; }                                // SSE2
+    template <class XMM> ARKXMM_API operator &(XMM a, XMM b) -> enable::if_f32x4<XMM> { return {_mm_and_ps(a.v, b.v)}; }                                  // SSE
+    template <class XMM> ARKXMM_API operator &(XMM a, XMM b) -> enable::if_f64x2<XMM> { return {_mm_and_pd(a.v, b.v)}; }                                  // SSE2
+    template <class YMM> ARKXMM_API operator &(YMM a, YMM b) -> enable::if_iYMM<YMM> { return {_mm256_and_si256(a.v, b.v)}; }                             // AVX2
+    template <class YMM> ARKXMM_API operator &(YMM a, YMM b) -> enable::if_f32x8<YMM> { return {_mm256_and_ps(a.v, b.v)}; }                               // AVX
+    template <class YMM> ARKXMM_API operator &(YMM a, YMM b) -> enable::if_f64x4<YMM> { return {_mm256_and_pd(a.v, b.v)}; }                               // AVX
+    template <class XMM> ARKXMM_API operator |(XMM a, XMM b) -> enable::if_iXMM<XMM> { return {_mm_or_si128(a.v, b.v)}; }                                 // SSE2
+    template <class XMM> ARKXMM_API operator |(XMM a, XMM b) -> enable::if_f32x4<XMM> { return {_mm_or_ps(a.v, b.v)}; }                                   // SSE
+    template <class XMM> ARKXMM_API operator |(XMM a, XMM b) -> enable::if_f64x2<XMM> { return {_mm_or_pd(a.v, b.v)}; }                                   // SSE2
+    template <class YMM> ARKXMM_API operator |(YMM a, YMM b) -> enable::if_iYMM<YMM> { return {_mm256_or_si256(a.v, b.v)}; }                              // AVX2
+    template <class YMM> ARKXMM_API operator |(YMM a, YMM b) -> enable::if_f32x8<YMM> { return {_mm256_or_ps(a.v, b.v)}; }                                // AVX
+    template <class YMM> ARKXMM_API operator |(YMM a, YMM b) -> enable::if_f64x4<YMM> { return {_mm256_or_pd(a.v, b.v)}; }                                // AVX
+    template <class XMM> ARKXMM_API operator ^(XMM a, XMM b) -> enable::if_iXMM<XMM> { return {_mm_xor_si128(a.v, b.v)}; }                                // SSE2
+    template <class XMM> ARKXMM_API operator ^(XMM a, XMM b) -> enable::if_f32x4<XMM> { return {_mm_xor_ps(a.v, b.v)}; }                                  // SSE
+    template <class XMM> ARKXMM_API operator ^(XMM a, XMM b) -> enable::if_f64x2<XMM> { return {_mm_xor_pd(a.v, b.v)}; }                                  // SSE2
+    template <class YMM> ARKXMM_API operator ^(YMM a, YMM b) -> enable::if_iYMM<YMM> { return {_mm256_xor_si256(a.v, b.v)}; }                             // AVX2
+    template <class YMM> ARKXMM_API operator ^(YMM a, YMM b) -> enable::if_f32x8<YMM> { return {_mm256_xor_ps(a.v, b.v)}; }                               // AVX
+    template <class YMM> ARKXMM_API operator ^(YMM a, YMM b) -> enable::if_f64x4<YMM> { return {_mm256_xor_pd(a.v, b.v)}; }                               // AVX
+    template <class XMM> ARKXMM_API masked_not(XMM a, XMM mask) -> enable::if_iXMM<XMM> { return {_mm_andnot_si128(a.v, mask.v)}; }                       // SSE2 masked_not(a,mask) := ~a & mask
+    template <class XMM> ARKXMM_API masked_not(XMM a, XMM mask) -> enable::if_f32x4<XMM> { return {_mm_andnot_ps(a.v, mask.v)}; }                         // SSE  masked_not(a,mask) := ~a & mask
+    template <class XMM> ARKXMM_API masked_not(XMM a, XMM mask) -> enable::if_f64x2<XMM> { return {_mm_andnot_pd(a.v, mask.v)}; }                         // SSE2 masked_not(a,mask) := ~a & mask
+    template <class YMM> ARKXMM_API masked_not(YMM a, YMM mask) -> enable::if_iYMM<YMM> { return {_mm256_andnot_si256(a.v, mask.v)}; }                    // AVX2 masked_not(a,mask) := ~a & mask
+    template <class YMM> ARKXMM_API masked_not(YMM a, YMM mask) -> enable::if_f32x8<YMM> { return {_mm256_andnot_ps(a.v, mask.v)}; }                      // AVX  masked_not(a,mask) := ~a & mask
+    template <class YMM> ARKXMM_API masked_not(YMM a, YMM mask) -> enable::if_f64x4<YMM> { return {_mm256_andnot_pd(a.v, mask.v)}; }                      // AVX  masked_not(a,mask) := ~a & mask
 
-    template <class T, class U> ARKXMM_API testz(XMM<T> v, XMM<U> mask) -> int { return _mm_testz_si128(mask.v, v.v); }     // SSE4.1
-    template <class T, class U> ARKXMM_API testc(XMM<T> v, XMM<U> mask) -> int { return _mm_testc_si128(mask.v, v.v); }     // SSE4.1
-    template <class T, class U> ARKXMM_API testnzc(XMM<T> v, XMM<U> mask) -> int { return _mm_testnzc_si128(mask.v, v.v); } // SSE4.1
+    template <class XMM> ARKXMM_API testz(XMM a, XMM mask) -> enable::if_iXMM<XMM> { return {_mm_testz_si128(a.v, mask.v)}; }        // SSE4.1 testz(a,mask) := all bits are zero: (a & mask) == 0
+    template <class XMM> ARKXMM_API testz(XMM a, XMM mask) -> enable::if_f32x4<XMM> { return {_mm_testz_ps(a.v, mask.v)}; }          // AVX    testz(a,mask) := all **sign** bits are zero
+    template <class XMM> ARKXMM_API testz(XMM a, XMM mask) -> enable::if_f64x2<XMM> { return {_mm_testz_pd(a.v, mask.v)}; }          // AVX    testz(a,mask) := all **sign** bits are zero
+    template <class YMM> ARKXMM_API testz(YMM a, YMM mask) -> enable::if_iYMM<YMM> { return {_mm256_testz_si256(a.v, mask.v)}; }     // AVX    testz(a,mask) := all bits are zero: (a & mask) == 0
+    template <class YMM> ARKXMM_API testz(YMM a, YMM mask) -> enable::if_f32x8<YMM> { return {_mm256_testz_ps(a.v, mask.v)}; }       // AVX    testz(a,mask) := all **sign** bits are zero
+    template <class YMM> ARKXMM_API testz(YMM a, YMM mask) -> enable::if_f64x4<YMM> { return {_mm256_testz_pd(a.v, mask.v)}; }       // AVX    testz(a,mask) := all **sign** bits are zero
+    template <class XMM> ARKXMM_API testc(XMM a, XMM mask) -> enable::if_iXMM<XMM> { return {_mm_testc_si128(a.v, mask.v)}; }        // SSE4.1 testc(a,mask) := all bits are one: (~a & mask) == 0
+    template <class XMM> ARKXMM_API testc(XMM a, XMM mask) -> enable::if_f32x4<XMM> { return {_mm_testc_ps(a.v, mask.v)}; }          // AVX    testc(a,mask) := all **sign** bits are one
+    template <class XMM> ARKXMM_API testc(XMM a, XMM mask) -> enable::if_f64x2<XMM> { return {_mm_testc_pd(a.v, mask.v)}; }          // AVX    testc(a,mask) := all **sign** bits are one
+    template <class YMM> ARKXMM_API testc(YMM a, YMM mask) -> enable::if_iYMM<YMM> { return {_mm256_testc_si256(a.v, mask.v)}; }     // AVX    testc(a,mask) := all bits are one: (~a & mask) == 0
+    template <class YMM> ARKXMM_API testc(YMM a, YMM mask) -> enable::if_f32x8<YMM> { return {_mm256_testc_ps(a.v, mask.v)}; }       // AVX    testc(a,mask) := all **sign** bits are one
+    template <class YMM> ARKXMM_API testc(YMM a, YMM mask) -> enable::if_f64x4<YMM> { return {_mm256_testc_pd(a.v, mask.v)}; }       // AVX    testc(a,mask) := all **sign** bits are one
+    template <class XMM> ARKXMM_API testnzc(XMM a, XMM mask) -> enable::if_iXMM<XMM> { return {_mm_testnzc_si128(a.v, mask.v)}; }    // SSE4.1 testnzc(a,mask) := !testz(a,mask) & !testc(a,mask)
+    template <class XMM> ARKXMM_API testnzc(XMM a, XMM mask) -> enable::if_f32x4<XMM> { return {_mm_testnzc_ps(a.v, mask.v)}; }      // AVX    testnzc(a,mask) := !testz(a,mask) & !testc(a,mask)
+    template <class XMM> ARKXMM_API testnzc(XMM a, XMM mask) -> enable::if_f64x2<XMM> { return {_mm_testnzc_pd(a.v, mask.v)}; }      // AVX    testnzc(a,mask) := !testz(a,mask) & !testc(a,mask)
+    template <class YMM> ARKXMM_API testnzc(YMM a, YMM mask) -> enable::if_iYMM<YMM> { return {_mm256_testnzc_si256(a.v, mask.v)}; } // AVX    testnzc(a,mask) := !testz(a,mask) & !testc(a,mask)
+    template <class YMM> ARKXMM_API testnzc(YMM a, YMM mask) -> enable::if_f32x8<YMM> { return {_mm256_testnzc_ps(a.v, mask.v)}; }   // AVX    testnzc(a,mask) := !testz(a,mask) & !testc(a,mask)
+    template <class YMM> ARKXMM_API testnzc(YMM a, YMM mask) -> enable::if_f64x4<YMM> { return {_mm256_testnzc_pd(a.v, mask.v)}; }   // AVX    testnzc(a,mask) := !testz(a,mask) & !testc(a,mask)
 
-    template <int bytes, class T> ARKXMM_API byte_shift_l_128(XMM<T> reg) -> XMM<T> { return {_mm_slli_si128(reg.v, bytes)}; }                          // SSE2
-    template <int bytes, class T> ARKXMM_API byte_shift_l_128(YMM<T> reg) -> YMM<T> { return {_mm256_slli_si256(reg.v, bytes)}; }                       // AVX2
-    template <int bytes, class T> ARKXMM_API byte_shift_r_128(XMM<T> reg) -> XMM<T> { return {_mm_srli_si128(reg.v, bytes)}; }                          // SSE2
-    template <int bytes, class T> ARKXMM_API byte_shift_r_128(YMM<T> reg) -> YMM<T> { return {_mm256_srli_si256(reg.v, bytes)}; }                       // AVX2
-    template <int bytes, class T> ARKXMM_API byte_align_r_128(XMM<T> lo, XMM<T> hi) -> XMM<T> { return {_mm_alignr_epi8(hi.v, lo.v, bytes)}; }          // SSSE3
-    template <int bytes, class T> ARKXMM_API byte_align_r_128(YMM<T> lo, YMM<T> hi) -> YMM<T> { return {_mm256_alignr_epi8(hi.v, lo.v, bytes)}; }       // AVX2
-    template <class T> ARKXMM_API byte_shuffle_128(XMM<T> val, XMM<int8_t> index) -> XMM<T> { return {_mm_shuffle_epi8(val.v, index.v)}; }              // SSSE3
-    template <class T> ARKXMM_API byte_shuffle_128(YMM<T> val, YMM<int8_t> index) -> YMM<T> { return {_mm256_shuffle_epi8(val.v, index.v)}; }           // AVX2
-    template <class T> ARKXMM_API byte_blend(XMM<T> a, XMM<T> b, XMM<int8_t> selector) -> XMM<T> { return {_mm_blendv_epi8(a.v, b.v, selector.v)}; }    // SSSE4.1
-    template <class T> ARKXMM_API byte_blend(YMM<T> a, YMM<T> b, YMM<int8_t> selector) -> YMM<T> { return {_mm256_blendv_epi8(a.v, b.v, selector.v)}; } // AVX2
+    template <int bytes, class XMM> ARKXMM_API byte_shift_l_128(XMM reg) -> enable::if_iXMM<XMM> { return {_mm_slli_si128(reg.v, bytes)}; }                           // SSE2
+    template <int bytes, class YMM> ARKXMM_API byte_shift_l_128(YMM reg) -> enable::if_iYMM<YMM> { return {_mm256_slli_si256(reg.v, bytes)}; }                        // AVX2
+    template <int bytes, class XMM> ARKXMM_API byte_shift_r_128(XMM reg) -> enable::if_iXMM<XMM> { return {_mm_srli_si128(reg.v, bytes)}; }                           // SSE2
+    template <int bytes, class YMM> ARKXMM_API byte_shift_r_128(YMM reg) -> enable::if_iYMM<YMM> { return {_mm256_srli_si256(reg.v, bytes)}; }                        // AVX2
+    template <int bytes, class XMM> ARKXMM_API byte_align_r_128(XMM lo, XMM hi) -> enable::if_iXMM<XMM> { return {_mm_alignr_epi8(hi.v, lo.v, bytes)}; }              // SSSE3
+    template <int bytes, class YMM> ARKXMM_API byte_align_r_128(YMM lo, YMM hi) -> enable::if_iYMM<YMM> { return {_mm256_alignr_epi8(hi.v, lo.v, bytes)}; }           // AVX2
+    template <class XMM_> ARKXMM_API byte_shuffle_128(XMM_ val, XMM<int8_t> index) -> enable::if_iXMM<XMM_> { return {_mm_shuffle_epi8(val.v, index.v)}; }            // SSSE3
+    template <class YMM_> ARKXMM_API byte_shuffle_128(YMM_ val, YMM<int8_t> index) -> enable::if_iYMM<YMM_> { return {_mm256_shuffle_epi8(val.v, index.v)}; }         // AVX2
+    template <class XMM_> ARKXMM_API byte_blend(XMM_ a, XMM_ b, XMM<int8_t> selector) -> enable::if_iXMM<XMM_> { return {_mm_blendv_epi8(a.v, b.v, selector.v)}; }    // SSSE4.1
+    template <class YMM_> ARKXMM_API byte_blend(YMM_ a, YMM_ b, YMM<int8_t> selector) -> enable::if_iYMM<YMM_> { return {_mm256_blendv_epi8(a.v, b.v, selector.v)}; } // AVX2
 
     // broadcast shortcut
     ARKXMM_API i8x16(int8_t v) -> vi8x16 { return broadcast<vi8x16>(v); }
@@ -882,30 +917,34 @@ namespace arkana::xmm
     ARKXMM_API pack_sat_u(vi32x8 a, vi32x8 b) -> vu16x16 { return {_mm256_packus_epi32(a.v, b.v)}; }  // AVX2 - clamp to [0..65535]
 
     // unpack 2 vector {lll...lLLL..L}, {hhh..hHHH..H} to {lhlhlh...lh}
-    template <class XMM> ARKXMM_API unpack8_lo(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpacklo_epi8(l.v, h.v)}; }      // SSE2 {l0...l15}, {h0...h15} -> {l0,h0,...,l7,h7}
-    template <class YMM> ARKXMM_API unpack8_lo(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpacklo_epi8(l.v, h.v)}; }   // AVX2 {l0...l15|l16...l31}, {h0...h15|h16...h31} -> {l0,h0,...,l7,h7 | l16,h16,...,l23,h23}
-    template <class XMM> ARKXMM_API unpack16_lo(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpacklo_epi16(l.v, h.v)}; }    // SSE2 {l0... l7}, {h0... h7} -> {l0,h0,...,l3,h3}
-    template <class YMM> ARKXMM_API unpack16_lo(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpacklo_epi16(l.v, h.v)}; } // AVX2 {l0... l7| l8...l15}, {h0... h7| h8...h15} -> {l0,h0,...,l3,h3 | l8,h8,...,l11,h11}
-    template <class XMM> ARKXMM_API unpack32_lo(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpacklo_epi32(l.v, h.v)}; }    // SSE2 {l0... l3}, {h0... h3} -> {l0,h0,l1,h1}
-    template <class YMM> ARKXMM_API unpack32_lo(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpacklo_epi32(l.v, h.v)}; } // AVX2 {l0... l3| l4... l7}, {h0... h3| h4... h7} -> {l0,h0,l1,h1 | l4,h4,l5,h5}
-    template <class XMM> ARKXMM_API unpack32_lo(XMM l, XMM h) -> enable::if_f32x4<XMM> { return {_mm_unpacklo_ps(l.v, h.v)}; }      // SSE  {l0... l3}, {h0... h3} -> {l0,h0,l1,h1}
-    template <class YMM> ARKXMM_API unpack32_lo(YMM l, YMM h) -> enable::if_f32x8<YMM> { return {_mm256_unpacklo_ps(l.v, h.v)}; }   // AVX  {l0... l3| l4... l7}, {h0... h3| h4... h7} -> {l0,h0,l1,h1 | l4,h4,l5,h5}
-    template <class XMM> ARKXMM_API unpack64_lo(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpacklo_epi64(l.v, h.v)}; }    // SSE2 {l0... l1}, {h0... h1} -> {l0,h0}
-    template <class YMM> ARKXMM_API unpack64_lo(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpacklo_epi64(l.v, h.v)}; } // AVX2 {l0... l1| l2... l3}, {h0... h1| h2... h3} -> {l0,h0|l2,h2}
-    template <class XMM> ARKXMM_API unpack64_lo(XMM l, XMM h) -> enable::if_f64x2<XMM> { return {_mm_unpacklo_pd(l.v, h.v)}; }      // SSE2 {l0... l1}, {h0... h1} -> {l0,h0}
-    template <class YMM> ARKXMM_API unpack64_lo(YMM l, YMM h) -> enable::if_f64x4<YMM> { return {_mm256_unpacklo_pd(l.v, h.v)}; }   // AVX  {l0... l1| l2... l3}, {h0... h1| h2... h3} -> {l0,h0|l2,h2}
-    template <class XMM> ARKXMM_API unpack8_hi(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpackhi_epi8(l.v, h.v)}; }      // SSE2 {l0...l15}, {h0...h15} -> {l8,h8,...,l15,h15}
-    template <class YMM> ARKXMM_API unpack8_hi(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpackhi_epi8(l.v, h.v)}; }   // AVX2 {l0...l15|l16...l31}, {h0...h15|h16...h31} -> {l7,h7,...,l15,h15 | l24,h24,...,l31,h31}
-    template <class XMM> ARKXMM_API unpack16_hi(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpackhi_epi16(l.v, h.v)}; }    // SSE2 {l0... l7}, {h0... h7} -> {l4,h4,...,l7,h7}
-    template <class YMM> ARKXMM_API unpack16_hi(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpackhi_epi16(l.v, h.v)}; } // AVX2 {l0... l7| l8...l15}, {h0... h7| h8...h15} -> {l4,h4,...,l7,h7 | l12,h12,...,l15,h15}
-    template <class XMM> ARKXMM_API unpack32_hi(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpackhi_epi32(l.v, h.v)}; }    // SSE2 {l0... l3}, {h0... h3} -> {l2,h2,l3,h3}
-    template <class YMM> ARKXMM_API unpack32_hi(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpackhi_epi32(l.v, h.v)}; } // AVX2 {l0... l3| l4... l7}, {h0... h3| h4... h7} -> {l2,h2,l3,h3 | l6,h6,l7,h7}
-    template <class XMM> ARKXMM_API unpack32_hi(XMM l, XMM h) -> enable::if_f32x4<XMM> { return {_mm_unpackhi_ps(l.v, h.v)}; }      // SSE  {l0... l3}, {h0... h3} -> {l2,h2,l3,h3}
-    template <class YMM> ARKXMM_API unpack32_hi(YMM l, YMM h) -> enable::if_f32x8<YMM> { return {_mm256_unpackhi_ps(l.v, h.v)}; }   // AVX  {l0... l3| l4... l7}, {h0... h3| h4... h7} -> {l2,h2,l3,h3 | l6,h6,l7,h7}
-    template <class XMM> ARKXMM_API unpack64_hi(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpackhi_epi64(l.v, h.v)}; }    // SSE2 {l0... l1}, {h0... h1} -> {l1,h1}
-    template <class YMM> ARKXMM_API unpack64_hi(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpackhi_epi64(l.v, h.v)}; } // AVX2 {l0... l1| l2... l3}, {h0... h1| h2... h3} -> {l1,h1 | l3,h3}
-    template <class XMM> ARKXMM_API unpack64_hi(XMM l, XMM h) -> enable::if_f64x2<XMM> { return {_mm_unpackhi_pd(l.v, h.v)}; }      // SSE2 {l0... l1}, {h0... h1} -> {l1,h1}
-    template <class YMM> ARKXMM_API unpack64_hi(YMM l, YMM h) -> enable::if_f64x4<YMM> { return {_mm256_unpackhi_pd(l.v, h.v)}; }   // AVX  {l0... l1| l2... l3}, {h0... h1| h2... h3} -> {l1,h1 | l3,h3}
+    template <class XMM> ARKXMM_API unpack8_lo(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpacklo_epi8(l.v, h.v)}; }         // SSE2 {l0...l15}, {h0...h15} -> {l0,h0,...,l7,h7}
+    template <class YMM> ARKXMM_API unpack8_lo(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpacklo_epi8(l.v, h.v)}; }      // AVX2 {l0...l15|l16...l31}, {h0...h15|h16...h31} -> {l0,h0,...,l7,h7 | l16,h16,...,l23,h23}
+    template <class XMM> ARKXMM_API unpack16_lo(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpacklo_epi16(l.v, h.v)}; }       // SSE2 {l0... l7}, {h0... h7} -> {l0,h0,...,l3,h3}
+    template <class YMM> ARKXMM_API unpack16_lo(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpacklo_epi16(l.v, h.v)}; }    // AVX2 {l0... l7| l8...l15}, {h0... h7| h8...h15} -> {l0,h0,...,l3,h3 | l8,h8,...,l11,h11}
+    template <class XMM> ARKXMM_API unpack32_lo(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpacklo_epi32(l.v, h.v)}; }       // SSE2 {l0... l3}, {h0... h3} -> {l0,h0,l1,h1}
+    template <class YMM> ARKXMM_API unpack32_lo(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpacklo_epi32(l.v, h.v)}; }    // AVX2 {l0... l3| l4... l7}, {h0... h3| h4... h7} -> {l0,h0,l1,h1 | l4,h4,l5,h5}
+    template <class XMM> ARKXMM_API unpack32_lo(XMM l, XMM h) -> enable::if_f32x4<XMM> { return {_mm_unpacklo_ps(l.v, h.v)}; }         // SSE  {l0... l3}, {h0... h3} -> {l0,h0,l1,h1}
+    template <class YMM> ARKXMM_API unpack32_lo(YMM l, YMM h) -> enable::if_f32x8<YMM> { return {_mm256_unpacklo_ps(l.v, h.v)}; }      // AVX  {l0... l3| l4... l7}, {h0... h3| h4... h7} -> {l0,h0,l1,h1 | l4,h4,l5,h5}
+    template <class XMM> ARKXMM_API unpack64_lo(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpacklo_epi64(l.v, h.v)}; }       // SSE2 {l0... l1}, {h0... h1} -> {l0,h0}
+    template <class YMM> ARKXMM_API unpack64_lo(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpacklo_epi64(l.v, h.v)}; }    // AVX2 {l0... l1| l2... l3}, {h0... h1| h2... h3} -> {l0,h0|l2,h2}
+    template <class XMM> ARKXMM_API unpack64_lo(XMM l, XMM h) -> enable::if_f64x2<XMM> { return {_mm_unpacklo_pd(l.v, h.v)}; }         // SSE2 {l0... l1}, {h0... h1} -> {l0,h0}
+    template <class YMM> ARKXMM_API unpack64_lo(YMM l, YMM h) -> enable::if_f64x4<YMM> { return {_mm256_unpacklo_pd(l.v, h.v)}; }      // AVX  {l0... l1| l2... l3}, {h0... h1| h2... h3} -> {l0,h0|l2,h2}
+    template <class XMM> ARKXMM_API unpack64_lo(XMM l, XMM h) -> enable::if_f32x4<XMM> { return {_mm_shuffle_ps(l.v, h.v, 0x44)}; }    // SSE2 {l0... l1}, {h0... h1} -> {l0,h0}
+    template <class YMM> ARKXMM_API unpack64_lo(YMM l, YMM h) -> enable::if_f32x8<YMM> { return {_mm256_shuffle_ps(l.v, h.v, 0x44)}; } // AVX  {l0... l1| l2... l3}, {h0... h1| h2... h3} -> {l0,h0|l2,h2}
+    template <class XMM> ARKXMM_API unpack8_hi(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpackhi_epi8(l.v, h.v)}; }         // SSE2 {l0...l15}, {h0...h15} -> {l8,h8,...,l15,h15}
+    template <class YMM> ARKXMM_API unpack8_hi(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpackhi_epi8(l.v, h.v)}; }      // AVX2 {l0...l15|l16...l31}, {h0...h15|h16...h31} -> {l7,h7,...,l15,h15 | l24,h24,...,l31,h31}
+    template <class XMM> ARKXMM_API unpack16_hi(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpackhi_epi16(l.v, h.v)}; }       // SSE2 {l0... l7}, {h0... h7} -> {l4,h4,...,l7,h7}
+    template <class YMM> ARKXMM_API unpack16_hi(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpackhi_epi16(l.v, h.v)}; }    // AVX2 {l0... l7| l8...l15}, {h0... h7| h8...h15} -> {l4,h4,...,l7,h7 | l12,h12,...,l15,h15}
+    template <class XMM> ARKXMM_API unpack32_hi(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpackhi_epi32(l.v, h.v)}; }       // SSE2 {l0... l3}, {h0... h3} -> {l2,h2,l3,h3}
+    template <class YMM> ARKXMM_API unpack32_hi(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpackhi_epi32(l.v, h.v)}; }    // AVX2 {l0... l3| l4... l7}, {h0... h3| h4... h7} -> {l2,h2,l3,h3 | l6,h6,l7,h7}
+    template <class XMM> ARKXMM_API unpack32_hi(XMM l, XMM h) -> enable::if_f32x4<XMM> { return {_mm_unpackhi_ps(l.v, h.v)}; }         // SSE  {l0... l3}, {h0... h3} -> {l2,h2,l3,h3}
+    template <class YMM> ARKXMM_API unpack32_hi(YMM l, YMM h) -> enable::if_f32x8<YMM> { return {_mm256_unpackhi_ps(l.v, h.v)}; }      // AVX  {l0... l3| l4... l7}, {h0... h3| h4... h7} -> {l2,h2,l3,h3 | l6,h6,l7,h7}
+    template <class XMM> ARKXMM_API unpack64_hi(XMM l, XMM h) -> enable::if_iXMM<XMM> { return {_mm_unpackhi_epi64(l.v, h.v)}; }       // SSE2 {l0... l1}, {h0... h1} -> {l1,h1}
+    template <class YMM> ARKXMM_API unpack64_hi(YMM l, YMM h) -> enable::if_iYMM<YMM> { return {_mm256_unpackhi_epi64(l.v, h.v)}; }    // AVX2 {l0... l1| l2... l3}, {h0... h1| h2... h3} -> {l1,h1 | l3,h3}
+    template <class XMM> ARKXMM_API unpack64_hi(XMM l, XMM h) -> enable::if_f32x4<XMM> { return {_mm_shuffle_ps(l.v, h.v, 0xEE)}; }    // SSE2 {l0... l1}, {h0... h1} -> {l0,h0}
+    template <class YMM> ARKXMM_API unpack64_hi(YMM l, YMM h) -> enable::if_f32x8<YMM> { return {_mm256_shuffle_ps(l.v, h.v, 0xEE)}; } // AVX  {l0... l1| l2... l3}, {h0... h1| h2... h3} -> {l0,h0|l2,h2}
+    template <class XMM> ARKXMM_API unpack64_hi(XMM l, XMM h) -> enable::if_f64x2<XMM> { return {_mm_unpackhi_pd(l.v, h.v)}; }         // SSE2 {l0... l1}, {h0... h1} -> {l1,h1}
+    template <class YMM> ARKXMM_API unpack64_hi(YMM l, YMM h) -> enable::if_f64x4<YMM> { return {_mm256_unpackhi_pd(l.v, h.v)}; }      // AVX  {l0... l1| l2... l3}, {h0... h1| h2... h3} -> {l1,h1 | l3,h3}
 
     template <class XMM> ARKXMM_API unpack_lo(XMM l, XMM h) -> enable::if_8x16<XMM> { return unpack8_lo(l, h); }   // SSE2 {l0...l15}, {h0...h15} -> {l0,h0,...,l7,h7}
     template <class YMM> ARKXMM_API unpack_lo(YMM l, YMM h) -> enable::if_8x32<YMM> { return unpack8_lo(l, h); }   // AVX2 {l0...l15|l16...l31}, {h0...h15|h16...h31} -> {l0,h0,...,l7,h7 | l16,h16,...,l23,h23}
@@ -1098,6 +1137,23 @@ namespace arkana::xmm
     ARKXMM_API byteswap(vu32x8 v) -> vu32x8 { return byte_shuffle_128(v, from_values<YMM<int8_t>>(3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12, 3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12)); }
     ARKXMM_API byteswap(vu64x2 v) -> vu64x2 { return byte_shuffle_128(v, from_values<XMM<int8_t>>(7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8)); }
     ARKXMM_API byteswap(vu64x4 v) -> vu64x4 { return byte_shuffle_128(v, from_values<YMM<int8_t>>(7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8)); }
+
+    template <class XMM>
+    ARKXMM_API transpose_32x4x4(
+        XMM& /* { 0,1,2,3 } */ x0,
+        XMM& /* { 4,5,6,7 } */ x1,
+        XMM& /* { 8,9,A,B } */ x2,
+        XMM& /* { C,D,E,F } */ x3) -> enable::if_NMM<XMM, void>
+    {
+        auto t0 = xmm::unpack32_lo(x0, x1); // t0 = {0,4,1,5} <- {0,1,_,_},{4,5,_,_}
+        auto t1 = xmm::unpack32_hi(x0, x1); // t1 = {2,6,3,7} <- {_,_,2,3},{_,_,6,7}
+        auto t2 = xmm::unpack32_lo(x2, x3); // t2 = {8,C,9,D} <- {8,9,_,_},{C,D,_,_}
+        auto t3 = xmm::unpack32_hi(x2, x3); // t3 = {A,E,B,F} <- {_,_,A,B},{_,_,E,F}
+        x0 = xmm::unpack64_lo(t0, t2);      // x0 = {0,4,8,C} <- {0,4,_,_},{8,C,_,_}
+        x1 = xmm::unpack64_hi(t0, t2);      // x1 = {1,5,9,D} <- {_,_,1,5},{_,_,9,D}
+        x2 = xmm::unpack64_lo(t1, t3);      // x2 = {2,6,A,E} <- {2,6,_,_},{A,E,_,_}
+        x3 = xmm::unpack64_hi(t1, t3);      // x3 = {3,7,B,F} <- {_,_,3,7},{_,_,B,F}
+    }
 }
 
 namespace arkxmm
