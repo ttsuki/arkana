@@ -21,12 +21,10 @@
   <ItemGroup>
     <ClInclude Include="ark.h" />
     <ClInclude Include="ark\base64.h" />
-    <ClInclude Include="ark\bitmanip.h" />
     <ClInclude Include="ark\cpuid.h" />
     <ClInclude Include="ark\hexilit.h" />
+    <ClInclude Include="ark\intrinsics.h" />
     <ClInclude Include="ark\lutgen.h" />
-    <ClInclude Include="ark\macros.h" />
-    <ClInclude Include="ark\memory.h" />
     <ClInclude Include="ark\types.h" />
     <ClInclude Include="ark\uint128.h" />
     <ClInclude Include="ark\xmm.h" />

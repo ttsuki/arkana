@@ -11,10 +11,8 @@
 #pragma once
 
 #include "../ark/types.h"
-#include "../ark/memory.h"
-#include "../ark/bitmanip.h"
+#include "../ark/intrinsics.h"
 #include "../ark/lutgen.h"
-#include "../ark/macros.h"
 
 #include <stdexcept>
 
@@ -286,7 +284,7 @@ namespace arkana::camellia
 
             template <size_t key_length, bool encrypting, auto camellia_f = camellia_f_table_lookup<v64, lookup_sbox32, lookup_sbox64, key64>>
             static constexpr auto generate_key_vector(const key_t<key_length>& key, bool_constant_t<encrypting>  = {}) noexcept
-            -> key_vector_for_t<key_t<key_length>, key64>
+                -> key_vector_for_t<key_t<key_length>, key64>
             {
                 struct uint128_t
                 {
@@ -304,7 +302,7 @@ namespace arkana::camellia
 
                     ARKANA_FORCEINLINE auto byteswap() const noexcept
                     {
-                        return uint128_t{ bit::byteswap(r), bit::byteswap(l) };
+                        return uint128_t{bit::byteswap(r), bit::byteswap(l)};
                     }
                 };
 
@@ -316,23 +314,23 @@ namespace arkana::camellia
 
                     if constexpr (key_length * 8 == 128)
                     {
-                        kl.l = load_u<uint64_t>(key + 0);
-                        kl.r = load_u<uint64_t>(key + 8);
+                        kl.l = bit::load_u<uint64_t>(key + 0);
+                        kl.r = bit::load_u<uint64_t>(key + 8);
                         kr = {};
                     }
                     else if constexpr (key_length * 8 == 192)
                     {
-                        kl.l = load_u<uint64_t>(key + 0);
-                        kl.r = load_u<uint64_t>(key + 8);
-                        kr.l = load_u<uint64_t>(key + 16);
+                        kl.l = bit::load_u<uint64_t>(key + 0);
+                        kl.r = bit::load_u<uint64_t>(key + 8);
+                        kr.l = bit::load_u<uint64_t>(key + 16);
                         kr.r = ~kr.l;
                     }
                     else if constexpr (key_length * 8 == 256)
                     {
-                        kl.l = load_u<uint64_t>(key + 0);
-                        kl.r = load_u<uint64_t>(key + 8);
-                        kr.l = load_u<uint64_t>(key + 16);
-                        kr.r = load_u<uint64_t>(key + 24);
+                        kl.l = bit::load_u<uint64_t>(key + 0);
+                        kl.r = bit::load_u<uint64_t>(key + 8);
+                        kr.l = bit::load_u<uint64_t>(key + 16);
+                        kr.r = bit::load_u<uint64_t>(key + 24);
                     }
 
                     uint128_t t = kl;
@@ -517,13 +515,13 @@ namespace arkana::camellia
             // process_blocks_ecb
             template <
                 class block_t = v128,
-                auto load_block = load_u<v128>,
+                auto load_block = bit::load_u<v128>,
                 auto camellia_prewhite = camellia_prewhite<v128&, key64>,
                 auto camellia_f = camellia_f_table_lookup<v64&, lookup_sbox32, lookup_sbox64, key64>,
                 auto camellia_fl = camellia_fl<v64&, rotl_be1, key64>,
                 auto camellia_fl_inv = camellia_fl_inv<v64&, rotl_be1, key64>,
                 auto camellia_postwhite = camellia_postwhite<v128&, key64>,
-                auto store_block = store_u<v128>,
+                auto store_block = bit::store_u<v128>,
                 class key_vector_t>
             static void process_blocks_ecb(void* dst, const void* src, size_t length, const key_vector_t& kv)
             {
@@ -581,9 +579,9 @@ namespace arkana::camellia
                 auto camellia_fl = camellia_fl<v64&, rotl_be1, key64>,
                 auto camellia_fl_inv = camellia_fl_inv<v64&, rotl_be1, key64>,
                 auto camellia_postwhite = camellia_postwhite<v128&, key64>,
-                auto load_block = load_u<v128>,
+                auto load_block = bit::load_u<v128>,
                 auto xor_block = xor_block<v128>,
-                auto store_block = store_u<v128>,
+                auto store_block = bit::store_u<v128>,
                 class key_vector_t,
                 class ctr_generator_t, std::enable_if_t<is_ctr_generator_v<ctr_generator_t, block_t>>* = nullptr>
             static void process_bytes_ctr(
@@ -672,9 +670,9 @@ namespace arkana::camellia
             static inline ctr_vector_t generate_rfc5528_ctr_vector(const ctr_iv_t& iv, const ctr_nonce_t& nonce)
             {
                 return {
-                    load_u<uint32_t>(nonce.data() + 0),
-                    load_u<uint32_t>(iv.data() + 0),
-                    load_u<uint32_t>(iv.data() + 4),
+                    bit::load_u<uint32_t>(nonce.data() + 0),
+                    bit::load_u<uint32_t>(iv.data() + 0),
+                    bit::load_u<uint32_t>(iv.data() + 4),
                     0,
                 };
             }
@@ -685,7 +683,7 @@ namespace arkana::camellia
                 {
                     auto v = ctr0;
                     v.ctr = bit::byteswap(static_cast<uint32_t>(index + 1));
-                    return load_u<v128>(&v);
+                    return bit::load_u<v128>(&v);
                 };
             }
         }
@@ -708,13 +706,13 @@ namespace arkana::camellia
                 using namespace functions;
                 ecb_mode::process_blocks_ecb<
                     v128,
-                    load_u<v128>,
+                    bit::load_u<v128>,
                     camellia_prewhite<v128&, key64>,
                     camellia_f_table_lookup<v64&, lookup_sbox32, lookup_sbox64, key64>,
                     camellia_fl<v64&, rotl_be1, key64>,
                     camellia_fl_inv<v64&, rotl_be1, key64>,
                     camellia_postwhite<v128&, key64>,
-                    store_u<v128>>(dst, src, length, kv);
+                    bit::store_u<v128>>(dst, src, length, kv);
             }
 
             using functions::ctr_iv_t;
@@ -730,7 +728,7 @@ namespace arkana::camellia
             static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, const ctr_vector_t& cv)
             {
                 // pre-prewhitening
-                ctr_vector_t ctr0 = arkana::load_u<ctr_vector_t>(&kv);
+                ctr_vector_t ctr0 = bit::load_u<ctr_vector_t>(&kv);
                 ctr0.n ^= cv.n;
                 ctr0.ivl ^= cv.ivl;
                 ctr0.ivr ^= cv.ivr;
@@ -743,16 +741,16 @@ namespace arkana::camellia
                     camellia_fl<v64&, rotl_be1, key64>,
                     camellia_fl_inv<v64&, rotl_be1, key64>,
                     camellia_postwhite<v128&, key64>,
-                    load_u<v128>,
+                    bit::load_u<v128>,
                     xor_block<v128>,
-                    store_u<v128>>
+                    bit::store_u<v128>>
                 (
                     dst, src, position, length, kv,
                     [ctr0](size_t index) -> v128
                     {
                         auto v = ctr0;
                         v.ctr ^= bit::byteswap(static_cast<uint32_t>(index + 1)); // prewhitening
-                        return load_u<v128>(&v);
+                        return bit::load_u<v128>(&v);
                     });
             }
 
@@ -770,14 +768,14 @@ namespace arkana::camellia
                     camellia_fl<v64&, rotl_be1, key64>,
                     camellia_fl_inv<v64&, rotl_be1, key64>,
                     camellia_postwhite<v128&, key64>,
-                    load_u<v128>,
+                    bit::load_u<v128>,
                     xor_block<v128>,
-                    store_u<v128>>
+                    bit::store_u<v128>>
                 (
                     dst, src, position, length, kv,
                     [ctr = std::forward<decltype(ctr)>(ctr)](size_t index)
                     {
-                        return bit_cast<v128>(ctr(index));
+                        return bit::bit_cast<v128>(ctr(index));
                     });
             }
         }

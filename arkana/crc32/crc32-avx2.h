@@ -198,7 +198,7 @@ namespace arkana::crc32
 
                 // process last 128-byte block
                 {
-                    auto block = load_u<std::array<uint32_t, 32>>(p);
+                    auto block = bit::load_u<std::array<uint32_t, 32>>(p);
                     p += block_size;
 
                     auto varr = to_array(permute32<0, 4, 1, 5, 2, 6, 3, 7>(v));

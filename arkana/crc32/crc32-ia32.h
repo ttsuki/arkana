@@ -9,7 +9,8 @@
 #pragma once
 
 #include "crc32-ref.h"
-#include "../ark/memory.h"
+#include "../ark/types.h"
+#include "../ark/intrinsics.h"
 
 namespace arkana::crc32
 {

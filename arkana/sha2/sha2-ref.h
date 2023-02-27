@@ -9,8 +9,7 @@
 #pragma once
 
 #include "../ark/types.h"
-#include "../ark/bitmanip.h"
-#include "../ark/memory.h"
+#include "../ark/intrinsics.h"
 
 namespace arkana::sha2
 {

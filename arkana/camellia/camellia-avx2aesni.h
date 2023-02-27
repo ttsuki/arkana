@@ -495,7 +495,7 @@ namespace arkana::camellia
             >
             static inline void process_bytes_ctr(void* dst, const void* src, size_t position, size_t length, const key_vector_t& kv, const ctr_vector_t& cv)
             {
-                ctr_vector_t ctr0 = arkana::load_u<ctr_vector_t>(&kv);
+                ctr_vector_t ctr0 = bit::load_u<ctr_vector_t>(&kv);
                 ctr0.n ^= cv.n;
                 ctr0.ivl ^= cv.ivl;
                 ctr0.ivr ^= cv.ivr;

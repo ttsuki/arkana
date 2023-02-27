@@ -13,7 +13,7 @@ using namespace arkana::uint128::literals;
 static inline uint128_t u128(uint64_t h, uint64_t l)
 {
     // little-endian u128
-    return arkana::bit_cast<uint128_t>(std::array<uint64_t, 2>{l, h});
+    return arkana::bit::bit_cast<uint128_t>(std::array<uint64_t, 2>{l, h});
 }
 
 TEST(uint128, bool) 

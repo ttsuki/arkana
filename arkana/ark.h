@@ -8,15 +8,12 @@
 #pragma once
 
 #include "./ark/types.h"
-#include "./ark/lutgen.h"
-#include "./ark/macros.h"
-#include "./ark/bitmanip.h"
-#include "./ark/memory.h"
+#include "./ark/intrinsics.h"
 #include "./ark/cpuid.h"
-#include "./ark/hexilit.h"
 #include "./ark/uint128.h"
-#include "./ark/base64.h"
-
 #ifdef __AVX2__
 #include "./ark/xmm.h"
 #endif
+#include "./ark/lutgen.h"
+#include "./ark/hexilit.h"
+#include "./ark/base64.h"

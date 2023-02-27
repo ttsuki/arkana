@@ -26,22 +26,22 @@ namespace arkana::camellia
 
     void process_blocks_ecb_avx2aesni(void* dst, const void* src, size_t length, const key_vector_small_t& kv)
     {
-        return avx2aesni::process_blocks_ecb(dst, src, length, type_punning_cast<const avx2aesni::key_vector_small_t&>(kv));
+        return avx2aesni::process_blocks_ecb(dst, src, length, bit::type_punning_cast<const avx2aesni::key_vector_small_t&>(kv));
     }
 
     void process_blocks_ecb_avx2aesni(void* dst, const void* src, size_t length, const key_vector_large_t& kv)
     {
-        return avx2aesni::process_blocks_ecb(dst, src, length, type_punning_cast<const avx2aesni::key_vector_large_t&>(kv));
+        return avx2aesni::process_blocks_ecb(dst, src, length, bit::type_punning_cast<const avx2aesni::key_vector_large_t&>(kv));
     }
 
     void process_bytes_ctr_avx2aesni(void* dst, const void* src, size_t position, size_t length, const key_vector_small_t& kv, const ctr_vector_t& cv)
     {
-        return avx2aesni::process_bytes_ctr(dst, src, position, length, type_punning_cast<const avx2aesni::key_vector_small_t&>(kv), type_punning_cast<const avx2aesni::ctr_vector_t&>(cv));
+        return avx2aesni::process_bytes_ctr(dst, src, position, length, bit::type_punning_cast<const avx2aesni::key_vector_small_t&>(kv), bit::type_punning_cast<const avx2aesni::ctr_vector_t&>(cv));
     }
 
     void process_bytes_ctr_avx2aesni(void* dst, const void* src, size_t position, size_t length, const key_vector_large_t& kv, const ctr_vector_t& cv)
     {
-        return avx2aesni::process_bytes_ctr(dst, src, position, length, type_punning_cast<const avx2aesni::key_vector_large_t&>(kv), type_punning_cast<const avx2aesni::ctr_vector_t&>(cv));
+        return avx2aesni::process_bytes_ctr(dst, src, position, length, bit::type_punning_cast<const avx2aesni::key_vector_large_t&>(kv), bit::type_punning_cast<const avx2aesni::ctr_vector_t&>(cv));
     }
 
     template <class key_vector_t>
@@ -51,7 +51,7 @@ namespace arkana::camellia
         {
             const key_vector_t key_vector_;
             explicit ecb_context_impl_t(key_vector_t kv) : key_vector_(kv) { }
-            ~ecb_context_impl_t() override { secure_be_zero(const_cast<key_vector_t&>(key_vector_)); }
+            ~ecb_context_impl_t() override { bit::secure_be_zero(const_cast<key_vector_t&>(key_vector_)); }
             void process_blocks(void* dst, const void* src, size_t length) override { return process_blocks_ecb_avx2aesni(dst, src, length, key_vector_); }
         };
 
@@ -66,7 +66,7 @@ namespace arkana::camellia
             const key_vector_t key_vector_;
             const ctr_vector_t ctr_vector_;
             explicit ctr_context_impl_t(key_vector_t kv, ctr_vector_t cv) : key_vector_(kv), ctr_vector_(cv) { }
-            ~ctr_context_impl_t() override { secure_be_zero(const_cast<key_vector_t&>(key_vector_)), secure_be_zero(const_cast<ctr_vector_t&>(ctr_vector_)); }
+            ~ctr_context_impl_t() override { bit::secure_be_zero(const_cast<key_vector_t&>(key_vector_)), bit::secure_be_zero(const_cast<ctr_vector_t&>(ctr_vector_)); }
             void process_bytes(void* dst, const void* src, size_t position, size_t length) override { return process_bytes_ctr_avx2aesni(dst, src, position, length, key_vector_, ctr_vector_); }
         };
 
