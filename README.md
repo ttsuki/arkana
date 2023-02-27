@@ -1,15 +1,14 @@
 𝒂𝒓𝒌a𝒏𝒂
 ======
 
-Somthing of an fs infra library (Intel AVX2 accelerated) for C++17
+Something of an fs infra library (Intel AVX2 accelerated) for C++17
 
 ---
 
 ## arkana::ark
 
 ### [arkana::ark](arkana/ark.h): A useful infra library collection (header-only library)
-  - [bitmanip.h](arkana/ark/bitmanip.h): Bit-manipulation helper (rotl, rotr, byteswap)
-  - [memory.h](arkana/ark/memory.h): Type conversion helper (load_u, store_u, memcpy, memset, bit_cast)
+  - [intrinsics.h](arkana/ark/intrinsics.h): Type conversion, Bit-manipulation, Multi-precision arithmetic helper
   - [cpuid.h](arkana/ark/cpuid.h): CPU feature flag loader
   - [uint128.h](arkana/ark/uint128.h): Unsigned 128 bit integer and bitwise-, arithmetic-, and comparing- operators
   - [xmm.h](arkana/ark/xmm.h): Typed SSE/AVX integer vector operation wraper library (vu32x4, vu16x16, etc)
