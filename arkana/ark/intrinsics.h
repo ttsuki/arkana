@@ -1,5 +1,5 @@
 /// @file
-/// @brief	arkana::ark::intrinsics
+/// @brief	arkana::intrinsics
 /// @author Copyright(c) 2021 ttsuki
 /// 
 /// This software is released under the MIT License.
@@ -230,7 +230,7 @@ namespace arkana::intrinsics
         auto [hl, hh] = decompose(muld(ah, bh)); // __a_ * __b_ = hh__
         hh += adc(adc(0, lh, xl), hl, xh);
         hh += adc(adc(0, lh, yl), hl, yh);
-        return uint64x2_t{ static_cast<uint64_t>(lh) << 32 | ll, static_cast<uint64_t>(hh) << 32 | hl };
+        return uint64x2_t{static_cast<uint64_t>(lh) << 32 | ll, static_cast<uint64_t>(hh) << 32 | hl};
 #endif
     }
 
@@ -384,12 +384,12 @@ namespace arkana::intrinsics
 
     template <> inline carry_flag_t adc(carry_flag_t cf, uint64x2_t& a, uint64x2_t b) noexcept { return adc(adc(cf, a.l, b.l), a.h, b.h); }
     template <> inline carry_flag_t sbb(carry_flag_t cf, uint64x2_t& a, uint64x2_t b) noexcept { return sbb(sbb(cf, a.l, b.l), a.h, b.h); }
-    template <> inline auto muld(uint64x2_t a, uint64x2_t b) noexcept = delete; // is demanded?
+    template <> inline auto muld(uint64x2_t a, uint64x2_t b) noexcept = delete; // not implemented yet.
     template <> inline uint64x2_t rotl(uint64x2_t v, int i) noexcept { return i & 64 ? uint64x2_t{shld(v.l, v.h, i), shld(v.h, v.l, i)} : uint64x2_t{shld(v.h, v.l, i), shld(v.l, v.h, i)}; }
     template <> inline uint64x2_t rotr(uint64x2_t v, int i) noexcept { return i & 64 ? uint64x2_t{shrd(v.h, v.l, i), shrd(v.l, v.h, i)} : uint64x2_t{shrd(v.l, v.h, i), shrd(v.h, v.l, i)}; }
     template <> inline uint64x2_t byteswap(uint64x2_t a) noexcept { return uint64x2_t{byteswap(a.h), byteswap(a.l)}; }
-    template <> inline uint64x2_t shld(uint64x2_t l, uint64x2_t h, int i) noexcept = delete; // is demanded?
-    template <> inline uint64x2_t shrd(uint64x2_t l, uint64x2_t h, int i) noexcept = delete; // is demanded?
+    template <> inline uint64x2_t shld(uint64x2_t l, uint64x2_t h, int i) noexcept = delete; // not implemented yet.
+    template <> inline uint64x2_t shrd(uint64x2_t l, uint64x2_t h, int i) noexcept = delete; // not implemented yet.
 }
 
 namespace arkana::bit
