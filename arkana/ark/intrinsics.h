@@ -33,10 +33,6 @@
 #include <type_traits>
 #include <numeric>
 
-#if __has_include("hexilit.h")
-#  include "hexilit.h"
-#endif
-
 namespace arkana::intrinsics
 {
     using std::memcpy;
@@ -394,21 +390,6 @@ namespace arkana::intrinsics
     template <> inline uint64x2_t byteswap(uint64x2_t a) noexcept { return uint64x2_t{byteswap(a.h), byteswap(a.l)}; }
     template <> inline uint64x2_t shld(uint64x2_t l, uint64x2_t h, int i) noexcept = delete; // is demanded?
     template <> inline uint64x2_t shrd(uint64x2_t l, uint64x2_t h, int i) noexcept = delete; // is demanded?
-
-#if __has_include("hexilit.h")
-    inline namespace literals
-    {
-        template <char... cs>
-        static inline constexpr uint64x2_t operator ""_u64x2()
-        {
-            using namespace hexilit::parser;
-            constexpr auto arr = parse_hexint_array<uint64_t, cs...>(is_in_range<1, 32>, always, never);
-            static_assert(arr.size() == 1 || arr.size() == 2);
-            if constexpr (arr.size() == 1) { return uint64x2_t{arr[0]}; }
-            else { return uint64x2_t{arr[1], arr[0]}; }
-        }
-    }
-#endif
 }
 
 namespace arkana::bit
